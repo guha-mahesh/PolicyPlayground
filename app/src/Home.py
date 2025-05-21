@@ -34,7 +34,7 @@ SideBarLinks(show_home=True)
 
 # set the title of the page and provide a simple prompt. 
 logger.info("Loading the Home page of the app")
-st.title('CS 4973 Sample DoC Project App')
+st.title('FinFluxes')
 st.write('\n\n')
 st.write('### 2025 Summer 1 Dialogue of Civilizations')
 st.write('\n')
