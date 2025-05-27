@@ -24,7 +24,7 @@ df = df.drop(columns='meta')
 # Concatenate the new columns with the rest of the DataFrame
 df = pd.concat([split_cols, df], axis=1)
 
-print(set(df['fin_source'].tolist()))
+print(df)
 '''for item in df.columns[0].split(","):
     df[item] = 00
 
