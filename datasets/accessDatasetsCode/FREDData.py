@@ -6,8 +6,6 @@ from dotenv import load_dotenv
 
 dotenv_path = "/Users/guhamahesh/VSCODE/dialogue/FinFluxes/api/.env"
 load_dotenv(dotenv_path)
-
-
 api_key = os.getenv("FRED_API_KEY")
 pd.set_option('display.max_columns', None)
 
