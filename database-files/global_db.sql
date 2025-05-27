@@ -46,15 +46,15 @@ CREATE TABLE IF NOT EXISTS `US Interest Rates` (
     fixed_rate INT,
     real_rate INT,
     rate_date DATE
-)
+);
 
 CREATE TABLE IF NOT EXISTS ProposedPolicy (
     proposed_policy_id INT PRIMARY KEY,
     scope VARCHAR(20),
     enforcement VARCHAR(20),
     duration VARCHAR(20),
-    FOREIGN KEY (country_id) REFERENCES Country(country_id)
-
+    country_id INT,
+    FOREIGN KEY (country_id) REFERENCES Countries(country_id)
 );
 
 CREATE TABLE HistoricalPolicy (
@@ -64,27 +64,25 @@ CREATE TABLE HistoricalPolicy (
     description VARCHAR(255),
     category VARCHAR(100),
     date DATE,
-    FOREIGN KEY (country_id) REFERENCES Country(country_id)
+    FOREIGN KEY (country_id) REFERENCES Countries(country_id)
+);
+
+CREATE TABLE IF NOT EXISTS Politician (
+    politician_id INT PRIMARY KEY,
+    contact_info VARCHAR(250),
+    name VARCHAR(250)
 );
 
 CREATE TABLE IF NOT EXISTS PolicyIdeas (
     entry_id INT PRIMARY KEY,
     percent_change INT,
-    topic VARCHAR(200)
-    FOREIGN KEY (entry_id) REFERENCES Conversations(convversation_id)
-
+    topic VARCHAR(200),
+    FOREIGN KEY (entry_id) REFERENCES Conversations(conversation_id)
 );
 
 CREATE TABLE IF NOT EXISTS Conversations (
-    convversation_id INT PRIMARY KEY,
-    politican_id INT,
+    conversation_id INT PRIMARY KEY,
+    politician_id INT,
     content TEXT,
-    FOREIGN KEY (politican_id) REFERENCES Politician(politican_id)
-
+    FOREIGN KEY (politician_id) REFERENCES Politician(politician_id)
 );
-
-CREATE TABLE IF NOT EXISTS Politican (
-    politican_id INT PRIMARY KEY,
-    contact_info VARCHAR(250),
-    name VARCHAR(250)
-)
