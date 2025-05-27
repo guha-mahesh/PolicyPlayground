@@ -120,7 +120,8 @@ data = data[(data['average_exports_value'] < 0) &
 merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
 data_currency = normalize_full_df(merged_df2)
 
-
+data_currency = data_currency[(
+    data_currency['average_TreasurySecurities_value'] > .2) & (data_currency['average_exports_value'] < .67)]
 X = np.ones((data.shape[0], 1))
 X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
 y = np.array(data['close'])
@@ -159,6 +160,7 @@ def plot():
 
 def plot_feats_1():
     data2 = data.drop(columns=['month', 'close'])
+
     for col in data2.columns:
         plt.figure()
         plt.scatter(data2[col].tolist(), data['close'].tolist())
