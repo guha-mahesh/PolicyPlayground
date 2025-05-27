@@ -38,7 +38,7 @@ def millitaryPercentage():
 
                     files_data[file_name] = df
 
-    df_military = files_data['API_MS.MIL.XPND.GD.ZS_DS2_en_csv_v2_85084.csv']
+    df_military = files_data['API_MS.MIL.XPND.GD.ZS_DS2_en_csv_v2_337778.csv']
     return df_military
 
 millitaryPercentage()
