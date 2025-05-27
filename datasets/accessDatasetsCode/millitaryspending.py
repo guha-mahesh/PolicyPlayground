@@ -38,7 +38,5 @@ def millitaryPercentage():
 
                     files_data[file_name] = df
 
-    # Now you have all CSV files as DataFrames in the files_data dictionary
-    # Access them like: files_data['filename.csv']
     df_military = files_data['API_MS.MIL.XPND.GD.ZS_DS2_en_csv_v2_85084.csv']
     return df_military
