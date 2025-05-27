@@ -120,6 +120,9 @@ data = data[(data['average_exports_value'] < 0) &
 merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
 data_currency = normalize_full_df(merged_df2)
 
+print(data)
+
+
 data_currency = data_currency[(
     data_currency['average_TreasurySecurities_value'] > .2) & (data_currency['average_exports_value'] < .67)]
 X = np.ones((data.shape[0], 1))
@@ -156,6 +159,10 @@ def plot():
         plt.figure()
         plt.scatter(lst, resids, label=col)
         plt.legend()
+        plt.xlabel(col)
+        plt.ylabel('Residual')
+        plt.title(f'ResidualPlots versus {col}')
+        plt.savefig(f'ResidualPlots {col}')
 
 
 def plot_feats_1():
@@ -178,10 +185,10 @@ def plot_feats_2():
         plt.scatter(currency_feats[col].tolist(),
                     data_currency['exchange_value'].tolist())
         plt.title(f'Currency V.S {col} ')
-        plt.savefig(f'Currency_{col}.png')
         plt.xlabel(col)
         plt.ylabel('ExchangeRate')
+        plt.savefig(f'Currency_{col}.png')
 
 
-plot_feats_2()
+plot()
 plt.show()

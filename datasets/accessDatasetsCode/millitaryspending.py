@@ -42,4 +42,4 @@ def millitaryPercentage():
     return df_military
 
 
-print(millitaryPercentage())
+print(millitaryPercentage().tail())

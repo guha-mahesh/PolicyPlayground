@@ -9,6 +9,8 @@ def monthly_sp500():
     df = sp500.history(start="2003-01-01", end="2024-02-01", interval="1mo")
     df = df.reset_index()
 
+    # Explicitly ensure Date column is datetime
+    df['Date'] = pd.to_datetime(df['Date'])
     df['month'] = df['Date'].dt.to_period('M')
 
     df_final = pd.DataFrame({
