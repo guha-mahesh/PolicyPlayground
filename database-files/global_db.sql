@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS Education (
     FOREIGN KEY (country_id) REFERENCES Countries(country_id)
 );
 
-CREATE TABLE IF NOT EXISTS Foreign Aid (
+CREATE TABLE IF NOT EXISTS `Foreign Aid` (
     aid_id INT AUTO_INCREMENT PRIMARY KEY,
     amount INT,
     country_id INT,
@@ -41,3 +41,10 @@ CREATE TABLE IF NOT EXISTS Currencies (
     exchange_date DATE,
     FOREIGN KEY (country_id) REFERENCES Countries(country_id)
 );
+
+CREATE TABLE IF NOT EXISTS `US Interest Rates` (
+    interest_id INT AUTO_INCREMENT PRIMARY KEY,
+    fixed_rate INT,
+    real_rate INT,
+    rate_date DATE
+)
