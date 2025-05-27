@@ -1,0 +1,79 @@
+
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+import requests
+from bs4 import BeautifulSoup
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.backends.backend_pdf import PdfPages
+import seaborn as sns
+import plotly.express as px
+from sklearn.model_selection import train_test_split
+import math
+
+from hdi import download_hdi_data
+from educationSpending import fetch_worldbank_data_json
+
+
+hdi_df = download_hdi_data()
+education_df = fetch_worldbank_data_json()
+
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
+print("HDI Data shape:", hdi_df.shape)
+print("Education Data shape:", education_df.shape)
+
+
+year_columns = ['1990', '2010', '2015', '2020', '2021', '2022', '2023']
+
+hdi_melted = pd.melt(hdi_df, 
+                     id_vars=['Country'], 
+                     value_vars=year_columns,
+                     var_name='Year', 
+                     value_name='HDI')
+
+
+hdi_melted['Year'] = pd.to_numeric(hdi_melted['Year'])
+hdi_melted = hdi_melted.dropna(subset=['HDI'])
+
+
+
+education_clean = education_df.rename(columns={'Country Name': 'Country'})
+education_clean = education_clean.dropna(subset=['Value'])
+
+print("\nEducation data sample:")
+print(education_clean.head())
+
+
+merged_data = pd.merge(hdi_melted, 
+                      education_clean[['Country', 'Year', 'Value']], 
+                      on=['Country', 'Year'], 
+                      how='inner')
+
+
+merged_data = merged_data.rename(columns={'Value': 'Education_Expenditure_GDP'})
+
+
+
+print(f"\nNumber of unique countries in merged data: {merged_data['Country'].nunique()}")
+
+
+fig2 = px.scatter(merged_data, 
+                 x='Education_Expenditure_GDP', 
+                 y='HDI',
+                 color='Country',
+                 facet_col='Year',
+                 facet_col_wrap=4,
+                 title='Education Expenditure vs HDI by Year',
+                 labels={
+                     'Education_Expenditure_GDP': 'Gov. Edu. Expenditure (% GDP)',
+                     'HDI': 'HDI'
+                 })
+
+fig2.update_layout(height=800, showlegend=False)
+fig2.show()
+
