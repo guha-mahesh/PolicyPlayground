@@ -5,6 +5,7 @@ from yahoofinance import monthly_sp500
 import numpy as np
 from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
+from FREDData import conversions as cr
 
 
 def clean_data(df):
@@ -74,7 +75,7 @@ def normalize_full_df(df):
 
 
 map = {
-    "federalfundsrate": "FEDFUNDS",
+
     "DiscountRate": "INTDSRUSM193N",
     "TreasurySecurities": "WSHOMCB",
     "FedReserveBalanceSheet": "WALCL"
@@ -109,8 +110,15 @@ for df in final_dfs[1:]:
     merged_df = pd.merge(merged_df, df, how="inner", on="month")
 merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
 
+
+euros = cr("Euro (EUR)")
+
 data = normalize_full_df(merged_df)
-print(data)
+data = data[(data['average_exports_value'] < 0) &
+            (data['average_TreasurySecurities_value'] > -1)]
+
+merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
+data_currency = normalize_full_df(merged_df2)
 
 
 X = np.ones((data.shape[0], 1))
@@ -140,10 +148,38 @@ print("R²:", r_squared)
 num_cols = [col for col in data.columns if (
     data[col].dtype == float)]
 
-for col in num_cols:
-    lst = data[col].tolist()
-    plt.figure()
-    plt.scatter(lst, resids, label=col)
-    plt.legend()
 
+def plot():
+    for col in num_cols:
+        lst = data[col].tolist()
+        plt.figure()
+        plt.scatter(lst, resids, label=col)
+        plt.legend()
+
+
+def plot_feats_1():
+    data2 = data.drop(columns=['month', 'close'])
+    for col in data2.columns:
+        plt.figure()
+        plt.scatter(data2[col].tolist(), data['close'].tolist())
+        plt.title(f'The S&P 500 index V.S {col} ')
+        plt.savefig(f'The_S&P_500_index_V.S_{col}.png')
+        plt.xlabel(col)
+        plt.ylabel('The S&P 500')
+
+
+def plot_feats_2():
+    print(data_currency)
+    currency_feats = data_currency.drop(columns=['month', 'exchange_value'])
+    for col in currency_feats.columns:
+        plt.figure()
+        plt.scatter(currency_feats[col].tolist(),
+                    data_currency['exchange_value'].tolist())
+        plt.title(f'Currency V.S {col} ')
+        plt.savefig(f'Currency_{col}.png')
+        plt.xlabel(col)
+        plt.ylabel('ExchangeRate')
+
+
+plot_feats_2()
 plt.show()

@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 dotenv_path = "/Users/guhamahesh/VSCODE/dialogue/FinFluxes/api/.env"
 load_dotenv(dotenv_path)
@@ -67,8 +68,18 @@ def conversions(currency):
     response = requests.get(url)
     jsondata = response.json()
     df = pd.DataFrame(jsondata["observations"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
-    return df.dropna(subset=['value'])
 
+    # Clean values
+    df["exchange_value"] = pd.to_numeric(df["value"], errors="coerce")
+    df = df.dropna(subset=["exchange_value"])
 
-df = exports()
+    # Convert to Period[M] to remove day
+    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M")
+
+    # Drop duplicate months
+    df = df.drop_duplicates(subset="month", keep="first")
+
+    # Filter date range
+    df = df[(df["month"] >= "2003-01") & (df["month"] <= "2024-02")]
+
+    return df[["month", "exchange_value"]]
