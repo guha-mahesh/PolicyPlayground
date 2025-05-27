@@ -1,23 +1,19 @@
 import yfinance as yf
 import pandas as pd
-import requests
 
 
-def maxSPY():
+def monthly_sp500():
     pd.set_option('display.max_columns', None)
-    # Get S&P 500 data since 2000 and print ALL of it
-    sp500 = yf.Ticker("^GSPC")
-    df = sp500.history(start="2000-01-01", period="max")
 
-    # Format exactly like your original broken code expected
+    sp500 = yf.Ticker("^GSPC")
+    df = sp500.history(start="2003-01-01", end="2024-02-01", interval="1mo")
+    df = df.reset_index()
+
+    df['month'] = df['Date'].dt.to_period('M')
+
     df_final = pd.DataFrame({
-        'date': df.index,
-        'open': df['Open'],
-        'high': df['High'],
-        'low': df['Low'],
-        'close': df['Close'],
-        'volume': df['Volume']
+        'month': df['month'],
+        'close': df['Close']
     })
 
-    # Print ALL the data
     return df_final
