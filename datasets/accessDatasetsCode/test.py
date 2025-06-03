@@ -44,6 +44,7 @@ infrastructure_spending = fetch_worldbank_data("IS.AIR.PSGR")
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
 # Merge data
+
 df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
 df = df.merge(govt_health.rename(columns={'value': 'Health_spending'}), on=[
     'Country', 'date'], how='outer')
@@ -55,16 +56,12 @@ df = df.merge(infrastructure_spending.rename(columns={'value': 'Infrastructure_p
 model_data = df.dropna(
     subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Infrastructure_proxy'])
 
-print(f"=== DATA AVAILABILITY CHECK ===")
-print(f"Total data points with all features: {len(model_data)}")
-print(f"Countries represented: {model_data['Country'].nunique()}")
-print(f"Years covered: {sorted(model_data['date'].unique())}")
 
 # Plot each feature against GDP per capita (BEFORE normalization)
 features = ['Health_spending', 'Education_spending', 'Infrastructure_proxy']
 
 for feature in features:
-    # Use original data for plotting (before normalization)
+
     plot_data = df.dropna(subset=[feature, 'GDP_per_capita'])
 
     print(f"\n{feature} vs GDP: {len(plot_data)} data points")
@@ -86,19 +83,33 @@ for feature in features:
 
 
 def regress(X, y):
+    # Ensure X and y are numeric arrays
+    X = np.asarray(X, dtype=np.float64)
+    y = np.asarray(y, dtype=np.float64)
+
     dot1 = np.dot(X.T, X)
-    inv = np.linalg.inv(dot1)
+
+    # Add regularization to handle potential singularity
+    regularization = 1e-8 * np.eye(dot1.shape[0])
+    dot1_reg = dot1 + regularization
+
+    try:
+        inv = np.linalg.inv(dot1_reg)
+    except np.linalg.LinAlgError:
+        # Use pseudo-inverse if regular inverse fails
+        inv = np.linalg.pinv(dot1)
+
     dot2 = np.dot(X.T, y)
     return np.dot(inv, dot2)
 
 
-def normalize_full_df(df):
+def normalize_features(df):
     df = df.copy()
     for col in df.columns:
-        if col == "date" or col == "Country":
+        if col == "date" or col.startswith('Country_'):
             continue
 
-        values = df[col]
+        values = df[col].astype(np.float64)  # Ensure numeric type
 
         if (values >= 0).all() and values.max() > 1000:
             values = np.log1p(values)
@@ -111,34 +122,40 @@ def normalize_full_df(df):
     return df
 
 
-# Split BEFORE normalization
-X_raw = model_data[['Health_spending',
-                    'Education_spending', 'Infrastructure_proxy']]
-y_raw = model_data['GDP_per_capita']
+numeric_cols = ['GDP_per_capita', 'Health_spending',
+                'Education_spending', 'Infrastructure_proxy']
+for col in numeric_cols:
+    model_data[col] = pd.to_numeric(model_data[col], errors='coerce')
 
-X_train_raw, X_test_raw, y_train_raw, y_test_raw = train_test_split(
-    X_raw, y_raw, test_size=0.3, random_state=42
-)
 
-# Normalize train and test separately
-train_data = pd.concat([X_train_raw, y_train_raw], axis=1)
-test_data = pd.concat([X_test_raw, y_test_raw], axis=1)
+model_data = model_data.dropna(subset=numeric_cols)
 
-train_norm = normalize_full_df(train_data)
-test_norm = normalize_full_df(test_data)
 
-X_train = np.column_stack([np.ones(len(train_norm)), train_norm[[
-    'Health_spending', 'Education_spending', 'Infrastructure_proxy']].values])
-X_test = np.column_stack([np.ones(len(test_norm)), test_norm[[
-    'Health_spending', 'Education_spending', 'Infrastructure_proxy']].values])
-y_train = train_norm['GDP_per_capita'].values
-y_test = test_norm['GDP_per_capita'].values
+country_dummies = pd.get_dummies(model_data['Country'], prefix='Country')
+model_data = pd.concat([model_data, country_dummies], axis=1)
+model_data = model_data.drop(columns=['Country'])
 
-# Original model (full data normalized together)
-model_data = normalize_full_df(model_data)
-X = np.ones((model_data.shape[0], 1))
-X = np.column_stack((X, model_data.drop(columns=['date', 'Country']).values))
-y = np.array(model_data['GDP_per_capita'])
+
+model_data = normalize_features(model_data)
+
+
+X = model_data.drop(columns=['date', 'GDP_per_capita']).astype(
+    np.float64).values
+X = np.column_stack([np.ones(len(X)), X])  # Add intercept
+y = model_data['GDP_per_capita'].astype(np.float64).values
+
+print(f"X shape: {X.shape}, X dtype: {X.dtype}")
+print(f"y shape: {y.shape}, y dtype: {y.dtype}")
+
+
+if np.any(np.isnan(X)) or np.any(np.isinf(X)):
+    print("Warning: X contains NaN or inf values")
+    X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
+
+if np.any(np.isnan(y)) or np.any(np.isinf(y)):
+    print("Warning: y contains NaN or inf values")
+    y = np.nan_to_num(y, nan=0.0, posinf=1e6, neginf=-1e6)
+
 
 b = regress(X, y)
 ypreds = np.dot(X, b)
@@ -146,13 +163,45 @@ ypreds = np.dot(X, b)
 r2 = r2_score(y, ypreds)
 mse = mean_squared_error(y, ypreds)
 
-print(f"\n=== MODEL RESULTS ===")
+print(f"\n=== MODEL RESULTS (WITH ONE-HOT ENCODED COUNTRIES) ===")
 print(f"R² Score: {r2:.4f}")
 print(f"MSE: {mse:.4f}")
 print(f"Number of observations: {len(y)}")
-print(f"Number of features: {X.shape[1] - 1}")
+print(f"Number of features (including countries): {X.shape[1] - 1}")
+
+
+X_raw = model_data.drop(
+    columns=['date', 'GDP_per_capita']).astype(np.float64).values
+y_raw = model_data['GDP_per_capita'].astype(np.float64).values
+
+X_train_raw, X_test_raw, y_train_raw, y_test_raw = train_test_split(
+    X_raw, y_raw, test_size=0.3, random_state=42
+)
+
+X_train = np.column_stack([np.ones(len(X_train_raw)), X_train_raw])
+X_test = np.column_stack([np.ones(len(X_test_raw)), X_test_raw])
+y_train = y_train_raw
+y_test = y_test_raw
 
 b_train = regress(X_train, y_train)
-ypreds_train = np.dot(X_test, b_train)
-r2_train = r2_score(y_test, ypreds_train)
-print(f"r2 score: {r2_train}")
+ypreds_test = np.dot(X_test, b_train)
+r2_test = r2_score(y_test, ypreds_test)
+print(f"Test set R² score: {r2_test:.4f}")
+
+# Residuals
+resids = y - ypreds
+print(f"\nResiduals summary:")
+print(f"Mean: {np.mean(resids):.6f}")
+print(f"Std: {np.std(resids):.4f}")
+print(f"Min: {np.min(resids):.4f}")
+print(f"Max: {np.max(resids):.4f}")
+
+# Feature importance (absolute values of coefficients, excluding intercept)
+feature_names = list(model_data.drop(
+    columns=['date', 'GDP_per_capita']).columns)
+coefficients = b[1:]  # Exclude intercept
+feature_importance = pd.DataFrame({
+    'Feature': feature_names,
+    'Coefficient': coefficients,
+    'Abs_Coefficient': np.abs(coefficients)
+}).sort_values('Abs_Coefficient', ascending=False)

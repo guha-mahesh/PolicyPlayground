@@ -76,6 +76,119 @@ def regress(X, y):
     return np.dot(inv, dot2)
 
 
+def cross_validate_model(X_data, y_data, model_name):
+    """Cross-validation function (one fold - 70/30 split)"""
+    n = len(y_data)
+    split_point = int(n * 0.7)  # 70% for training
+
+    # Split 1: First 70% train, last 30% test
+    X_train1, X_test1 = X_data[:split_point], X_data[split_point:]
+    y_train1, y_test1 = y_data[:split_point], y_data[split_point:]
+
+    # Train and predict
+    vector1 = regress(X_train1, y_train1)
+    y_pred1 = np.dot(X_test1, vector1)
+
+    # Split 2: Last 70% train, first 30% test
+    train_size = int(n * 0.7)
+    X_train2, X_test2 = X_data[-train_size:], X_data[:-train_size]
+    y_train2, y_test2 = y_data[-train_size:], y_data[:-train_size]
+
+    # Train and predict
+    vector2 = regress(X_train2, y_train2)
+    y_pred2 = np.dot(X_test2, vector2)
+
+    # Calculate metrics for both folds
+    r2_fold1 = r2_score(y_test1, y_pred1)
+    mse_fold1 = np.mean((y_pred1 - y_test1) ** 2)
+
+    r2_fold2 = r2_score(y_test2, y_pred2)
+    mse_fold2 = np.mean((y_pred2 - y_test2) ** 2)
+
+    # Average metrics
+    avg_r2 = (r2_fold1 + r2_fold2) / 2
+    avg_mse = (mse_fold1 + mse_fold2) / 2
+
+    return avg_r2, avg_mse
+
+
+def create_currency_model(currency_data, currency_name="Currency"):
+    """
+    Create a currency model with the same preprocessing as the S&P 500 model.
+
+    Parameters:
+    currency_data: DataFrame with currency exchange rate data
+    currency_name: String name for the currency (for printing)
+
+    Returns:
+    X_currency: Feature matrix with intercept and lag
+    y_currency: Target variable (exchange rates)
+    """
+    # Create currency dataset with proper preprocessing
+    currency_merged = pd.merge(
+        merged_df, currency_data, how="inner", on="month").dropna()
+
+    # Apply the same transformations as the S&P 500 model
+    currency_normalized = normalize_full_df(currency_merged)
+
+    # Create feature matrix with intercept column
+    adjusted = currency_normalized.drop(
+        columns=['close', 'exchange_value', 'month'])
+    X_currency = np.ones((adjusted.shape[0], 1))  # Add intercept column
+    X_currency = np.column_stack((X_currency, adjusted.values))
+    y_currency = np.array(currency_normalized['exchange_value'])
+
+    # Apply lag transformation
+    # Drop first row of X_currency
+    X_currency = X_currency[1:]
+    # Add lagged y_currency values
+    X_currency = np.column_stack((X_currency, y_currency[:-1]))
+    # Drop first row of y_currency to match X_currency
+    y_currency = y_currency[1:]
+
+    print(f"{currency_name} model data prepared - X shape: {X_currency.shape}, y shape: {y_currency.shape}")
+
+    return X_currency, y_currency
+
+
+def train_and_evaluate_currency_model(X_currency, y_currency, currency_name="Currency"):
+    """
+    Train and evaluate a currency model, including cross-validation.
+
+    Parameters:
+    X_currency: Feature matrix
+    y_currency: Target variable
+    currency_name: String name for the currency (for printing)
+
+    Returns:
+    Dictionary with model results
+    """
+    # Train on full dataset
+    vector_currency = regress(X_currency, y_currency)
+    ypreds_full_currency = np.dot(X_currency, vector_currency)
+
+    # Calculate full dataset metrics
+    r_squared_full_currency = r2_score(y_currency, ypreds_full_currency)
+    mse_currency = np.mean((ypreds_full_currency - y_currency) ** 2)
+
+    # Cross-validation
+    cv_r2, cv_mse = cross_validate_model(
+        X_currency, y_currency, f"{currency_name} Model")
+
+    # Store results
+    results = {
+        'currency_name': currency_name,
+        'full_r2': r_squared_full_currency,
+        'full_mse': mse_currency,
+        'cv_r2': cv_r2,
+        'cv_mse': cv_mse,
+        'coefficients': vector_currency,
+        'predictions': ypreds_full_currency
+    }
+
+    return results
+
+
 # Data loading and processing
 map = {
     "DiscountRate": "INTDSRUSM193N",
@@ -103,7 +216,25 @@ for df in final_dfs[1:]:
     merged_df = pd.merge(merged_df, df, how="inner", on="month")
 merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
 
-euros = cr("Euro (EUR)")
+# Load all currency data
+currencies = {
+    "Euro": "Euro (EUR)",
+
+    "Japanese Yen": "Japanese Yen (JPY)",
+    "Canadian Dollar": "Canadian Dollar (CAD)",
+    "Swiss Franc": "Swiss Franc (CHF)",
+    "Australian Dollar": "Australian Dollar (AUD)",
+    "Chinese Yuan": "Chinese Yuan (CNY)"
+}
+
+currency_data = {}
+for name, code in currencies.items():
+    try:
+        data = cr(code)
+        currency_data[name] = data.iloc[:-1]  # Remove last row
+        print(f"Loaded {name} data - Shape: {currency_data[name].shape}")
+    except Exception as e:
+        print(f"Error loading {name}: {e}")
 
 # Filter data BEFORE normalization
 # Drop all dates where Treasury Securities data is 0
@@ -119,24 +250,68 @@ merged_df['average_FedReserveBalanceSheet_value'] = np.sqrt(
 # Normalize full dataset
 data = normalize_full_df(merged_df)
 
-merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
-data_currency = normalize_full_df(merged_df2)
-
-data_currency = data_currency[data_currency['average_TreasurySecurities_value'] > .2]
-
-# Full dataset regression for residual plots
+# S&P 500 Model
 X = np.ones((data.shape[0], 1))
 X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
 y = np.array(data['close'])
 
+# Apply lag transformation to S&P 500 model
+X = X[1:]                          # Drop first row of X
+X = np.column_stack((X, y[:-1]))   # Add lagged y values
+y = y[1:]                          # Drop first row of y to match X
+
+# Train S&P 500 model
 vector_full = regress(X, y)
 ypreds_full = np.dot(X, vector_full)
 resids = ypreds_full - y
 
+# Calculate S&P 500 metrics
 mse_full = np.mean((ypreds_full - y) ** 2)
-print("Full dataset Mean Squared Error:", mse_full)
 r_squared_full = r2_score(y, ypreds_full)
-print("Full dataset R²:", r_squared_full)
+sp500_cv_r2, sp500_cv_mse = cross_validate_model(X, y, "S&P 500")
+
+# Create and evaluate currency models
+currency_results = {}
+for name, data in currency_data.items():
+    try:
+        X_currency, y_currency = create_currency_model(data, name)
+        results = train_and_evaluate_currency_model(
+            X_currency, y_currency, name)
+        currency_results[name] = results
+    except Exception as e:
+        print(f"Error creating model for {name}: {e}")
+
+# Print comprehensive results
+print("\n" + "="*80)
+print("MODEL COMPARISON RESULTS")
+print("="*80)
+
+print(f"\nS&P 500 Model:")
+print(f"  Full Dataset - R²: {r_squared_full:.4f}, MSE: {mse_full:.4f}")
+print(f"  Cross-Val    - R²: {sp500_cv_r2:.4f}, MSE: {sp500_cv_mse:.4f}")
+
+for name, results in currency_results.items():
+    print(f"\n{results['currency_name']} Model:")
+    print(
+        f"  Full Dataset - R²: {results['full_r2']:.4f}, MSE: {results['full_mse']:.4f}")
+    print(
+        f"  Cross-Val    - R²: {results['cv_r2']:.4f}, MSE: {results['cv_mse']:.4f}")
+
+# Create summary table
+print(f"\n{'Model':<15} {'Full R²':<10} {'Full MSE':<12} {'CV R²':<10} {'CV MSE':<12}")
+print("-" * 70)
+print(f"{'S&P 500':<15} {r_squared_full:<10.4f} {mse_full:<12.4f} {sp500_cv_r2:<10.4f} {sp500_cv_mse:<12.4f}")
+
+for name, results in currency_results.items():
+    print(
+        f"{name:<15} {results['full_r2']:<10.4f} {results['full_mse']:<12.4f} {results['cv_r2']:<10.4f} {results['cv_mse']:<12.4f}")
+
+# Find best performing currency model
+if currency_results:
+    best_currency = max(currency_results.keys(),
+                        key=lambda x: currency_results[x]['cv_r2'])
+    print(
+        f"\nBest performing currency model: {best_currency} (CV R²: {currency_results[best_currency]['cv_r2']:.4f})")
 
 num_cols = [col for col in data.columns if (data[col].dtype == float)]
 
@@ -195,23 +370,3 @@ def plot_feats_1():
         fig.update_traces(marker=dict(size=8, opacity=0.7))
         fig.write_html(f'The_S&P_500_index_V.S_{col}.html')
         fig.show()
-
-
-def plot_feats_2():
-    print(data_currency)
-    currency_feats = data_currency.drop(columns=['month', 'exchange_value'])
-    for col in currency_feats.columns:
-        fig = px.scatter(
-            x=currency_feats[col],
-            y=data_currency['exchange_value'],
-            title=f'Currency V.S {col}',
-            labels={'x': col, 'y': 'ExchangeRate'}
-        )
-        fig.update_traces(marker=dict(size=8, opacity=0.7))
-        fig.write_html(f'Currency_{col}.html')
-        fig.show()
-
-
-plot()
-# plot_feats_1()
-# plot_feats_no_normal()
