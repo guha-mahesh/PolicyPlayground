@@ -34,7 +34,7 @@ SideBarLinks(show_home=True)
 
 # set the title of the page and provide a simple prompt. 
 logger.info("Loading the Home page of the app")
-st.title('CS 4973 Sample DoC Project App')
+st.title('Welcome to Pushing Policy')
 st.write('\n\n')
 st.write('### 2025 Summer 1 Dialogue of Civilizations')
 st.write('\n')
@@ -44,7 +44,7 @@ st.write('#### HI! As which user would you like to log in?')
 # functionality, we put a button on the screen that the user 
 # can click to MIMIC logging in as that mock user. 
 
-if st.button("Act as John, a Political Strategy Advisor", 
+if st.button("Act as Sun Yue, a US congresswoman.", 
             type = 'primary', 
             use_container_width=True):
     # when user clicks the button, they are now considered authenticated
@@ -53,13 +53,13 @@ if st.button("Act as John, a Political Strategy Advisor",
     st.session_state['role'] = 'pol_strat_advisor'
     # we add the first name of the user (so it can be displayed on 
     # subsequent pages). 
-    st.session_state['first_name'] = 'John'
+    st.session_state['first_name'] = 'Sun'
     # finally, we ask streamlit to switch to another page, in this case, the 
     # landing page for this particular user type
     logger.info("Logging in as Political Strategy Advisor Persona")
-    st.switch_page('pages/00_Pol_Strat_Home.py')
-
-if st.button('Act as Mohammad, an USAID worker', 
+    st.switch_page('pages/historicaldata.py')
+    
+if st.button('Act as Andrew Thornton, a student researcher.', 
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
@@ -67,7 +67,7 @@ if st.button('Act as Mohammad, an USAID worker',
     st.session_state['first_name'] = 'Mohammad'
     st.switch_page('pages/10_USAID_Worker_Home.py')
 
-if st.button('Act as System Administrator', 
+if st.button('Act as Eleanore Goosens, a poltical lobbyist.', 
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True

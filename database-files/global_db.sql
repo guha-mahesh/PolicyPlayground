@@ -86,3 +86,14 @@ CREATE TABLE IF NOT EXISTS Conversations (
     content TEXT,
     FOREIGN KEY (politician_id) REFERENCES Politician(politician_id)
 );
+
+
+CREATE TABLE IF NOT EXISTS Policies (
+    policy_id INT PRIMARY KEY,
+    year_enacted INT
+)
+
+INSERT INTO Policies (policy_id, year_enacted) 
+VALUES 
+(1, 2000), 
+(2, 1000); 
