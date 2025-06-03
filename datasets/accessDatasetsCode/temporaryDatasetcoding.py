@@ -1,10 +1,10 @@
 from FREDData import interestRate as ir
 import pandas as pd
-from FREDData import exports as ex
 from yahoofinance import monthly_sp500
 import numpy as np
 from sklearn.metrics import r2_score
-import matplotlib.pyplot as plt
+import plotly.express as px
+import plotly.graph_objects as go
 from FREDData import conversions as cr
 
 
@@ -12,7 +12,6 @@ def clean_data(df):
     # Convert 'date' column to pandas Period (year-month only)
     df['date'] = pd.to_datetime(df['date']).dt.to_period('M')
     df = df.iloc[:, 2:4]
-
     return df
 
 
@@ -37,15 +36,11 @@ def find_averages(df):
 
     current_period = start_date
     while current_period <= end_date:
-
         month_data = df[df['date'] == current_period]
-
         avg_value = month_data[column_name].mean(
         ) if not month_data.empty else 0
-
         months.append(current_period)
         averages.append(avg_value)
-
         current_period += 1
 
     result_df = pd.DataFrame({
@@ -74,62 +69,6 @@ def normalize_full_df(df):
     return df
 
 
-map = {
-
-    "DiscountRate": "INTDSRUSM193N",
-    "TreasurySecurities": "WSHOMCB",
-    "FedReserveBalanceSheet": "WALCL"
-
-}
-
-
-dfs_to_concat = []
-
-for key in map.keys():
-    dfs_to_concat.append(ir(key))
-
-exports_df = ex()
-dfs_to_concat.append(exports_df)
-
-dfs = [clean_data(df) for df in dfs_to_concat]
-new_dfs = standardize_dates(dfs)
-normalized = []
-
-
-final_dfs = []
-for df in new_dfs:
-    final_dfs.append(find_averages(df))
-
-
-sandp = monthly_sp500()
-
-
-merged_df = final_dfs[0]
-
-for df in final_dfs[1:]:
-    merged_df = pd.merge(merged_df, df, how="inner", on="month")
-merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
-
-
-euros = cr("Euro (EUR)")
-
-data = normalize_full_df(merged_df)
-data = data[(data['average_exports_value'] < 0) &
-            (data['average_TreasurySecurities_value'] > -1)]
-
-merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
-data_currency = normalize_full_df(merged_df2)
-
-print(data)
-
-
-data_currency = data_currency[(
-    data_currency['average_TreasurySecurities_value'] > .2) & (data_currency['average_exports_value'] < .67)]
-X = np.ones((data.shape[0], 1))
-X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
-y = np.array(data['close'])
-
-
 def regress(X, y):
     dot1 = np.dot(X.T, X)
     inv = np.linalg.inv(dot1)
@@ -137,58 +76,142 @@ def regress(X, y):
     return np.dot(inv, dot2)
 
 
-vector = regress(X, y)
-ypreds = np.dot(X, vector)
+# Data loading and processing
+map = {
+    "DiscountRate": "INTDSRUSM193N",
+    "TreasurySecurities": "WSHOMCB",
+    "FedReserveBalanceSheet": "WALCL"
+}
 
-resids = ypreds-y
+dfs_to_concat = []
 
+for key in map.keys():
+    dfs_to_concat.append(ir(key))
 
-mse = np.mean((ypreds - y) ** 2)
-print("Mean Squared Error:", mse)
-r_squared = r2_score(y, ypreds)
-print("R²:", r_squared)
+dfs = [clean_data(df) for df in dfs_to_concat]
+new_dfs = standardize_dates(dfs)
 
+final_dfs = []
+for df in new_dfs:
+    final_dfs.append(find_averages(df))
 
-num_cols = [col for col in data.columns if (
-    data[col].dtype == float)]
+sandp = monthly_sp500()
+
+merged_df = final_dfs[0]
+
+for df in final_dfs[1:]:
+    merged_df = pd.merge(merged_df, df, how="inner", on="month")
+merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
+
+euros = cr("Euro (EUR)")
+
+# Filter data BEFORE normalization
+# Drop all dates where Treasury Securities data is 0
+merged_df = merged_df[merged_df['average_TreasurySecurities_value'] != 0]
+
+# Apply existing filters
+merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
+
+# Apply square root transformation to Fed Reserve Balance Sheet
+merged_df['average_FedReserveBalanceSheet_value'] = np.sqrt(
+    merged_df['average_FedReserveBalanceSheet_value'])
+
+# Normalize full dataset
+data = normalize_full_df(merged_df)
+
+merged_df2 = pd.merge(merged_df, euros, how="inner", on="month")
+data_currency = normalize_full_df(merged_df2)
+
+data_currency = data_currency[data_currency['average_TreasurySecurities_value'] > .2]
+
+# Full dataset regression for residual plots
+X = np.ones((data.shape[0], 1))
+X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
+y = np.array(data['close'])
+
+vector_full = regress(X, y)
+ypreds_full = np.dot(X, vector_full)
+resids = ypreds_full - y
+
+mse_full = np.mean((ypreds_full - y) ** 2)
+print("Full dataset Mean Squared Error:", mse_full)
+r_squared_full = r2_score(y, ypreds_full)
+print("Full dataset R²:", r_squared_full)
+
+num_cols = [col for col in data.columns if (data[col].dtype == float)]
 
 
 def plot():
     for col in num_cols:
         lst = data[col].tolist()
-        plt.figure()
-        plt.scatter(lst, resids, label=col)
-        plt.legend()
-        plt.xlabel(col)
-        plt.ylabel('Residual')
-        plt.title(f'ResidualPlots versus {col}')
-        plt.savefig(f'ResidualPlots {col}')
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(
+            x=lst,
+            y=resids,
+            mode='markers',
+            name=col,
+            marker=dict(size=8, opacity=0.7)
+        ))
+        fig.add_hline(y=0, line_dash="dash", line_color="red")
+
+        fig.update_layout(
+            title=f'Residual Plots versus {col}',
+            xaxis_title=col,
+            yaxis_title='Residual',
+            showlegend=True
+        )
+        fig.write_html(f'ResidualPlots_{col}.html')
+        fig.show()
+
+
+def plot_feats_no_normal():
+    data2 = merged_df.drop(columns=['month', 'close'])
+
+    for col in data2.columns:
+        fig = px.scatter(
+            x=data2[col],
+            y=merged_df['close'],
+            color=merged_df['month'].astype(str),
+            title=f'The S&P 500 index V.S {col}',
+            labels={'x': col, 'y': 'The S&P 500', 'color': 'Month'}
+        )
+        fig.update_traces(marker=dict(size=8, opacity=0.7))
+        fig.write_html(f'The_S&P_500_index_V.S_{col}.html')
+        fig.show()
 
 
 def plot_feats_1():
     data2 = data.drop(columns=['month', 'close'])
 
     for col in data2.columns:
-        plt.figure()
-        plt.scatter(data2[col].tolist(), data['close'].tolist())
-        plt.title(f'The S&P 500 index V.S {col} ')
-        plt.savefig(f'The_S&P_500_index_V.S_{col}.png')
-        plt.xlabel(col)
-        plt.ylabel('The S&P 500')
+        fig = px.scatter(
+            x=data2[col],
+            y=data['close'],
+            color=data['month'].astype(str),
+            title=f'The S&P 500 index V.S {col}',
+            labels={'x': col, 'y': 'The S&P 500', 'color': 'Month'}
+        )
+        fig.update_traces(marker=dict(size=8, opacity=0.7))
+        fig.write_html(f'The_S&P_500_index_V.S_{col}.html')
+        fig.show()
 
 
 def plot_feats_2():
     print(data_currency)
     currency_feats = data_currency.drop(columns=['month', 'exchange_value'])
     for col in currency_feats.columns:
-        plt.figure()
-        plt.scatter(currency_feats[col].tolist(),
-                    data_currency['exchange_value'].tolist())
-        plt.title(f'Currency V.S {col} ')
-        plt.xlabel(col)
-        plt.ylabel('ExchangeRate')
-        plt.savefig(f'Currency_{col}.png')
+        fig = px.scatter(
+            x=currency_feats[col],
+            y=data_currency['exchange_value'],
+            title=f'Currency V.S {col}',
+            labels={'x': col, 'y': 'ExchangeRate'}
+        )
+        fig.update_traces(marker=dict(size=8, opacity=0.7))
+        fig.write_html(f'Currency_{col}.html')
+        fig.show()
 
 
 plot()
-plt.show()
+# plot_feats_1()
+# plot_feats_no_normal()
