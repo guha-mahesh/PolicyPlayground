@@ -34,23 +34,14 @@ def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
     return df
 
 
-# Government direct controls - absolute spending amounts and policy measures
-# Total government health expenditure (absolute dollars)
-# Current health expenditure, government (current US$)
-govt_health_total = fetch_worldbank_data("SH.XPD.GHED.CD")
+govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")  # % of gdp
+govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")  # % of gdp
+# Air transport passengers - infrastructure policy proxy
+# Military Spending
+military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
 
-# Total government education expenditure (absolute dollars)
-# Government expenditure on education, total (current US$)
-govt_education_total = fetch_worldbank_data("SE.XPD.TOTL.CD")
-
-# Government infrastructure/capital spending
-# General government final consumption expenditure (current US$)
-govt_infrastructure = fetch_worldbank_data("NE.CON.GOVT.CD")
-# This includes infrastructure, public services, defense - all direct government spending
-
-# Alternative infrastructure measure - you could also use:
-# "GC.XPN.TOTL.CD" - Expense (current US$) - total government operational spending
-# "GC.REV.TOTL.CD" - Revenue, total (current US$) - government's fiscal capacity
+# IE.PPI.ENGY.CD - education
+# MS.MIL.XPND.ZS - military (% of general government expenditure)
 
 # Economic prosperity measure
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
@@ -64,18 +55,17 @@ gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
 df = df.merge(govt_health_total.rename(columns={'value': 'Govt_Health_Total'}), on=[
     'Country', 'date'], how='outer')
-df = df.merge(govt_education_total.rename(
-    columns={'value': 'Govt_Education_Total'}), on=['Country', 'date'], how='outer')
-df = df.merge(govt_infrastructure.rename(columns={'value': 'Govt_Infrastructure_Total'}), on=[
-    'Country', 'date'], how='outer')
+df = df.merge(govt_education.rename(
+    columns={'value': 'Education_spending'}), on=['Country', 'date'], how='outer')
+df = df.merge(military_spending.rename(columns={'value': 'Military Spending'}), on=[
+    'Country', 'date'], how='inner')
 
 model_data = df.dropna(
-    subset=['GDP_per_capita', 'Govt_Health_Total', 'Govt_Education_Total', 'Govt_Infrastructure_Total'])
+    subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Infrastructure_proxy'])
 
 
 # Plot each feature against GDP per capita (BEFORE normalization)
-features = ['Govt_Health_Total',
-            'Govt_Education_Total', 'Govt_Infrastructure_Total']
+features = ['Health_spending', 'Education_spending', 'Infrastructure_proxy']
 
 for feature in features:
 
@@ -100,20 +90,18 @@ for feature in features:
 
 
 def regress(X, y):
-    # Ensure X and y are numeric arrays
+    # `X and y are numeric arrays
     X = np.asarray(X, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
 
     dot1 = np.dot(X.T, X)
 
-    # Add regularization to handle potential singularity
     regularization = 1e-8 * np.eye(dot1.shape[0])
     dot1_reg = dot1 + regularization
 
     try:
         inv = np.linalg.inv(dot1_reg)
     except np.linalg.LinAlgError:
-        # Use pseudo-inverse if regular inverse fails
         inv = np.linalg.pinv(dot1)
 
     dot2 = np.dot(X.T, y)
@@ -126,7 +114,7 @@ def normalize_features(df):
         if col == "date" or col.startswith('Country_'):
             continue
 
-        values = df[col].astype(np.float64)  # Ensure numeric type
+        values = df[col].astype(np.float64)
 
         if (values >= 0).all() and values.max() > 1000:
             values = np.log1p(values)
@@ -135,12 +123,12 @@ def normalize_features(df):
         if std != 0:
             df[col] = (values - values.mean()) / std
         else:
-            df[col] = 0  # If constant column, set to 0
+            df[col] = 0
     return df
 
 
-numeric_cols = ['GDP_per_capita', 'Govt_Health_Total',
-                'Govt_Education_Total', 'Govt_Infrastructure_Total']
+numeric_cols = ['GDP_per_capita', 'Health_spending',
+                'Education_spending', 'Infrastructure_proxy']
 for col in numeric_cols:
     model_data[col] = pd.to_numeric(model_data[col], errors='coerce')
 
@@ -158,7 +146,7 @@ model_data = normalize_features(model_data)
 
 X = model_data.drop(columns=['date', 'GDP_per_capita']).astype(
     np.float64).values
-X = np.column_stack([np.ones(len(X)), X])  # Add intercept
+X = np.column_stack([np.ones(len(X)), X])
 y = model_data['GDP_per_capita'].astype(np.float64).values
 
 print(f"X shape: {X.shape}, X dtype: {X.dtype}")
@@ -166,11 +154,11 @@ print(f"y shape: {y.shape}, y dtype: {y.dtype}")
 
 
 if np.any(np.isnan(X)) or np.any(np.isinf(X)):
-    print("Warning: X contains NaN or inf values")
+    # print("Warning: X contains NaN or inf values")
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
 
 if np.any(np.isnan(y)) or np.any(np.isinf(y)):
-    print("Warning: y contains NaN or inf values")
+    # print("Warning: y contains NaN or inf values")
     y = np.nan_to_num(y, nan=0.0, posinf=1e6, neginf=-1e6)
 
 
@@ -180,7 +168,7 @@ ypreds = np.dot(X, b)
 r2 = r2_score(y, ypreds)
 mse = mean_squared_error(y, ypreds)
 
-print(f"\n=== MODEL RESULTS (WITH ONE-HOT ENCODED COUNTRIES) ===")
+print(f"\nMODEL RESULTS (WITH ONE-HOT ENCODED COUNTRIES)")
 print(f"R² Score: {r2:.4f}")
 print(f"MSE: {mse:.4f}")
 print(f"Number of observations: {len(y)}")
@@ -205,7 +193,7 @@ ypreds_test = np.dot(X_test, b_train)
 r2_test = r2_score(y_test, ypreds_test)
 print(f"Test set R² score: {r2_test:.4f}")
 
-# Residuals
+
 resids = y - ypreds
 print(f"\nResiduals summary:")
 print(f"Mean: {np.mean(resids):.6f}")
@@ -213,15 +201,11 @@ print(f"Std: {np.std(resids):.4f}")
 print(f"Min: {np.min(resids):.4f}")
 print(f"Max: {np.max(resids):.4f}")
 
-# Feature importance (absolute values of coefficients, excluding intercept)
 feature_names = list(model_data.drop(
     columns=['date', 'GDP_per_capita']).columns)
-coefficients = b[1:]  # Exclude intercept
+coefficients = b[1:]
 feature_importance = pd.DataFrame({
     'Feature': feature_names,
     'Coefficient': coefficients,
     'Abs_Coefficient': np.abs(coefficients)
 }).sort_values('Abs_Coefficient', ascending=False)
-
-print(f"\n=== FEATURE IMPORTANCE ===")
-print(feature_importance)
