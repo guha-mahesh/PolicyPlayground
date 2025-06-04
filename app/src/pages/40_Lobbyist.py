@@ -5,6 +5,7 @@ logger = logging.getLogger(__name__)
 import streamlit as st
 from modules.nav import SideBarLinks
 import requests
+import requestfunctions.getmethods as getmethods
 
 st.set_page_config(layout="wide")
 
@@ -28,14 +29,16 @@ st.text_area(label="Enter Description", value="", height=None, max_chars=None,
 
 col1, col2 = st.columns(2, vertical_alignment="bottom")
 polName = 'John Pork'
-politicians = ['John Pork', 'Goonha']
+politicians = getmethods.getPoliticians()
 #requests.get("http://web-api:4000/politicians/{polName}")
 
 with col1:
     st.selectbox(label="Select Politician:", options=politicians, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
 
 with col2:
-    st.button("New Politician")
+    if st.button("New Politician"):
+        st.switch_page('pages/42_NewPolitician.py')
+
 
 st.subheader('Policy Changes')
 st.text('Monetary Policy:')
