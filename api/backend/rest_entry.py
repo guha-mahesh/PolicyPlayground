@@ -7,6 +7,7 @@ from logging.handlers import RotatingFileHandler
 from backend.db_connection import db
 from backend.simple.simple_routes import simple_routes
 from backend.ngos.ngo_routes import ngos
+from api.backend.pproutes.politician_routes import politician
 from backend.policy_api.policy_api import policy_api
 
 def create_app():
@@ -47,6 +48,7 @@ def create_app():
     app.logger.info("create_app(): registering blueprints with Flask app object.")
     app.register_blueprint(simple_routes)
     app.register_blueprint(ngos, url_prefix="/ngo")
+    app.register_blueprint(politician, url_prefix="/politician")
     app.register_blueprint(policy_api, url_prefix="/pol")
 
     # Don't forget to return the app object

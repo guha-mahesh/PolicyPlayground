@@ -2,6 +2,7 @@ import requests
 import zipfile
 import io
 import pandas as pd
+url2 = "https://api.worldbank.org/v2/country/USA;CHN;RUS;GBR;FRA;DEU;IND/indicator/MS.MIL.XPND.GD.ZS?format=json&per_page=1000"
 
 url = "https://api.worldbank.org/v2/en/indicator/MS.MIL.XPND.GD.ZS?downloadformat=csv"
 

@@ -160,4 +160,4 @@ else:
        
         
     else:
-        print("ERROR: No data after merging! Check country name matching.")
+        print("no data")
