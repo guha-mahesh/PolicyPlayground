@@ -11,25 +11,33 @@ st.set_page_config(layout="wide")
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
 
-st.title("Prediction with Regression")
+st.title("Policy Maker")
+st.markdown("---")
 
-# create a 2 column layout
-col1, col2 = st.columns(2)
+st.markdown("**Monetary Policy**")
 
-# add one number input for variable 1 into column 1
-with col1:
-    var_01 = st.number_input("Variable 01:", step=1)
+col1, col2, col3 = st.columns(3)
+with col1:  
+    discountrate = st.slider("Discount Rate", 0, 100)
 
-# add another number input for variable 2 into column 2
 with col2:
-    var_02 = st.number_input("Variable 02:", step=1)
+    treasurysecurities = st.slider("Treasury Securities", 0, 100)
 
-logger.info(f"var_01 = {var_01}")
-logger.info(f"var_02 = {var_02}")
+with col3:
+    fedreserve = st.slider("Federal Reserve Balance Sheets", 0, 100)
 
-# add a button to use the values entered into the number field to send to the
-# prediction function via the REST API
-if st.button("Calculate Prediction", type="primary", use_container_width=True):
-    results = requests.get(f"http://web-api:4000/prediction/{var_01}/{var_02}")
-    json_results = results.json()
-    st.dataframe(json_results)
+st.markdown("**Fiscal Policy**")
+col1, col2, col3 = st.columns(3)
+with col1:  
+    education = st.slider("Education Spending", 0, 100)
+
+with col2:
+    healthcare = st.slider("Healthcare Spending", 0, 100)
+
+with col3:
+    infrastrucutre = st.slider("Infrastructure Spending", 0, 100)
+    st.markdown("\n\n\n")
+    st.button("Test")
+
+
+
