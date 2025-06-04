@@ -34,33 +34,26 @@ def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
     return df
 
 
-govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS") # % of gdp
-govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS") # % of gdp
-# Air transport passengers - infrastructure policy proxy
-# Military Spending
-military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
-
-# IE.PPI.ENGY.CD - education
-# MS.MIL.XPND.ZS - military (% of general government expenditure)
+# Direct government policy controls
+govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")
+govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")
 
 # Economic prosperity measure
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
 # Merge data
-
 df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
 df = df.merge(govt_health.rename(columns={'value': 'Health_spending'}), on=[
     'Country', 'date'], how='outer')
 df = df.merge(govt_education.rename(
     columns={'value': 'Education_spending'}), on=['Country', 'date'], how='outer')
-df = df.merge(military_spending.rename(columns={'value': 'Military Spending'}), on=[
-    'Country', 'date'], how='inner')
 
 model_data = df.dropna(
-    subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Military Spending'])
+    subset=['GDP_per_capita', 'Health_spending', 'Education_spending'])
 
 
-features = ['Health_spending', 'Education_spending', 'Military Spending']
+# Plot each feature against GDP per capita (BEFORE normalization)
+features = ['Health_spending', 'Education_spending']
 
 for feature in features:
 
@@ -85,18 +78,20 @@ for feature in features:
 
 
 def regress(X, y):
-    # `X and y are numeric arrays
+    # Ensure X and y are numeric arrays
     X = np.asarray(X, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
 
     dot1 = np.dot(X.T, X)
 
+    # Add regularization to handle potential singularity
     regularization = 1e-8 * np.eye(dot1.shape[0])
     dot1_reg = dot1 + regularization
 
     try:
         inv = np.linalg.inv(dot1_reg)
     except np.linalg.LinAlgError:
+        # Use pseudo-inverse if regular inverse fails
         inv = np.linalg.pinv(dot1)
 
     dot2 = np.dot(X.T, y)
@@ -109,7 +104,7 @@ def normalize_features(df):
         if col == "date" or col.startswith('Country_'):
             continue
 
-        values = df[col].astype(np.float64)
+        values = df[col].astype(np.float64)  # Ensure numeric type
 
         if (values >= 0).all() and values.max() > 1000:
             values = np.log1p(values)
@@ -118,12 +113,11 @@ def normalize_features(df):
         if std != 0:
             df[col] = (values - values.mean()) / std
         else:
-            df[col] = 0
+            df[col] = 0  # If constant column, set to 0
     return df
 
 
-numeric_cols = ['GDP_per_capita', 'Health_spending',
-                'Education_spending', 'Military Spending']
+numeric_cols = ['GDP_per_capita', 'Health_spending', 'Education_spending']
 for col in numeric_cols:
     model_data[col] = pd.to_numeric(model_data[col], errors='coerce')
 
@@ -141,7 +135,7 @@ model_data = normalize_features(model_data)
 
 X = model_data.drop(columns=['date', 'GDP_per_capita']).astype(
     np.float64).values
-X = np.column_stack([np.ones(len(X)), X])
+X = np.column_stack([np.ones(len(X)), X])  # Add intercept
 y = model_data['GDP_per_capita'].astype(np.float64).values
 
 print(f"X shape: {X.shape}, X dtype: {X.dtype}")
@@ -149,11 +143,11 @@ print(f"y shape: {y.shape}, y dtype: {y.dtype}")
 
 
 if np.any(np.isnan(X)) or np.any(np.isinf(X)):
-    # print("Warning: X contains NaN or inf values")
+    print("Warning: X contains NaN or inf values")
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
 
 if np.any(np.isnan(y)) or np.any(np.isinf(y)):
-    # print("Warning: y contains NaN or inf values")
+    print("Warning: y contains NaN or inf values")
     y = np.nan_to_num(y, nan=0.0, posinf=1e6, neginf=-1e6)
 
 
@@ -163,7 +157,7 @@ ypreds = np.dot(X, b)
 r2 = r2_score(y, ypreds)
 mse = mean_squared_error(y, ypreds)
 
-print(f"\nMODEL RESULTS (WITH ONE-HOT ENCODED COUNTRIES)")
+print(f"\n=== MODEL RESULTS (WITH ONE-HOT ENCODED COUNTRIES) ===")
 print(f"R² Score: {r2:.4f}")
 print(f"MSE: {mse:.4f}")
 print(f"Number of observations: {len(y)}")
@@ -188,7 +182,7 @@ ypreds_test = np.dot(X_test, b_train)
 r2_test = r2_score(y_test, ypreds_test)
 print(f"Test set R² score: {r2_test:.4f}")
 
-
+# Residuals
 resids = y - ypreds
 print(f"\nResiduals summary:")
 print(f"Mean: {np.mean(resids):.6f}")
@@ -196,9 +190,10 @@ print(f"Std: {np.std(resids):.4f}")
 print(f"Min: {np.min(resids):.4f}")
 print(f"Max: {np.max(resids):.4f}")
 
+# Feature importance (absolute values of coefficients, excluding intercept)
 feature_names = list(model_data.drop(
     columns=['date', 'GDP_per_capita']).columns)
-coefficients = b[1:]
+coefficients = b[1:]  # Exclude intercept
 feature_importance = pd.DataFrame({
     'Feature': feature_names,
     'Coefficient': coefficients,
@@ -206,31 +201,33 @@ feature_importance = pd.DataFrame({
 }).sort_values('Abs_Coefficient', ascending=False)
 
 
-print("HEAD OF MAIN DATASET (df)")
+print("=== HEAD OF MAIN DATASET (df) ===")
 print(df.head())
 print(f"Shape: {df.shape}")
 
-
-print("\nHEAD OF MODEL DATA")
+# See the head of the model-ready dataset  
+print("\n=== HEAD OF MODEL DATA ===")
 print(model_data.head())
 print(f"Shape: {model_data.shape}")
 
-print("\nFEATURE IMPORTANCE RESULTS")
+# See the feature importance results
+print("\n=== FEATURE IMPORTANCE RESULTS ===")
 print(feature_importance.head(10))
 
 
 
+# Convert date to numeric for proper plotting
 df['date_numeric'] = pd.to_numeric(df['date'])
 
 # Create individual time series plots for each metric
 metrics = {
     'GDP_per_capita': 'GDP per Capita (USD)',
     'Health_spending': 'Health Spending (% of GDP)', 
-    'Education_spending': 'Education Spending (% of GDP)',
-    'Military Spending': 'Military Spending (% of general government expenditure)'
+    'Education_spending': 'Education Spending (% of GDP)'
 }
 
 for metric, title in metrics.items():
+    # Filter out missing values for this metric
     plot_data = df.dropna(subset=[metric])
     
     if len(plot_data) > 0:
@@ -247,6 +244,7 @@ for metric, title in metrics.items():
             }
         )
         
+        # Customize the plot
         fig.update_layout(
             xaxis_title='Year',
             yaxis_title=title,
@@ -254,7 +252,7 @@ for metric, title in metrics.items():
             hovermode='x unified'
         )
         
-
+        # Set x-axis to show years properly
         fig.update_xaxes(
             tickmode='linear',
             tick0=2010,
@@ -263,25 +261,28 @@ for metric, title in metrics.items():
         
         fig.show()
         
-        print(f"\n{title} Summary")
+        # Print some summary statistics
+        print(f"\n=== {title} Summary ===")
         summary = plot_data.groupby('Country')[metric].agg(['mean', 'std', 'min', 'max']).round(2)
         print(summary)
 
+# Create a combined subplot showing all metrics
 from plotly.subplots import make_subplots
 
 fig = make_subplots(
     rows=2, cols=2,
-    subplot_titles=list(metrics.values()),
+    subplot_titles=list(metrics.values()) + [''], # Add empty title for unused subplot
     specs=[[{"secondary_y": False}, {"secondary_y": False}],
            [{"secondary_y": False}, {"secondary_y": False}]]
 )
 
-row_col_mapping = [(1,1), (1,2), (2,1), (2,2)]
+row_col_mapping = [(1,1), (1,2), (2,1)]
 
 for i, (metric, title) in enumerate(metrics.items()):
     row, col = row_col_mapping[i]
     plot_data = df.dropna(subset=[metric])
     
+    # Add traces for each country
     for country in plot_data['Country'].unique():
         country_data = plot_data[plot_data['Country'] == country]
         fig.add_scatter(
@@ -290,9 +291,13 @@ for i, (metric, title) in enumerate(metrics.items()):
             mode='lines+markers',
             name=country,
             legendgroup=country,
-            showlegend=(i == 0),
+            showlegend=(i == 0),  # Only show legend for first subplot
             row=row, col=col
         )
+
+# Remove the unused subplot
+fig.update_xaxes(visible=False, row=2, col=2)
+fig.update_yaxes(visible=False, row=2, col=2)
 
 fig.update_layout(
     height=800,
@@ -300,7 +305,8 @@ fig.update_layout(
     hovermode='x unified'
 )
 
-for i in range(1, 5):
+# Update x-axes to show years properly
+for i in range(1, 4):  # Only 3 plots now
     fig.update_xaxes(
         tickmode='linear',
         tick0=2010,
