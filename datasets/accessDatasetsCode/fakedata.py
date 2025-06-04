@@ -1,10 +1,6 @@
+import itertools
 import random
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OrdinalEncoder, LabelEncoder
-from sklearn.metrics import classification_report
-
 
 scopes = [
     'Neighborhood', 'City', 'County', 'State', 'Province',
@@ -27,25 +23,71 @@ advocacy_methods = [
     'Academic Paper', 'Meme Campaign', 'Podcast', 'Newsletter', 'Public Poll'
 ]
 
+# Generate every combination
+combinations = list(itertools.product(scopes, durations, intensities))
 
 data = []
-num_samples = 500
 
-for _ in range(num_samples):
-    scope = random.choice(scopes)
-    duration = random.choice(durations)
-    intensity = random.choice(intensities)
-
-    if intensity in ['Strict Enforcement', 'Punitive'] and scope in ['National', 'International']:
-        method = random.choice(
-            ['Lobby Group', 'Media Outreach', 'Influencer Collaboration', 'Documentary'])
-    elif scope in ['Neighborhood', 'City'] and duration in ['Temporary', 'Trial']:
-        method = random.choice(['Town Hall', 'Petition', 'Public Comment'])
-    elif intensity in ['Minimal', 'Symbolic Only']:
-        method = random.choice(
-            ['Social Media Campaign', 'Op-ed', 'Podcast', 'Meme Campaign'])
+for scope, duration, intensity in combinations:
+    # Simplify intensity to "low, medium, high"
+    if intensity in ['Not Enforced', 'Symbolic Only', 'Minimal']:
+        intensity_level = 'low'
+    elif intensity in ['Light Enforcement', 'Moderate Enforcement', 'Community-Enforced']:
+        intensity_level = 'medium'
     else:
-        method = random.choice(advocacy_methods)
+        intensity_level = 'high'
+
+    # Determine if it's local, regional, national/global
+    if scope in ['Neighborhood', 'City', 'County']:
+        level = 'local'
+    elif scope in ['State', 'Province', 'Region']:
+        level = 'regional'
+    else:
+        level = 'global'
+
+    # Determine if short/long-term
+    if duration in ['Temporary', 'Trial', 'Short-Term']:
+        term = 'short'
+    elif duration in ['Long-Term', 'Permanent']:
+        term = 'long'
+    else:
+        term = 'medium'
+
+    if intensity_level == 'low':
+        method = random.choice([
+            'Social Media Campaign', 'Op-ed', 'Podcast', 'Meme Campaign', 'Public Poll'
+        ])
+    elif intensity_level == 'medium':
+        if level == 'local':
+            method = random.choice([
+                'Town Hall', 'Petition', 'Public Comment', 'Direct Email to Representative'
+            ])
+        elif level == 'regional':
+            method = random.choice([
+                'Public Art', 'Public Poll', 'Join Advocacy Group', 'Citizen Report'
+            ])
+        else:  # global
+            method = random.choice([
+                'Media Outreach', 'Documentary', 'Influencer Collaboration', 'Newsletter'
+            ])
+    else:  # high intensity
+        if level == 'local':
+            method = random.choice([
+                'Protest', 'Town Hall', 'Public Comment'
+            ])
+        elif level == 'regional':
+            method = random.choice([
+                'Lawsuit', 'Citizen Report', 'Direct Email to Representative'
+            ])
+        else:  # global
+            method = random.choice([
+                'Lawsuit', 'Media Outreach', 'Influencer Collaboration', 'Documentary'
+            ])
+
+    if term == 'long' and intensity_level == 'high' and level == 'global':
+        method = random.choice([
+            'Lawsuit', 'Academic Paper', 'Documentary'
+        ])
 
     data.append({
         'Policy Scope': scope,
@@ -54,34 +96,5 @@ for _ in range(num_samples):
         'Best Advocacy Method': method
     })
 
-
 df = pd.DataFrame(data)
-
-
 print(df)
-
-X = df[['Policy Scope', 'Policy Duration', 'Enforcement Intensity']]
-y = df['Best Advocacy Method']
-
-feature_encoder = OrdinalEncoder()
-X_encoded = feature_encoder.fit_transform(X)
-
-label_encoder = LabelEncoder()
-y_encoded = label_encoder.fit_transform(y)
-
-X_train, X_test, y_train, y_test = train_test_split(
-    X_encoded, y_encoded, test_size=0.2, random_state=42)
-
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(X_train, y_train)
-
-y_pred = clf.predict(X_test)
-
-print(y_pred, "\n\n\n", y_test)
-right = 0
-for i in range(len(y_pred)):
-
-    if y_pred[i] == y_test[i]:
-        right += 1
-
-print(right)

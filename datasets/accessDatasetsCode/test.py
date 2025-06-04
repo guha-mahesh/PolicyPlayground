@@ -34,8 +34,8 @@ def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
     return df
 
 
-govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS") # % of gdp
-govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS") # % of gdp
+govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")  # % of gdp
+govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")  # % of gdp
 # Air transport passengers - infrastructure policy proxy
 # Military Spending
 military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
@@ -46,10 +46,14 @@ military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
 # Economic prosperity measure
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
-# Merge data
+# Additional government control variables you could add:
+# Government debt: "GC.DOD.TOTL.CD" - Central government debt, total (current US$)
+# Military spending: "MS.MIL.XPND.CD" - Military expenditure (current US$)
+# Tax revenue: "GC.TAX.TOTL.CD" - Tax revenue (current US$)
 
+# Merge data
 df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
-df = df.merge(govt_health.rename(columns={'value': 'Health_spending'}), on=[
+df = df.merge(govt_health_total.rename(columns={'value': 'Govt_Health_Total'}), on=[
     'Country', 'date'], how='outer')
 df = df.merge(govt_education.rename(
     columns={'value': 'Education_spending'}), on=['Country', 'date'], how='outer')
@@ -57,10 +61,11 @@ df = df.merge(military_spending.rename(columns={'value': 'Military Spending'}), 
     'Country', 'date'], how='inner')
 
 model_data = df.dropna(
-    subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Military Spending'])
+    subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Infrastructure_proxy'])
 
 
-features = ['Health_spending', 'Education_spending', 'Military Spending']
+# Plot each feature against GDP per capita (BEFORE normalization)
+features = ['Health_spending', 'Education_spending', 'Infrastructure_proxy']
 
 for feature in features:
 
@@ -123,7 +128,7 @@ def normalize_features(df):
 
 
 numeric_cols = ['GDP_per_capita', 'Health_spending',
-                'Education_spending', 'Military Spending']
+                'Education_spending', 'Infrastructure_proxy']
 for col in numeric_cols:
     model_data[col] = pd.to_numeric(model_data[col], errors='coerce')
 
@@ -204,141 +209,3 @@ feature_importance = pd.DataFrame({
     'Coefficient': coefficients,
     'Abs_Coefficient': np.abs(coefficients)
 }).sort_values('Abs_Coefficient', ascending=False)
-
-
-print("HEAD OF MAIN DATASET (df)")
-print(df.head())
-print(f"Shape: {df.shape}")
-
-
-print("\nHEAD OF MODEL DATA")
-print(model_data.head())
-print(f"Shape: {model_data.shape}")
-
-print("\nFEATURE IMPORTANCE RESULTS")
-print(feature_importance.head(10))
-
-
-
-df['date_numeric'] = pd.to_numeric(df['date'])
-
-# Create individual time series plots for each metric
-metrics = {
-    'GDP_per_capita': 'GDP per Capita (USD)',
-    'Health_spending': 'Health Spending (% of GDP)', 
-    'Education_spending': 'Education Spending (% of GDP)',
-    'Military Spending': 'Military Spending (% of general government expenditure)'
-}
-
-for metric, title in metrics.items():
-    plot_data = df.dropna(subset=[metric])
-    
-    if len(plot_data) > 0:
-        fig = px.line(
-            plot_data,
-            x='date_numeric',
-            y=metric,
-            color='Country',
-            markers=True,
-            title=f'{title} Over Time by Country',
-            labels={
-                'date_numeric': 'Year',
-                metric: title
-            }
-        )
-        
-        fig.update_layout(
-            xaxis_title='Year',
-            yaxis_title=title,
-            legend_title='Country',
-            hovermode='x unified'
-        )
-        
-
-        fig.update_xaxes(
-            tickmode='linear',
-            tick0=2010,
-            dtick=1
-        )
-        
-        fig.show()
-        
-        print(f"\n{title} Summary")
-        summary = plot_data.groupby('Country')[metric].agg(['mean', 'std', 'min', 'max']).round(2)
-        print(summary)
-
-from plotly.subplots import make_subplots
-
-fig = make_subplots(
-    rows=2, cols=2,
-    subplot_titles=list(metrics.values()),
-    specs=[[{"secondary_y": False}, {"secondary_y": False}],
-           [{"secondary_y": False}, {"secondary_y": False}]]
-)
-
-row_col_mapping = [(1,1), (1,2), (2,1), (2,2)]
-
-for i, (metric, title) in enumerate(metrics.items()):
-    row, col = row_col_mapping[i]
-    plot_data = df.dropna(subset=[metric])
-    
-    for country in plot_data['Country'].unique():
-        country_data = plot_data[plot_data['Country'] == country]
-        fig.add_scatter(
-            x=country_data['date_numeric'],
-            y=country_data[metric],
-            mode='lines+markers',
-            name=country,
-            legendgroup=country,
-            showlegend=(i == 0),
-            row=row, col=col
-        )
-
-fig.update_layout(
-    height=800,
-    title_text="All Metrics Over Time by Country",
-    hovermode='x unified'
-)
-
-for i in range(1, 5):
-    fig.update_xaxes(
-        tickmode='linear',
-        tick0=2010,
-        dtick=2,
-        title_text='Year',
-        row=(i-1)//2 + 1,
-        col=(i-1)%2 + 1
-    )
-
-fig.show()
-
-# Calculate correlation between time and each metric by country
-print("\n=== TIME TREND CORRELATIONS ===")
-print("Correlation between Year and each metric by country:")
-print("(Positive = increasing over time, Negative = decreasing over time)")
-
-for metric in metrics.keys():
-    print(f"\n{metric}:")
-    correlations = df.dropna(subset=[metric]).groupby('Country').apply(
-        lambda x: x['date_numeric'].corr(x[metric])
-    ).round(3)
-    print(correlations)
-
-# Identify strongest trends
-print("\n=== STRONGEST TRENDS ===")
-for metric in metrics.keys():
-    metric_data = df.dropna(subset=[metric])
-    correlations = metric_data.groupby('Country').apply(
-        lambda x: x['date_numeric'].corr(x[metric])
-    )
-    
-    strongest_pos = correlations.idxmax() if correlations.max() > 0.5 else None
-    strongest_neg = correlations.idxmin() if correlations.min() < -0.5 else None
-    
-    print(f"\n{metric}:")
-    if strongest_pos:
-        print(f"  Strongest increasing trend: {strongest_pos} (r={correlations[strongest_pos]:.3f})")
-    if strongest_neg:
-        print(f"  Strongest decreasing trend: {strongest_neg} (r={correlations[strongest_neg]:.3f})")
-    if not strongest_pos and not strongest_neg:
-        print(f"  No strong trends (all correlations between -0.5 and 0.5)")
