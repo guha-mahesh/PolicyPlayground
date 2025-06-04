@@ -34,31 +34,48 @@ def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
     return df
 
 
-# Direct government policy controls
-govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")
-govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")
-# Air transport passengers - infrastructure policy proxy
-infrastructure_spending = fetch_worldbank_data("IS.AIR.PSGR")
+# Government direct controls - absolute spending amounts and policy measures
+# Total government health expenditure (absolute dollars)
+# Current health expenditure, government (current US$)
+govt_health_total = fetch_worldbank_data("SH.XPD.GHED.CD")
+
+# Total government education expenditure (absolute dollars)
+# Government expenditure on education, total (current US$)
+govt_education_total = fetch_worldbank_data("SE.XPD.TOTL.CD")
+
+# Government infrastructure/capital spending
+# General government final consumption expenditure (current US$)
+govt_infrastructure = fetch_worldbank_data("NE.CON.GOVT.CD")
+# This includes infrastructure, public services, defense - all direct government spending
+
+# Alternative infrastructure measure - you could also use:
+# "GC.XPN.TOTL.CD" - Expense (current US$) - total government operational spending
+# "GC.REV.TOTL.CD" - Revenue, total (current US$) - government's fiscal capacity
 
 # Economic prosperity measure
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
-# Merge data
+# Additional government control variables you could add:
+# Government debt: "GC.DOD.TOTL.CD" - Central government debt, total (current US$)
+# Military spending: "MS.MIL.XPND.CD" - Military expenditure (current US$)
+# Tax revenue: "GC.TAX.TOTL.CD" - Tax revenue (current US$)
 
+# Merge data
 df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
-df = df.merge(govt_health.rename(columns={'value': 'Health_spending'}), on=[
+df = df.merge(govt_health_total.rename(columns={'value': 'Govt_Health_Total'}), on=[
     'Country', 'date'], how='outer')
-df = df.merge(govt_education.rename(
-    columns={'value': 'Education_spending'}), on=['Country', 'date'], how='outer')
-df = df.merge(infrastructure_spending.rename(columns={'value': 'Infrastructure_proxy'}), on=[
+df = df.merge(govt_education_total.rename(
+    columns={'value': 'Govt_Education_Total'}), on=['Country', 'date'], how='outer')
+df = df.merge(govt_infrastructure.rename(columns={'value': 'Govt_Infrastructure_Total'}), on=[
     'Country', 'date'], how='outer')
 
 model_data = df.dropna(
-    subset=['GDP_per_capita', 'Health_spending', 'Education_spending', 'Infrastructure_proxy'])
+    subset=['GDP_per_capita', 'Govt_Health_Total', 'Govt_Education_Total', 'Govt_Infrastructure_Total'])
 
 
 # Plot each feature against GDP per capita (BEFORE normalization)
-features = ['Health_spending', 'Education_spending', 'Infrastructure_proxy']
+features = ['Govt_Health_Total',
+            'Govt_Education_Total', 'Govt_Infrastructure_Total']
 
 for feature in features:
 
@@ -122,8 +139,8 @@ def normalize_features(df):
     return df
 
 
-numeric_cols = ['GDP_per_capita', 'Health_spending',
-                'Education_spending', 'Infrastructure_proxy']
+numeric_cols = ['GDP_per_capita', 'Govt_Health_Total',
+                'Govt_Education_Total', 'Govt_Infrastructure_Total']
 for col in numeric_cols:
     model_data[col] = pd.to_numeric(model_data[col], errors='coerce')
 
@@ -205,3 +222,6 @@ feature_importance = pd.DataFrame({
     'Coefficient': coefficients,
     'Abs_Coefficient': np.abs(coefficients)
 }).sort_values('Abs_Coefficient', ascending=False)
+
+print(f"\n=== FEATURE IMPORTANCE ===")
+print(feature_importance)

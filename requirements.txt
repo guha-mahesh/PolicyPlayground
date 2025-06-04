@@ -70,7 +70,7 @@ pd==0.0.4
 peewee==3.18.1
 pillow==11.1.0
 platformdirs==4.3.8
-plotly==6.1.1
+plotly==6.1.2
 prometheus_client==0.22.0
 protobuf==6.31.0
 pyarrow==20.0.0

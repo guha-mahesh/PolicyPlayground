@@ -22,9 +22,6 @@ def test():
     return 'Testing the model'
 
 
-w
-
-
 def predict(var01, var02):
     """
     Retreives model parameters from the database and uses them for real-time prediction

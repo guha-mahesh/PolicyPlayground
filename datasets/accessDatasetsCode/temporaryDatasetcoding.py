@@ -1,6 +1,5 @@
-
-import plotly.graph_objects as go
-import plotly.express as px
+# import plotly.graph_objects as go
+# import plotly.express as px
 from sklearn.metrics import r2_score
 import numpy as np
 import requests
@@ -9,9 +8,23 @@ import os
 from dotenv import load_dotenv
 import yfinance as yf
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 def monthly_sp500():
+    """Fetch S&P 500 data with CSV caching"""
+    csv_file = "data/sp500_monthly.csv"
+
+    # Try to read from CSV first
+    if os.path.exists(csv_file):
+        print(f"Reading S&P 500 data from {csv_file}")
+        df = pd.read_csv(csv_file)
+        df['Date'] = pd.to_datetime(df['Date'])
+        df['month'] = pd.to_datetime(df['month']).dt.to_period('M')
+        return df[['month', 'close']]
+
+    # If CSV doesn't exist, fetch from API
+    print("Fetching S&P 500 data from Yahoo Finance...")
     pd.set_option('display.max_columns', None)
 
     sp500 = yf.Ticker("^GSPC")
@@ -23,11 +36,17 @@ def monthly_sp500():
     df['month'] = df['Date'].dt.to_period('M')
 
     df_final = pd.DataFrame({
+        'Date': df['Date'],
         'month': df['month'],
         'close': df['Close']
     })
 
-    return df_final
+    # Save to CSV
+    os.makedirs("data", exist_ok=True)
+    df_final.to_csv(csv_file, index=False)
+    print(f"Saved S&P 500 data to {csv_file}")
+
+    return df_final[['month', 'close']]
 
 
 dotenv_path = "/Users/guhamahesh/VSCODE/dialogue/FinFluxes/api/.env"
@@ -37,6 +56,17 @@ pd.set_option('display.max_columns', None)
 
 
 def interestRate(type):
+    """Fetch interest rate data with CSV caching"""
+    csv_file = f"data/{type.replace(' ', '_')}_data.csv"
+
+    # Try to read from CSV first
+    if os.path.exists(csv_file):
+        print(f"Reading {type} data from {csv_file}")
+        df = pd.read_csv(csv_file)
+        return df.dropna(subset=[f'{type}_value'])
+
+    # If CSV doesn't exist, fetch from API
+    print(f"Fetching {type} data from FRED API...")
     map = {"federalfundsrate": "FEDFUNDS", "DiscountRate": "INTDSRUSM193N",
            "TreasurySecurities": "WSHOMCB", "FedReserveBalanceSheet": "WALCL"}
 
@@ -49,23 +79,57 @@ def interestRate(type):
     df["value"] = pd.to_numeric(df["value"], errors="coerce")
     df = df.rename(columns={'value': f'{type}_value'})
 
+    # Save to CSV
+    os.makedirs("data", exist_ok=True)
+    df.to_csv(csv_file, index=False)
+    print(f"Saved {type} data to {csv_file}")
+
     return df.dropna(subset=[f'{type}_value'])
 
 
 def exports():
+    """Fetch exports data with CSV caching"""
+    csv_file = "data/exports_data.csv"
 
+    # Try to read from CSV first
+    if os.path.exists(csv_file):
+        print(f"Reading exports data from {csv_file}")
+        df = pd.read_csv(csv_file)
+        return df.dropna(subset=['exports_value'])
+
+    # If CSV doesn't exist, fetch from API
+    print("Fetching exports data from FRED API...")
     url = f"https://api.stlouisfed.org/fred/series/observations?series_id=NETEXP&api_key={api_key}&file_type=json"
     response = requests.get(url)
     jsondata = response.json()
     df = pd.DataFrame(jsondata["observations"])
     df["value"] = pd.to_numeric(df["value"], errors="coerce")
     df = df.rename(columns={'value': f'exports_value'})
+
+    # Save to CSV
+    os.makedirs("data", exist_ok=True)
+    df.to_csv(csv_file, index=False)
+    print(f"Saved exports data to {csv_file}")
     print(url)
+
     return df.dropna(subset=['exports_value'])
 
 
 def conversions(currency):
+    """Fetch currency conversion data with CSV caching"""
+    safe_currency_name = currency.replace(
+        " ", "_").replace("(", "").replace(")", "")
+    csv_file = f"data/currency_{safe_currency_name}_data.csv"
 
+    # Try to read from CSV first
+    if os.path.exists(csv_file):
+        print(f"Reading {currency} data from {csv_file}")
+        df = pd.read_csv(csv_file)
+        df["month"] = pd.to_datetime(df["month"]).dt.to_period("M")
+        return df[["month", "exchange_value"]]
+
+    # If CSV doesn't exist, fetch from API
+    print(f"Fetching {currency} data from FRED API...")
     currency_fred_codes = {
         "Euro (EUR)": "DEXUSEU",         # USD per 1 Euro
         "British Pound (GBP)": "DEXUSUK",  # USD per 1 British Pound
@@ -107,7 +171,17 @@ def conversions(currency):
     # Filter date range
     df = df[(df["month"] >= "2003-01") & (df["month"] <= "2024-02")]
 
-    return df[["month", "exchange_value"]]
+    result_df = df[["month", "exchange_value"]]
+
+    # Save to CSV
+    os.makedirs("data", exist_ok=True)
+    # Convert month to string for CSV storage
+    result_df_to_save = result_df.copy()
+    result_df_to_save["month"] = result_df_to_save["month"].astype(str)
+    result_df_to_save.to_csv(csv_file, index=False)
+    print(f"Saved {currency} data to {csv_file}")
+
+    return result_df
 
 
 def clean_data(df):
@@ -223,7 +297,7 @@ def create_currency_model(currency_data, currency_name="Currency"):
     currency_name: String name for the currency (for printing)
 
     Returns:
-    X_currency: Feature matrix with intercept and lag
+    X_currency: Feature matrix with intercept and specific lags
     y_currency: Target variable (exchange rates)
     """
     # Create currency dataset with proper preprocessing
@@ -240,15 +314,20 @@ def create_currency_model(currency_data, currency_name="Currency"):
     X_currency = np.column_stack((X_currency, adjusted.values))
     y_currency = np.array(currency_normalized['exchange_value'])
 
-    # Apply lag transformation
-    # Drop first row of X_currency
-    X_currency = X_currency[1:]
-    # Add lagged y_currency values
-    X_currency = np.column_stack((X_currency, y_currency[:-1]))
-    # Drop first row of y_currency to match X_currency
-    y_currency = y_currency[1:]
+    # Specify exactly which lags you want (e.g., 1, 2, 3, 6, 9 months)
+    selected_lags = [1, 2, 3, 6, 9]
+    max_lag = max(selected_lags)  # Use the maximum lag as the starting point
 
-    print(f"{currency_name} model data prepared - X shape: {X_currency.shape}, y shape: {y_currency.shape}")
+    # Start with base features (drop first max_lag months)
+    X_currency = X_currency[max_lag:]
+
+    # Add each selected lag
+    for lag in selected_lags:
+        X_currency = np.column_stack(
+            (X_currency, y_currency[max_lag-lag:-lag]))
+
+    # Adjust y to match
+    y_currency = y_currency[max_lag:]
 
     return X_currency, y_currency
 
@@ -256,18 +335,13 @@ def create_currency_model(currency_data, currency_name="Currency"):
 def train_and_evaluate_currency_model(X_currency, y_currency, currency_name="Currency"):
     """
     Train and evaluate a currency model, including cross-validation.
-
-    Parameters:
-    X_currency: Feature matrix
-    y_currency: Target variable
-    currency_name: String name for the currency (for printing)
-
-    Returns:
-    Dictionary with model results
     """
     # Train on full dataset
     vector_currency = regress(X_currency, y_currency)
     ypreds_full_currency = np.dot(X_currency, vector_currency)
+
+    # Calculate residuals
+    resids_currency = ypreds_full_currency - y_currency
 
     # Calculate full dataset metrics
     r_squared_full_currency = r2_score(y_currency, ypreds_full_currency)
@@ -277,7 +351,7 @@ def train_and_evaluate_currency_model(X_currency, y_currency, currency_name="Cur
     cv_r2, cv_mse = cross_validate_model(
         X_currency, y_currency, f"{currency_name} Model")
 
-    # Store results
+    # Store results including actual y values
     results = {
         'currency_name': currency_name,
         'full_r2': r_squared_full_currency,
@@ -285,190 +359,254 @@ def train_and_evaluate_currency_model(X_currency, y_currency, currency_name="Cur
         'cv_r2': cv_r2,
         'cv_mse': cv_mse,
         'coefficients': vector_currency,
-        'predictions': ypreds_full_currency
+        'predictions': ypreds_full_currency,
+        'y_actual': y_currency,  # Store actual values
+        'residuals': resids_currency  # Store residuals
     }
 
     return results
 
 
-# Data loading and processing
-map = {
-    "DiscountRate": "INTDSRUSM193N",
-    "TreasurySecurities": "WSHOMCB",
-    "FedReserveBalanceSheet": "WALCL"
-}
+def plot_currency_models(results):
+    """Create comprehensive diagnostic plots for currency models"""
+    currency = results['currency_name']
+    residuals = results['residuals']
+    predictions = results['predictions']
 
-dfs_to_concat = []
+    # Create subplot figure
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+    fig.suptitle(f'{currency} Model - Diagnostic Plots', fontsize=16)
 
-for key in map.keys():
-    dfs_to_concat.append(interestRate(key))
+    # 1. Residuals vs Fitted (Linearity & Homoscedasticity)
+    axes[0, 0].scatter(predictions, residuals, alpha=0.6)
+    axes[0, 0].axhline(y=0, color='red', linestyle='--', alpha=0.8)
+    axes[0, 0].set_xlabel('Fitted Values')
+    axes[0, 0].set_ylabel('Residuals')
+    axes[0, 0].set_title(
+        'Residuals vs Fitted Values\n(Linearity & Homoscedasticity)')
+    axes[0, 0].grid(True, alpha=0.3)
 
-dfs = [clean_data(df) for df in dfs_to_concat]
-new_dfs = standardize_dates(dfs)
+    # 2. Residuals vs Index (Autocorrelation)
+    axes[0, 1].scatter(range(len(residuals)), residuals, alpha=0.6)
+    axes[0, 1].axhline(y=0, color='red', linestyle='--', alpha=0.8)
+    axes[0, 1].set_xlabel('Time Index')
+    axes[0, 1].set_ylabel('Residuals')
+    axes[0, 1].set_title('Residuals vs Time Index\n(Autocorrelation Check)')
+    axes[0, 1].grid(True, alpha=0.3)
 
-final_dfs = []
-for df in new_dfs:
-    final_dfs.append(find_averages(df))
+    # 3. Scale-Location Plot (Homoscedasticity)
+    sqrt_abs_resid = np.sqrt(np.abs(residuals))
+    axes[1, 0].scatter(predictions, sqrt_abs_resid, alpha=0.6)
+    axes[1, 0].set_xlabel('Fitted Values')
+    axes[1, 0].set_ylabel('√|Residuals|')
+    axes[1, 0].set_title('Scale-Location Plot\n(Homoscedasticity)')
+    axes[1, 0].grid(True, alpha=0.3)
 
-sandp = monthly_sp500()
+    plt.tight_layout()
 
-merged_df = final_dfs[0]
 
-for df in final_dfs[1:]:
-    merged_df = pd.merge(merged_df, df, how="inner", on="month")
-merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
+def create_sp500_diagnostic_plots(residuals, predictions, title="S&P 500 Model"):
+    """Create comprehensive diagnostic plots for S&P 500 model"""
 
-# Load all currency data
-currencies = {
-    "Euro": "Euro (EUR)",
+    # Create subplot figure
+    fig, axes = plt.subplots(2, 2, figsize=(15, 12))
+    fig.suptitle(f'{title} - Diagnostic Plots', fontsize=16)
 
-    "Japanese Yen": "Japanese Yen (JPY)",
-    "Canadian Dollar": "Canadian Dollar (CAD)",
-    "Swiss Franc": "Swiss Franc (CHF)",
-    "Australian Dollar": "Australian Dollar (AUD)",
-    "Chinese Yuan": "Chinese Yuan (CNY)"
-}
+    # 1. Residuals vs Fitted (Linearity & Homoscedasticity)
+    axes[0, 0].scatter(predictions, residuals, alpha=0.6)
+    axes[0, 0].axhline(y=0, color='red', linestyle='--', alpha=0.8)
+    axes[0, 0].set_xlabel('Fitted Values')
+    axes[0, 0].set_ylabel('Residuals')
+    axes[0, 0].set_title(
+        'Residuals vs Fitted Values\n(Linearity & Homoscedasticity)')
+    axes[0, 0].grid(True, alpha=0.3)
 
-currency_data = {}
-for name, code in currencies.items():
-    try:
-        data = conversions(code)
-        currency_data[name] = data.iloc[:-1]  # Remove last row
-        print(f"Loaded {name} data - Shape: {currency_data[name].shape}")
-    except Exception as e:
-        print(f"Error loading {name}: {e}")
+    # 2. Residuals vs Index (Autocorrelation)
+    axes[0, 1].scatter(range(len(residuals)), residuals, alpha=0.6)
+    axes[0, 1].axhline(y=0, color='red', linestyle='--', alpha=0.8)
+    axes[0, 1].set_xlabel('Time Index')
+    axes[0, 1].set_ylabel('Residuals')
+    axes[0, 1].set_title('Residuals vs Time Index\n(Autocorrelation Check)')
+    axes[0, 1].grid(True, alpha=0.3)
 
-# Filter data BEFORE normalization
-# Drop all dates where Treasury Securities data is 0
-merged_df = merged_df[merged_df['average_TreasurySecurities_value'] != 0]
+    # 3. Scale-Location Plot (Homoscedasticity)
+    sqrt_abs_resid = np.sqrt(np.abs(residuals))
+    axes[1, 0].scatter(predictions, sqrt_abs_resid, alpha=0.6)
+    axes[1, 0].set_xlabel('Fitted Values')
+    axes[1, 0].set_ylabel('√|Residuals|')
+    axes[1, 0].set_title('Scale-Location Plot\n(Homoscedasticity)')
+    axes[1, 0].grid(True, alpha=0.3)
 
-# Apply existing filters
-merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
+    plt.tight_layout()
 
-# Apply square root transformation to Fed Reserve Balance Sheet
-merged_df['average_FedReserveBalanceSheet_value'] = np.sqrt(
-    merged_df['average_FedReserveBalanceSheet_value'])
 
-# Normalize full dataset
-data = normalize_full_df(merged_df)
+def create_qq_plot(residuals, title="QQ Plot of Residuals"):
+    """Create a QQ plot for residuals (normality check)"""
+    from scipy import stats
+    plt.figure(figsize=(8, 6))
+    stats.probplot(residuals, dist="norm", plot=plt)
+    plt.title(f'{title}\n(Normality Check)')
+    plt.grid(True)
 
-# S&P 500 Model
-X = np.ones((data.shape[0], 1))
-X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
-y = np.array(data['close'])
 
-# Apply lag transformation to S&P 500 model
-X = X[1:]                          # Drop first row of X
-X = np.column_stack((X, y[:-1]))   # Add lagged y values
-y = y[1:]                          # Drop first row of y to match X
+def plot_feats(data):
+    data['month_str'] = data['month'].astype(str)
 
-# Train S&P 500 model
-vector_full = regress(X, y)
-ypreds_full = np.dot(X, vector_full)
-resids = ypreds_full - y
+    fig, axes = plt.subplots(3, 1, figsize=(12, 10))
 
-# Calculate S&P 500 metrics
-mse_full = np.mean((ypreds_full - y) ** 2)
-r_squared_full = r2_score(y, ypreds_full)
-sp500_cv_r2, sp500_cv_mse = cross_validate_model(X, y, "S&P 500")
+    features = ['average_DiscountRate_value',
+                'average_TreasurySecurities_value',
+                'average_FedReserveBalanceSheet_value']
 
-# Create and evaluate currency models
-currency_results = {}
-for name, data in currency_data.items():
-    try:
+    for i, feat in enumerate(features):
+        axes[i].plot(data["month_str"], data[feat])
+        axes[i].set_title(
+            f'{feat.replace("average_", "").replace("_value", "")} Over Time')
+        axes[i].set_xlabel('Date')
+        axes[i].set_ylabel(feat.replace("average_", "").replace("_value", ""))
+
+        step = len(data) // 10
+        axes[i].set_xticks(range(0, len(data), step))
+        axes[i].set_xticklabels([data["month_str"].iloc[j] for j in range(0, len(data), step)],
+                                rotation=45)
+        axes[i].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
+
+
+    # Main execution starts here
+if __name__ == "__main__":
+    print("Starting financial data analysis with CSV caching...")
+
+    # fred code map
+    map = {
+        "DiscountRate": "INTDSRUSM193N",
+        "TreasurySecurities": "WSHOMCB",
+        "FedReserveBalanceSheet": "WALCL"
+    }
+
+    dfs_to_concat = []
+
+    for key in map.keys():
+        dfs_to_concat.append(interestRate(key))
+
+    dfs = [clean_data(df) for df in dfs_to_concat]
+    new_dfs = standardize_dates(dfs)
+
+    final_dfs = []
+    for df in new_dfs:
+        final_dfs.append(find_averages(df))
+
+    sandp = monthly_sp500()
+
+    merged_df = final_dfs[0]
+
+    for df in final_dfs[1:]:
+        merged_df = pd.merge(merged_df, df, how="inner", on="month")
+    merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
+
+    # Load all currency data
+    currencies = {
+        "Euro": "Euro (EUR)",
+        "Japanese Yen": "Japanese Yen (JPY)",
+        "Australian Dollar": "Australian Dollar (AUD)",
+        "Chinese Yuan": "Chinese Yuan (CNY)",
+        "British Pound": "British Pound (GBP)"
+    }
+
+    currency_data = {}
+    for name, code in currencies.items():
+        try:
+            data = conversions(code)
+            currency_data[name] = data.iloc[:-1]  # Remove last row
+            print(f"Loaded {name} data - Shape: {currency_data[name].shape}")
+        except Exception as e:
+            print(f"Error loading {name}: {e}")
+
+    # Filter data BEFORE normalization
+    # Drop all dates where Treasury Securities data is 0
+    merged_df = merged_df[merged_df['average_TreasurySecurities_value'] != 0]
+
+    # Apply existing filters
+    merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
+
+    ''' # Apply square root transformation to Fed Reserve Balance Sheet
+    merged_df['average_FedReserveBalanceSheet_value'] = np.sqrt(
+        merged_df['average_FedReserveBalanceSheet_value'])'''
+
+    plot_later = merged_df.copy()
+    # Normalize full dataset
+    data = normalize_full_df(merged_df)
+
+    # S&P 500 Model
+    X = np.ones((data.shape[0], 1))
+    X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
+    y = np.array(data['close'])
+
+    # Apply lag transformation to S&P 500 model
+    X = X[1:]
+    X = np.column_stack((X, y[:-1]))
+    y = y[1:]
+
+    # Train S&P 500 model
+    vector_full = regress(X, y)
+    ypreds_full = np.dot(X, vector_full)
+    resids = ypreds_full - y
+
+    # Calculate S&P 500 metrics
+    mse_full = np.mean((ypreds_full - y) ** 2)
+    r_squared_full = r2_score(y, ypreds_full)
+    sp500_cv_r2, sp500_cv_mse = cross_validate_model(X, y, "S&P 500")
+
+    # Create and evaluate currency models
+    currency_results = {}
+    for name, data in currency_data.items():
+
         X_currency, y_currency = create_currency_model(data, name)
         results = train_and_evaluate_currency_model(
             X_currency, y_currency, name)
         currency_results[name] = results
-    except Exception as e:
-        print(f"Error creating model for {name}: {e}")
 
-# Print comprehensive results
-print("\n" + "="*80)
-print("MODEL COMPARISON RESULTS")
-print("="*80)
+    # Print results
+    print(f"\nS&P 500 Model:")
+    print(f"  Full Dataset - R²: {r_squared_full:.4f}, MSE: {mse_full:.4f}")
+    print(f"  Cross-Val    - R²: {sp500_cv_r2:.4f}, MSE: {sp500_cv_mse:.4f}")
 
-print(f"\nS&P 500 Model:")
-print(f"  Full Dataset - R²: {r_squared_full:.4f}, MSE: {mse_full:.4f}")
-print(f"  Cross-Val    - R²: {sp500_cv_r2:.4f}, MSE: {sp500_cv_mse:.4f}")
+    create_sp500_diagnostic_plots(resids, ypreds_full, "S&P 500 Model")
 
-for name, results in currency_results.items():
-    print(f"\n{results['currency_name']} Model:")
+    create_qq_plot(resids, "S&P 500 Model - QQ Plot of Residuals")
+
+    for name, results in currency_results.items():
+        plot_currency_models(results)
+        print(f"\n{results['currency_name']} Model:")
+        print(
+            f"  Full Dataset - R²: {results['full_r2']:.4f}, MSE: {results['full_mse']:.4f}")
+        print(
+            f"  Cross-Val    - R²: {results['cv_r2']:.4f}, MSE: {results['cv_mse']:.4f}")
+
+        create_qq_plot(results['residuals'],
+                       f"{name} Model - QQ Plot of Residuals")
+
     print(
-        f"  Full Dataset - R²: {results['full_r2']:.4f}, MSE: {results['full_mse']:.4f}")
-    print(
-        f"  Cross-Val    - R²: {results['cv_r2']:.4f}, MSE: {results['cv_mse']:.4f}")
+        f"\n{'Model':<15} {'Full R²':<10} {'Full MSE':<12} {'CV R²':<10} {'CV MSE':<12}")
+    print("-" * 70)
+    print(f"{'S&P 500':<15} {r_squared_full:<10.4f} {mse_full:<12.4f} {sp500_cv_r2:<10.4f} {sp500_cv_mse:<12.4f}")
 
-# Create summary table
-print(f"\n{'Model':<15} {'Full R²':<10} {'Full MSE':<12} {'CV R²':<10} {'CV MSE':<12}")
-print("-" * 70)
-print(f"{'S&P 500':<15} {r_squared_full:<10.4f} {mse_full:<12.4f} {sp500_cv_r2:<10.4f} {sp500_cv_mse:<12.4f}")
+    for name, results in currency_results.items():
+        print(
+            f"{name:<15} {results['full_r2']:<10.4f} {results['full_mse']:<12.4f} {results['cv_r2']:<10.4f} {results['cv_mse']:<12.4f}")
 
-for name, results in currency_results.items():
-    print(
-        f"{name:<15} {results['full_r2']:<10.4f} {results['full_mse']:<12.4f} {results['cv_r2']:<10.4f} {results['cv_mse']:<12.4f}")
+    num_cols = [col for col in data.columns if (data[col].dtype == float)]
 
-# Find best performing currency model
-if currency_results:
-    best_currency = max(currency_results.keys(),
-                        key=lambda x: currency_results[x]['cv_r2'])
-    print(
-        f"\nBest performing currency model: {best_currency} (CV R²: {currency_results[best_currency]['cv_r2']:.4f})")
+    weights = {
+        'SP500': vector_full,
+        **{name: results['coefficients'] for name, results in currency_results.items()}
+    }
 
-num_cols = [col for col in data.columns if (data[col].dtype == float)]
+    print("\nModel Weights:")
+    for model, coeffs in weights.items():
+        print(f"{model}: {coeffs}")
 
-
-def plot():
-    for col in num_cols:
-        lst = data[col].tolist()
-
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(
-            x=lst,
-            y=resids,
-            mode='markers',
-            name=col,
-            marker=dict(size=8, opacity=0.7)
-        ))
-        fig.add_hline(y=0, line_dash="dash", line_color="red")
-
-        fig.update_layout(
-            title=f'Residual Plots versus {col}',
-            xaxis_title=col,
-            yaxis_title='Residual',
-            showlegend=True
-        )
-        fig.write_html(f'ResidualPlots_{col}.html')
-        fig.show()
-
-
-def plot_feats_no_normal():
-    data2 = merged_df.drop(columns=['month', 'close'])
-
-    for col in data2.columns:
-        fig = px.scatter(
-            x=data2[col],
-            y=merged_df['close'],
-            color=merged_df['month'].astype(str),
-            title=f'The S&P 500 index V.S {col}',
-            labels={'x': col, 'y': 'The S&P 500', 'color': 'Month'}
-        )
-        fig.update_traces(marker=dict(size=8, opacity=0.7))
-        fig.write_html(f'The_S&P_500_index_V.S_{col}.html')
-        fig.show()
-
-
-def plot_feats_1():
-    data2 = data.drop(columns=['month', 'close'])
-
-    for col in data2.columns:
-        fig = px.scatter(
-            x=data2[col],
-            y=data['close'],
-            color=data['month'].astype(str),
-            title=f'The S&P 500 index V.S {col}',
-            labels={'x': col, 'y': 'The S&P 500', 'color': 'Month'}
-        )
-        fig.update_traces(marker=dict(size=8, opacity=0.7))
-        fig.write_html(f'The_S&P_500_index_V.S_{col}.html')
-        fig.show()
+plot_feats(plot_later)
+plt.show()
