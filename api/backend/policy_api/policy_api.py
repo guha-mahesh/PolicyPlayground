@@ -9,24 +9,23 @@ policy_api = Blueprint("policy_api", __name__)
 
 @policy_api.route("/get", methods=["GET"])
 def test():
-    response = {
-        "the_joke" : "Knock Knock!", "id" :5
-        }
     
-    
-    conn = db.get_db()
-    cursor = conn.cursor()
+    cursor = db.get_db().cursor()
     current_app.logger.info("testing testing.")
-    cursor.execute("SELECT * FROM Policies")  # Replace with your table name
-    rows = cursor.fetchall()
     
-    # Convert the rows to a list of dicts
-    data = [dict(row) for row in rows]
+    query = "SELECT * FROM Policies"
+    params = []
 
-    conn.close()
+
+    cursor.execute(query)  
+
+    data = cursor.fetchall()
+    
+    cursor.close()
     return jsonify(data)
 
-    return jsonify(response)
+
+
 
     
 

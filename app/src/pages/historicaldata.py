@@ -3,6 +3,7 @@ logger = logging.getLogger(__name__)
 
 import streamlit as st
 from modules.nav import SideBarLinks
+import requests
 
 st.set_page_config(layout = 'wide')
 
@@ -51,6 +52,6 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
   st.button("Apply")
 
-
+st.write(requests.get('http://web-api:4000/pol/get').json())
 
 
