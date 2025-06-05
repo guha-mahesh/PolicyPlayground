@@ -3,7 +3,6 @@ CREATE DATABASE IF NOT EXISTS global_database;
 
 USE global_database;
 
-
 CREATE TABLE IF NOT EXISTS Policies (
     policy_id INT PRIMARY KEY,
     year_enacted INT,
@@ -16,6 +15,28 @@ CREATE TABLE IF NOT EXISTS Policies (
     advocacy_method VARCHAR(50),
     pol_description VARCHAR(255)
 );
+
+CREATE TABLE IF NOT EXISTS Favorite_Policies (
+    policy_id INT PRIMARY KEY,
+    year_enacted INT,
+    politician VARCHAR(50),
+    topic VARCHAR(50),
+    country VARCHAR(50),
+    pol_scope VARCHAR(50),
+    duration VARCHAR(50),
+    intensity VARCHAR(50),
+    advocacy_method VARCHAR(50),
+    pol_description VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS Politicians (
+    polyid INT PRIMARY KEY,
+    age INT,
+    email VARCHAR(50),
+    office_phone VARCHAR(50)
+);
+
+
 INSERT INTO Policies (policy_id, year_enacted, politician, topic, country, pol_scope, duration, intensity, advocacy_method, pol_description) VALUES
 (1, 2007, 'Damon Krill', 'Public deficit', 'China', 'State', 'Trial', 'Light Enforcement', 'Meme Campaign', 'This policy addresses key challenges with an innovative approach. Its implementation is expected to impact multiple sectors positively.'),
 (2, 2013, 'Hank Marx', 'Retirement', 'USA', 'Region', 'Medium-Term', 'Light Enforcement', 'Public Art', 'Aims to balance fiscal responsibilities with growth objectives. Early results show promising trends.'),

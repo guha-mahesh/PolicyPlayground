@@ -12,7 +12,9 @@ st.set_page_config(layout = 'wide')
 SideBarLinks()
 
 
-st.title(f"Historical Data Viewer")
+st.title(f"Historical Data Viewer 🔎")
+st.write("---")
+st.write("\n \n")
 
 col1, col2 = st.columns(2)
 
@@ -25,8 +27,8 @@ with col1:
   topic = ["Taxation", "Government Spending", "Public Deficit", "Interest Rates", "Inflation", "Money Supply", "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
   topic_choice = st.selectbox("Choose a Topic", topic)
 
-politician = ["Alice Danton", "Bryce Linwood", "Cara Solis", "Damon Krill", "Evelyn Marsh", "Felix Grant", "Gina Torres", "Hector Wells", "Isla Reed", "Jasper Cole"]
-politician_choice = st.selectbox("Choose a politican", politician)
+#politician = ["Alice Danton", "Bryce Linwood", "Cara Solis", "Damon Krill", "Evelyn Marsh", "Felix Grant", "Gina Torres", "Hector Wells", "Isla Reed", "Jasper Cole"]
+#politician_choice = st.selectbox("Choose a politican", politician)
 
 with col2:
   year_end = [ "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
@@ -36,12 +38,10 @@ with col2:
   country = ["USA", "EU", "China"]
   country_choice = st.selectbox("Choose a Country", country)
 
-col1, col2, col3 = st.columns([1, 2, 1])
+  sort_by = st.selectbox("Sort by:", ['policy_id', 'year_enacted'])
 
-
-
-sort_by = st.selectbox("Sort by:", ['policy_id', 'year_enacted'])
-order = st.radio("Order:", ["ASC", "DESC"])
+with col1: 
+  order = st.radio("Order:", ["ASC", "DESC"])
 
 if st.button("Apply"):
     params = {
@@ -54,16 +54,24 @@ if st.button("Apply"):
       params['End Year'] = end_choice
     if topic:
       params['Topic Choice'] = topic_choice
-    if politician:
-      params['politician_choice'] = politician_choice
+    """if politician:
+      params['politician_choice'] = politician_choice"""
     if country:
       params['country_choice'] = country_choice
 
     response = requests.get("http://web-api:4000/pol/getpol", params=params)
     data = response.json()
-
     df = pd.DataFrame(data)
     st.dataframe(df)
 
+st.write("---")
+enter_id = st.text_input("Enter a Policy ID to save:")
 
+col1, col2 = st.columns(2)
+with col1:
+  if st.button("Save"):
+    print()
 
+with col2:
+  if st.button("Next Page"):
+    st.switch_page("pages/41_Student.py")

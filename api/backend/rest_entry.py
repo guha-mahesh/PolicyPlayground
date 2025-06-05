@@ -7,8 +7,9 @@ from logging.handlers import RotatingFileHandler
 from backend.db_connection import db
 from backend.simple.simple_routes import simple_routes
 from backend.ngos.ngo_routes import ngos
-from api.backend.pproutes.politician_routes import politician
+from backend.pproutes.politician_routes import politician
 from backend.policy_api.policy_api import policy_api
+
 
 def create_app():
     app = Flask(__name__)
@@ -39,6 +40,7 @@ def create_app():
     app.config["MYSQL_DATABASE_DB"] = os.getenv(
         "DB_NAME"
     ).strip()  # Change this to your DB name
+
     # Initialize the database object with the settings above.
     app.logger.info("current_app(): starting the database connection")
     db.init_app(app)
