@@ -11,6 +11,9 @@ import json
 from backend.db_connection import db
 from backend.simple.playlist import sample_playlist_data
 from backend.ml_models import model01
+from backend.ml_models.model02_American import predict_sp500, predict_currency
+
+import requests
 
 # This blueprint handles some basic routes that you can use for testing
 simple_routes = Blueprint("simple_routes", __name__)
@@ -72,18 +75,25 @@ def getData():
     return response
 
 
-@simple_routes.route("/prediction/<var_01>/<var_02>", methods=["GET"])
-def get_prediction(var_01, var_02):
+@simple_routes.route("/predictSp/<var_01>", methods=["GET"])
+def get_predictionSp500(var_01):
     current_app.logger.info("GET /prediction handler")
 
     try:
-        # Call prediction function from model01
-        prediction = model01.predict(var_01, var_02)
+        # Parse the comma-separated input
+        user_features = [float(x.strip()) for x in var_01.split(',')]
+
+        # Call prediction function with parsed features
+        # Pass the list, not the string
+        prediction = predict_sp500(user_features)
+
         current_app.logger.info(f"prediction value returned is {prediction}")
-        
+
         response_data = {
             "prediction": prediction,
-            "input_variables": {"var01": var_01, "var02": var_02},
+            "input_variables": {
+                "var01": var_01,
+            },
         }
 
         response = make_response(jsonify(response_data))
@@ -91,8 +101,45 @@ def get_prediction(var_01, var_02):
         return response
 
     except Exception as e:
+        # Add this to see the actual error
+        current_app.logger.error(f"Error: {str(e)}")
         response = make_response(
-            jsonify({"error": "Error processing prediction request"})
+            jsonify({"error": f"Error processing prediction request: {str(e)}"})
+        )
+        response.status_code = 500
+        return response
+
+
+@simple_routes.route("/predictCurr/<var_01>", methods=["GET"])
+def get_predictionCurr(var_01):
+    current_app.logger.info("GET /prediction handler")
+
+    try:
+        # Parse the comma-separated input
+        user_features = [float(x.strip()) for x in var_01.split(',')]
+
+        # Call prediction function with parsed features
+        # Pass the list, not the string
+        prediction = predict_currency(user_features)
+
+        current_app.logger.info(f"prediction value returned is {prediction}")
+
+        response_data = {
+            "prediction": prediction,
+            "input_variables": {
+                "var01": var_01,
+            },
+        }
+
+        response = make_response(jsonify(response_data))
+        response.status_code = 200
+        return response
+
+    except Exception as e:
+        # Add this to see the actual error
+        current_app.logger.error(f"Error: {str(e)}")
+        response = make_response(
+            jsonify({"error": f"Error processing prediction request: {str(e)}"})
         )
         response.status_code = 500
         return response

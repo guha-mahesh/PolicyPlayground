@@ -1,5 +1,3 @@
-name: project-app-team-repo
-
 services:
   app:
     build: ./app
@@ -8,6 +6,8 @@ services:
     volumes: ["./app/src:/appcode"]
     ports:
       - 8501:8501
+    environment:
+      - FRED_API_KEY=8bfee1b8f2dcdbe90b98a448fd886383
 
   api:
     build: ./api
@@ -16,6 +16,8 @@ services:
     volumes: ["./api:/apicode"]
     ports:
       - 4000:4000
+    environment:
+      -  FRED_API_KEY=8bfee1b8f2dcdbe90b98a448fd886383
 
   db:
     env_file:
