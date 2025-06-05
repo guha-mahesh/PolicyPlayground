@@ -76,4 +76,4 @@ with col1:
 
 with col2:
   if st.button("Next Page"):
-    st.switch_page("pages/41_Student.py")
+    st.switch_page("pages/view_favorites.py")
