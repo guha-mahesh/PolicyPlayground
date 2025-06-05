@@ -9,6 +9,10 @@ from backend.simple.simple_routes import simple_routes
 from backend.ngos.ngo_routes import ngos
 # from api.backend.pproutes.politician_routes import politician
 
+from backend.pproutes.politician_routes import politician
+from backend.pproutes.user_routes import users
+from backend.pproutes.note_routes import notes
+
 
 def create_app():
     app = Flask(__name__)
@@ -52,8 +56,16 @@ def create_app():
     app.register_blueprint(simple_routes)
     app.register_blueprint(ngos, url_prefix="/ngo")
 
-    # Don't forget to return the app object
-    return app
+
+<< << << < HEAD
+== == == =
+app.register_blueprint(politician, url_prefix="/politician")
+app.register_blueprint(users, url_prefix="/users")
+app.register_blueprint(notes, url_prefix="/notes")
+>>>>>> > 64421b9b5bf655471ce03aee10cabd3ddc7344c7
+
+# Don't forget to return the app object
+return app
 
 
 def setup_logging(app):
