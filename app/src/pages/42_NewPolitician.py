@@ -14,15 +14,13 @@ SideBarLinks()
 
 st.title("Enter new Politician")
 
-st.text_input(label="Enter Name")
+name = st.text_input(label="Enter Name")
+contact = st.text_input(label="Enter Contact Info")
 
-col1, col2 = st.columns(2, vertical_alignment="bottom")
-politicians = getmethods.getPoliticians()
-#requests.get("http://web-api:4000/politicians/{polName}")
+returnJson = {"name" : name, "contact" : contact, "user_id" : st.session_state["user_id"]}
 
 # add a button to use the values entered into the number field to send to the
 # prediction function via the REST API
 if st.button("Save Politician", type="primary", use_container_width=True):
-    results = requests.get(f"http://web-api:4000/prediction/{var_01}/{var_02}")
-    json_results = results.json()
-    st.dataframe(json_results)
+    requests.post("http://web-api:4000/politician/newPolitician", json=returnJson)
+    st.switch_page('pages/40_Lobbyist.py')
