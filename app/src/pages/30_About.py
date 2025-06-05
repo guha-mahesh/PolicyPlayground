@@ -8,14 +8,12 @@ st.write("# About this App")
 
 st.markdown(
     """
-    This is a demo app for Data and Software in International Government and Politics Dialogue 2025 Project Course.  
+    Welcome to **Policy Playground** by Pushin Policy! Our app is designed to empower individuals working with economic public policy by providing data-driven insights to support the legislative process. 
 
-    The goal of this demo is to provide information on the tech stack 
-    being used as well as demo some of the features of the various platforms. 
-
-    Stay tuned for more information and features to come!
+    Through interactive fiscal and monetary tools, users can explore and predict key economic indicators such as the **S&P 500** and **GDP**. Policy Playground also offers access to historical policy data, politicians’ records, and their associated economic impacts—helping economists, lobbyists, and policymakers make informed decisions with confidence.
     """
 )
+
 
 # Add a button to return to home page
 if st.button("Return to Home", type="primary"):
