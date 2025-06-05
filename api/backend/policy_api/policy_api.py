@@ -132,3 +132,17 @@ def getallfav():
     data = cursor.fetchall()
     cursor.close()
     return jsonify(data)
+
+@policy_api.route("/getdesc/<int:policy_id>", methods=["GET"])
+def getdesc(policy_id):
+    conn = db.get_db()
+    cursor = db.get_db().cursor()
+    current_app.logger.info("testing testing.")
+    query = "SELECT pol_description FROM Favorite_Policies WHERE policy_id = %s"
+    params = [policy_id]
+    cursor.execute(query, params)
+    data = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    return jsonify(data)
+

@@ -51,8 +51,6 @@ if st.button("Apply"):
       params['End Year'] = end_choice
     if topic:
       params['Topic Choice'] = topic_choice
-    """if politician:
-      params['politician_choice'] = politician_choice"""
     if country:
       params['country_choice'] = country_choice
 
