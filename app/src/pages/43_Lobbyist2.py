@@ -12,32 +12,61 @@ st.set_page_config(layout="wide")
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
 
-# Simulated conversation data
-conversations = {
-    "Alice": ["Hi there!", "How's the project going?"],
-    "Bob": ["Did you see the latest update?", "We need to review it."],
-    "Charlie": ["Lunch at 1 PM?", "Let me know."],
-}
+politicians = getmethods.getPoliticians(st.session_state["user_id"]).json()
 
-# convos = getmethods.getConversations()
+selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["Name"])
 
 
-# Initialize session state for selected conversation
-if "selected" not in st.session_state:
-    st.session_state.selected = list(conversations.keys())[0]  # Default selection
+currentConvo = {"title" : "", "content" : ""}
+conversations = getmethods.getNotes(st.session_state["user_id"], selected_politician["politician_id"]).json()
+st.session_state["notes_empty"] = True
 
-# Layout: Two columns
+try:
+    currentConvo = conversations[0]
+    st.session_state["notes_empty"] = False
+except IndexError:
+    st.session_state["notes_empty"] = True
+
 col1, col2 = st.columns([1, 2])
 
-# Left panel: Scrollable conversation list
+# Left panel
 with col1:
-    with st.container(height=500):
-        for name in conversations:
-            if st.button(label="Conversation #1", key=name, use_container_width=True):
-                st.session_state.selected = name
+    with st.container(height=500): 
+        if st.session_state["notes_empty"]:
+            st.write("No conversations found")
+        else:
+            for convo in conversations:
+                if st.button(label=convo["title"], key=convo["conversation_id"], use_container_width=True):
+                    currentConvo = convo
+                    st.session_state["current_convo"] = currentConvo
 
-# Right panel: Show selected conversation
+# Right panel
 with col2:
-    st.subheader(f"Conversation with {st.session_state.selected}")
-    for msg in conversations[st.session_state.selected]:
-        st.markdown(f"🗨️ {msg}")
+    if not(st.session_state["notes_empty"]):  
+        st.subheader(currentConvo["title"])
+
+        st.write("Future Prediction")
+        with st.container(height=200):
+            st.write("graph")
+
+        col2_1, col2_2 = st.columns([2, 1])
+
+        with col2_1:
+            with st.container(height=150):
+                st.write("description")
+                st.write(currentConvo["content"])
+
+        with col2_2:
+            with st.container(height=150):
+                st.write("Policy Summary")
+
+        col2_3, col2_4 = st.columns([3, 1])
+
+        with col2_3:
+            with st.container(height=150):
+                st.write("Similar Politicians")
+                
+        with col2_4:
+            if st.button(label="Modify", use_container_width=True):
+                st.session_state["current_politician"] = selected_politician
+                st.switch_page("pages/44_Lobbyist3.py")

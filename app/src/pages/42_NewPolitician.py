@@ -22,5 +22,5 @@ returnJson = {"name" : name, "contact" : contact, "user_id" : st.session_state["
 # add a button to use the values entered into the number field to send to the
 # prediction function via the REST API
 if st.button("Save Politician", type="primary", use_container_width=True):
-    requests.post("http://web-api:4000/politician/newPolitician", json=returnJson)
+    getmethods.savePolitician(returnJson)
     st.switch_page('pages/40_Lobbyist.py')

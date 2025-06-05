@@ -93,10 +93,10 @@ CREATE TABLE IF NOT EXISTS Conversations (
     politician_id INT,
     saved_id INT,
     content TEXT,
-    title VARCHAR(50)
-    -- FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    title VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
     -- FOREIGN KEY (saved_id) REFERENCES SavedPolicy(saved_id),
-    -- FOREIGN KEY (politician_id) REFERENCES Politician(politician_id)
+    FOREIGN KEY (politician_id) REFERENCES Politicians(politician_id)
 );
 
 CREATE TABLE IF NOT EXISTS Policies (
@@ -639,7 +639,3 @@ INSERT INTO Users (type_id, first_name, last_name, interest_id)
 VALUES
 (1, 'Sota', 'Shimizu', 3),
 (3, 'Eleanor', 'Goossens', 2);
-
-INSERT INTO Politicians (name, contact_info, user_id)
-VALUES
-('John Pork', '123-456-7890', 2);
