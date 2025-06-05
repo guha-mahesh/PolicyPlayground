@@ -10,9 +10,8 @@ from flask import (
 import json
 from backend.db_connection import db
 from backend.simple.playlist import sample_playlist_data
-from backend.ml_models import model01
-from backend.ml_models.model02_American import predict_sp500, predict_currency
 from backend.ml_models.model01_GDP import predict_gdp
+from backend.ml_models.model02_American import predict_sp500, predict_currency
 
 
 # This blueprint handles some basic routes that you can use for testing
@@ -141,10 +140,10 @@ def get_predictionCurr(var_01):
         )
         response.status_code = 500
         return response
-    
 
-@simple_routes.route("/predictGDP/<var_01>", methods=["GET"])
-def get_predictionGDP(var_01):
+
+@simple_routes.route("/predictGDP/<var_01>/<var_02>", methods=["GET"])
+def get_predictionGDP(var_01, var_02):
     current_app.logger.info("GET /prediction handler")
 
     try:
@@ -153,7 +152,7 @@ def get_predictionGDP(var_01):
 
         # Call prediction function with parsed features
         # Pass the list, not the string
-        prediction = predict_gdp(user_features)
+        prediction = predict_gdp(user_features, var_02)
 
         current_app.logger.info(f"prediction value returned is {prediction}")
 
