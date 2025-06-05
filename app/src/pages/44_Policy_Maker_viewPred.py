@@ -28,4 +28,4 @@ if st.button("Try a New Set"):
     st.switch_page('pages/00_Policy_Maker_Home.py')
 
 if st.button("View Currency Forecasts"):
-    st.switch_page('pages/00_Policy_Maker_Home.py')
+    st.switch_page('pages/45_Policy_Maker_Currency.py')

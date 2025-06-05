@@ -35,9 +35,9 @@ SideBarLinks(show_home=True)
 
 # set the title of the page and provide a simple prompt.
 logger.info("Loading the Home page of the app")
-st.title('CS 4973 Sample DoC Project App')
+st.title('Policy Playground')
 st.write('\n\n')
-st.write('### 2025 Summer 1 Dialogue of Civilizations')
+st.write('### By: Pushing Policy')
 st.write('\n')
 st.write('#### HI! As which user would you like to log in?')
 
@@ -45,13 +45,15 @@ st.write('#### HI! As which user would you like to log in?')
 # functionality, we put a button on the screen that the user
 # can click to MIMIC logging in as that mock user.
 
-if st.button("Act as a Policy Maker",
+if st.button("Act as Sun Yue, a  Policy Maker",
              type='primary',
              use_container_width=True):
     # when user clicks the button, they are now considered authenticated
     st.session_state['authenticated'] = True
     # we set the role of the current user
     st.session_state['role'] = 'Policy Maker'
+    st.session_state['nationality'] = 'United States'
+    st.session_state['first_name'] = 'Sun'
     # we add the first name of the user (so it can be displayed on
     # subsequent pages).
     # st.session_state['first_name'] = 'John'
@@ -60,19 +62,19 @@ if st.button("Act as a Policy Maker",
     logger.info("Logging in as Policy Maker Persona")
     st.switch_page('pages/00_Policy_Maker_Home.py')
 
-if st.button('Act as Mohammad, an USAID worker',
+if st.button('Act as Eleanor Goosens, a Lobbyist',
              type='primary',
              use_container_width=True):
     st.session_state['authenticated'] = True
-    st.session_state['role'] = 'usaid_worker'
-    st.session_state['first_name'] = 'Mohammad'
+    st.session_state['role'] = 'Lobbyist'
+    st.session_state['first_name'] = 'Eleanor'
     st.switch_page('pages/10_USAID_Worker_Home.py')
 
-if st.button('Act as System Administrator',
+if st.button('Act as Andrew Thornton, an Economist',
              type='primary',
              use_container_width=True):
     st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
-    st.session_state['first_name'] = 'SysAdmin'
+    st.session_state['role'] = 'Economist'
+    st.session_state['first_name'] = 'Andrew'
     st.switch_page('pages/20_Admin_Home.py')
     st.switch_page('pages/43_Lobbyist2.py')

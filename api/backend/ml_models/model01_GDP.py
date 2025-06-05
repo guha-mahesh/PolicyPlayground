@@ -3,7 +3,7 @@ import numpy as np
 import requests
 from sklearn.metrics import r2_score
 
-# Global variables for trained model
+
 gdp_model_coefficients = None
 gdp_feature_means = {}
 gdp_feature_stds = {}
@@ -129,13 +129,12 @@ def normalize_features(df, feature_means=None, feature_stds=None, log_features=N
 
 
 def prepare_training_data():
-    # Fetch training data
+
     govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")
     govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")
     military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
     gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
-    # Merge data
     df = gdp_per_capita.rename(columns={'value': 'GDP_per_capita'})
     df = df.merge(govt_health.rename(columns={'value': 'Health_spending'}), on=[
                   'Country', 'date'], how='outer')
@@ -172,7 +171,7 @@ def train_gdp_model():
 
     columns_to_use = lagged_features + ['previous_year'] + gdp_country_features
     X = model_data[columns_to_use].astype(np.float64).values
-    X = np.column_stack([np.ones(len(X)), X])  # Add intercept
+    X = np.column_stack([np.ones(len(X)), X])
     y = model_data['GDP_per_capita'].astype(np.float64).values
 
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
@@ -224,15 +223,12 @@ def predict_gdp(user_features, country, current_year=2024,
         'previous_year': current_year
     }
 
-    # Add country dummy variables
     for country_feature in gdp_country_features:
         country_name = country_feature.replace('Country_', '')
         feature_data[country_feature] = 1 if country_name == country else 0
 
-    # Create DataFrame
     feature_df = pd.DataFrame([feature_data])
 
-    # Apply same normalization as training
     feature_df = normalize_features(
         feature_df,
         feature_means=gdp_feature_means,
@@ -245,8 +241,11 @@ def predict_gdp(user_features, country, current_year=2024,
                        'Education_spending_lag1', 'Military Spending_lag1']
     columns_to_use = lagged_features + ['previous_year'] + gdp_country_features
     X = feature_df[columns_to_use].astype(np.float64).values
-    X = np.column_stack([np.ones(len(X)), X])  # Add intercept
+
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
+
+    if coefficients.shape[0] == X.shape[1] + 1:
+        X = np.hstack([np.ones((X.shape[0], 1)), X])
 
     prediction_normalized = np.dot(X, coefficients)[0]
 
@@ -269,10 +268,10 @@ def predict_gdp(user_features, country, current_year=2024,
 if __name__ == "__main__":
     try:
         predicted_gdp = predict_gdp(
-            # health%, education%, military% of GDP
+
             user_features=[10.9, 3.6, 1.0],
             country="Japan",
-            current_year=2024  # Will predict 2025 GDP
+            current_year=2024
         )
 
         print(f"Predicted NEXT YEAR GDP per capita: ${predicted_gdp:,.2f}")
