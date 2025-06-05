@@ -37,7 +37,7 @@ SideBarLinks(show_home=True)
 logger.info("Loading the Home page of the app")
 st.title('Policy Playground')
 st.write('\n\n')
-st.write('### By: Pushing Policy')
+st.write("### By: Pushin' Policy")
 st.write('\n')
 st.write('#### HI! As which user would you like to log in?')
 
@@ -62,19 +62,19 @@ if st.button("Act as Sun Yue, a  Policy Maker",
     logger.info("Logging in as Policy Maker Persona")
     st.switch_page('pages/00_Policy_Maker_Home.py')
 
-if st.button('Act as Eleanor Goosens, a Lobbyist',
+if st.button('Act as Andrew Thornton, an Economist',
+             type='primary',
+             use_container_width=True):
+    st.session_state['authenticated'] = True
+    st.session_state['role'] = 'Economist'
+    st.session_state['first_name'] = 'Andrew'
+    st.switch_page('pages/10_USAID_Worker_Home.py')
+
+if st.button('Act as Eleanor Goosens, an Economist',
              type='primary',
              use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'Lobbyist'
     st.session_state['first_name'] = 'Eleanor'
-    st.switch_page('pages/10_USAID_Worker_Home.py')
-
-if st.button('Act as Eleanore Goosens',
-             type='primary',
-             use_container_width=True):
-    st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
-    st.session_state['first_name'] = 'SysAdmin'
     st.session_state['user_id'] = 2
     st.switch_page('pages/40_Lobbyist.py')

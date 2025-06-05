@@ -11,10 +11,12 @@ def fetch_all(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id, Name FROM Politicians WHERE user_id = " + str(user_id)
+    query = "SELECT politician_id, Name FROM Politicians WHERE user_id = " + \
+        str(user_id)
     cursor.execute(query)
     allnames = cursor.fetchall()
     return jsonify(allnames), 200
+
 
 @politician.route("/getID/<polName>", methods=["GET"])
 def get_id(polName):
@@ -30,6 +32,7 @@ def get_id(polName):
 
     return jsonify(id), 200
 
+
 @politician.route("/showNotes", methods=["GET"])
 def all_notes():
     conn = db.get_db()
@@ -43,6 +46,7 @@ def all_notes():
     cursor.close()
 
     return jsonify(returnjson), 200
+
 
 @politician.route("/newPolitician", methods=["POST"])
 def new_politician():
