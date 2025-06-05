@@ -37,7 +37,7 @@ SideBarLinks(show_home=True)
 logger.info("Loading the Home page of the app")
 st.title('Policy Playground')
 st.write('\n\n')
-st.write('### By: Pushing Policy')
+st.write("### By: Pushin' Policy")
 st.write('\n')
 st.write('#### HI! As which user would you like to log in?')
 
@@ -59,6 +59,12 @@ if st.button("Act as Sun Yue, a  Policy Maker",
     # st.session_state['first_name'] = 'John'
     # finally, we ask streamlit to switch to another page, in this case, the
     # landing page for this particular user type
+    logger.info("Logging in as Policy Maker Persona")
+    st.switch_page('pages/00_Policy_Maker_Home.py')
+
+if st.button('Act as Andrew Thornton, an Economist',
+             type='primary',
+             use_container_width=True):
     st.session_state["user_id"] = 1
     logger.info("Logging in as Political Strategy Advisor Persona")
     st.switch_page('pages/44_Policy_Maker_viewPred.py')
@@ -69,13 +75,19 @@ if st.button('Act as Andrew Thornton, an economist.',
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'Economist'
     st.session_state['first_name'] = 'Andrew'
+    st.switch_page('pages/10_USAID_Worker_Home.py')
+    st.session_state['role'] = 'Economist'
+    st.session_state['first_name'] = 'Andrew'
     st.switch_page('pages/historicaldata.py')
 
+if st.button('Act as Eleanor Goosens, an Economist',
+             type='primary',
+             use_container_width=True):
 if st.button('Act as Eleanore Goosens, a poltical lobbyist.', 
             type = 'primary', 
             use_container_width=True):
     st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
-    st.session_state['first_name'] = 'SysAdmin'
+    st.session_state['role'] = 'Lobbyist'
+    st.session_state['first_name'] = 'Eleanor'
     st.session_state['user_id'] = 2
     st.switch_page('pages/40_Lobbyist.py')
