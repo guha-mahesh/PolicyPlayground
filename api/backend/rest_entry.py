@@ -9,9 +9,12 @@ from backend.simple.simple_routes import simple_routes
 from backend.ngos.ngo_routes import ngos
 from backend.pproutes.politician_routes import politician
 from backend.policy_api.policy_api import policy_api
+from backend.pproutes.user_routes import users
+from backend.pproutes.note_routes import notes
 
 
 def create_app():
+
     app = Flask(__name__)
 
     # Configure logging
@@ -21,7 +24,7 @@ def create_app():
     # Load environment variables
     # This function reads all the values from inside
     # the .env file (in the parent folder) so they
-    # are available in this file.  See the MySQL setup
+    # are available in this file. See the MySQL setup
     # commands below to see how they're being used.
     load_dotenv()
 
@@ -34,7 +37,8 @@ def create_app():
     # # these are for the DB object to be able to connect to MySQL.
     # app.config['MYSQL_DATABASE_USER'] = 'root'
     app.config["MYSQL_DATABASE_USER"] = os.getenv("DB_USER").strip()
-    app.config["MYSQL_DATABASE_PASSWORD"] = os.getenv("MYSQL_ROOT_PASSWORD").strip()
+    app.config["MYSQL_DATABASE_PASSWORD"] = os.getenv(
+        "MYSQL_ROOT_PASSWORD").strip()
     app.config["MYSQL_DATABASE_HOST"] = os.getenv("DB_HOST").strip()
     app.config["MYSQL_DATABASE_PORT"] = int(os.getenv("DB_PORT").strip())
     app.config["MYSQL_DATABASE_DB"] = os.getenv(
@@ -47,26 +51,29 @@ def create_app():
 
     # Register the routes from each Blueprint with the app object
     # and give a url prefix to each
-    app.logger.info("create_app(): registering blueprints with Flask app object.")
+    app.logger.info(
+        "create_app(): registering blueprints with Flask app object.")
     app.register_blueprint(simple_routes)
     app.register_blueprint(ngos, url_prefix="/ngo")
     app.register_blueprint(politician, url_prefix="/politician")
     app.register_blueprint(policy_api, url_prefix="/pol")
+    app.register_blueprint(users, url_prefix="/users")
+    app.register_blueprint(notes, url_prefix="/notes")
 
     # Don't forget to return the app object
     return app
 
+
 def setup_logging(app):
     """
     Configure logging for the Flask application in both files and console (Docker Desktop for this project)
-    
     Args:
-        app: Flask application instance to configure logging for
+    app: Flask application instance to configure logging for
     """
     if not os.path.exists('logs'):
         os.mkdir('logs')
 
-    ## Set up FILE HANDLER for all levels
+    # Set up FILE HANDLER for all levels
     file_handler = RotatingFileHandler(
         'logs/api.log',
         maxBytes=10240,
@@ -75,12 +82,11 @@ def setup_logging(app):
     file_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     ))
-    
-    # Make sure we are capturing all levels of logging into the log files. 
+    # Make sure we are capturing all levels of logging into the log files.
     file_handler.setLevel(logging.DEBUG)  # Capture all levels in file
     app.logger.addHandler(file_handler)
 
-    ## Set up CONSOLE HANDLER for all levels
+    # Set up CONSOLE HANDLER for all levels
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s'

@@ -1,11 +1,11 @@
+import requestfunctions.getmethods as getmethods
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
+import json
 
 logger = logging.getLogger(__name__)
-
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import requestfunctions.getmethods as getmethods
 
 st.set_page_config(layout="wide")
 
@@ -17,23 +17,27 @@ col1, col2 = st.columns(2)
 
 # add one number input for variable 1 into column 1
 with col1:
-   st.title("New Note")
+    st.title("New Note")
 
 # add another number input for variable 2 into column 2
 with col2:
-    st.text_input("Enter Title")
+    title = st.text_input("Enter Title")
 
-st.text_area(label="Enter Description", value="", height=None, max_chars=None,
-             key=None, help=None, on_change=None, args=None, kwargs=None,
-             placeholder=None, disabled=False, label_visibility="visible")
+content = st.text_area(label="Enter Description", value="", height=None, max_chars=None,
+                       key=None, help=None, on_change=None, args=None, kwargs=None,
+                       placeholder=None, disabled=False, label_visibility="visible")
 
 col1, col2 = st.columns(2, vertical_alignment="bottom")
-polName = 'John Pork'
-politicians = getmethods.getPoliticians()
+
+politicians = getmethods.getPoliticians(st.session_state["user_id"]).json()
+list_pol = []
+for pol in politicians:
+    list_pol.append(pol["Name"])
+
 #requests.get("http://web-api:4000/politicians/{polName}")
 
 with col1:
-    st.selectbox(label="Select Politician:", options=politicians, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
+    selected_politician = st.selectbox(label="Select Politician:", options=list_pol, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
 
 with col2:
     if st.button("New Politician"):
@@ -45,16 +49,17 @@ st.text('Monetary Policy:')
 col1, col2, col3 = st.columns(3)
 with col1:
     st.slider(label='Discount Rate')
-    
+
 with col2:
     st.slider(label='Treasury Securities')
 
 with col3:
     st.slider(label='Feature #3')
 
-# add a button to use the values entered into the number field to send to the
-# prediction function via the REST API
+returnJson = {"politician_id": getmethods.getPoliticianID(selected_politician),
+              "content": content, "title": title, "user_id": st.session_state["user_id"]}
+
+
+
 if st.button("Save Note", type="primary", use_container_width=True):
-    results = requests.get(f"http://web-api:4000/prediction/{var_01}/{var_02}")
-    json_results = results.json()
-    st.dataframe(json_results)
+    getmethods.postNote(returnJson)

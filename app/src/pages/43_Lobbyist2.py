@@ -19,6 +19,9 @@ conversations = {
     "Charlie": ["Lunch at 1 PM?", "Let me know."],
 }
 
+# convos = getmethods.getConversations()
+
+
 # Initialize session state for selected conversation
 if "selected" not in st.session_state:
     st.session_state.selected = list(conversations.keys())[0]  # Default selection
