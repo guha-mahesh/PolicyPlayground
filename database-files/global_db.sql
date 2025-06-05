@@ -24,7 +24,6 @@ CREATE TABLE IF NOT EXISTS Users (
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     interest_id INT,
-    active BOOLEAN,
     FOREIGN KEY (type_id) REFERENCES UserTypes(type_id),
     FOREIGN KEY (interest_id) REFERENCES Interest(interest_id)
 );
@@ -85,10 +84,12 @@ CREATE TABLE HistoricalPolicy (
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
-CREATE TABLE IF NOT EXISTS Politician (
-    politician_id INT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS Politicians (
+    politician_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50),
     contact_info VARCHAR(250),
-    name VARCHAR(250)
+    user_id INT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Conversations (
@@ -102,3 +103,25 @@ CREATE TABLE IF NOT EXISTS Conversations (
     -- FOREIGN KEY (saved_id) REFERENCES SavedPolicy(saved_id),
     -- FOREIGN KEY (politician_id) REFERENCES Politician(politician_id)
 );
+
+INSERT INTO UserTypes (type_name)
+VALUES
+('admin'),
+('policy_maker'),
+('lobbyist'),
+('economist');
+
+INSERT INTO Interest (interest_name)
+VALUES
+('monetary'),
+('fiscal'),
+('other');
+
+INSERT INTO Users (type_id, first_name, last_name, interest_id)
+VALUES
+(1, 'Sota', 'Shimizu', 3),
+(3, 'Eleanor', 'Goossens', 2);
+
+INSERT INTO Politicians (name, contact_info, user_id)
+VALUES
+('John Pork', '123-456-7890', 3);
