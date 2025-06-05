@@ -1,11 +1,11 @@
+import requestfunctions.getmethods as getmethods
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
 
 logger = logging.getLogger(__name__)
 
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import requestfunctions.getmethods as getmethods
 
 st.set_page_config(layout="wide")
 
@@ -17,7 +17,7 @@ col1, col2 = st.columns(2)
 
 # add one number input for variable 1 into column 1
 with col1:
-   st.title("New Note")
+    st.title("New Note")
 
 # add another number input for variable 2 into column 2
 with col2:
@@ -30,10 +30,11 @@ st.text_area(label="Enter Description", value="", height=None, max_chars=None,
 col1, col2 = st.columns(2, vertical_alignment="bottom")
 polName = 'John Pork'
 politicians = getmethods.getPoliticians()
-#requests.get("http://web-api:4000/politicians/{polName}")
+# requests.get("http://web-api:4000/politicians/{polName}")
 
 with col1:
-    st.selectbox(label="Select Politician:", options=politicians, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
+    st.selectbox(label="Select Politician:", options=politicians, index=0, key=None, help=None, on_change=None,
+                 args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
 
 with col2:
     if st.button("New Politician"):
@@ -45,7 +46,7 @@ st.text('Monetary Policy:')
 col1, col2, col3 = st.columns(3)
 with col1:
     st.slider(label='Discount Rate')
-    
+
 with col2:
     st.slider(label='Treasury Securities')
 

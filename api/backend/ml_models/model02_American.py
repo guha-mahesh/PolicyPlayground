@@ -261,7 +261,6 @@ def train_currency_model(merged_df, currency_data):
     X_currency = np.column_stack((X_currency, adjusted.values))
     y_currency = np.array(currency_normalized['exchange_value'])
 
-    # Add lags
     selected_lags = [1, 2, 3, 6, 9]
     max_lag = max(selected_lags)
     X_currency = X_currency[max_lag:]
@@ -272,20 +271,19 @@ def train_currency_model(merged_df, currency_data):
 
     y_currency = y_currency[max_lag:]
 
-    # Train model
     coefficients = regress(X_currency, y_currency)
     return coefficients
 
 
 sp500_coefficients_data = None
 currencies = None
-# Prepare data
+
 merged_df = prepare_data()
 
-# Train S&P 500 model
+
 sp500_coefficients, normalized_data = train_sp500_model(merged_df)
 sp500_coefficients_data = sp500_coefficients
-# Load and train currency models
+
 currencies = {
     "Euro": "Euro (EUR)",
     "Japanese Yen": "Japanese Yen (JPY)",

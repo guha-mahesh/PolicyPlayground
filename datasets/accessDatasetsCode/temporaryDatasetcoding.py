@@ -1,5 +1,7 @@
-# import plotly.graph_objects as go
-# import plotly.express as px
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import plotly.io as pio
 from sklearn.metrics import r2_score
 import numpy as np
 import requests
@@ -367,6 +369,382 @@ def train_and_evaluate_currency_model(X_currency, y_currency, currency_name="Cur
     return results
 
 
+# INTERACTIVE PLOTTING FUNCTIONS
+def interactive_plot_feats(data):
+    """Interactive version of plot_feats"""
+    data['month_str'] = data['month'].astype(str)
+
+    features = ['average_DiscountRate_value',
+                'average_TreasurySecurities_value',
+                'average_FedReserveBalanceSheet_value']
+
+    fig = make_subplots(
+        rows=3, cols=1,
+        subplot_titles=[feat.replace("average_", "").replace(
+            "_value", "") + " Over Time" for feat in features],
+        vertical_spacing=0.08
+    )
+
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+
+    for i, feat in enumerate(features):
+        clean_name = feat.replace("average_", "").replace("_value", "")
+
+        fig.add_trace(
+            go.Scatter(
+                x=data["month_str"],
+                y=data[feat],
+                name=clean_name,
+                line=dict(color=colors[i], width=2.5),
+                hovertemplate=f'<b>{clean_name}</b><br>Date: %{{x}}<br>Value: %{{y:.2f}}<extra></extra>'
+            ),
+            row=i+1, col=1
+        )
+
+    fig.update_layout(
+        title='Financial Features Over Time (Interactive)',
+        height=800,
+        showlegend=False,
+        hovermode='x unified'
+    )
+
+    fig.update_xaxes(tickangle=45)
+    fig.show()
+    fig.write_html("features_over_time.html")
+
+
+def interactive_plot_features_vs_sp500(data):
+    """Interactive version of plot_features_vs_sp500"""
+
+    features = [
+        'average_DiscountRate_value',
+        'average_TreasurySecurities_value',
+        'average_FedReserveBalanceSheet_value'
+    ]
+
+    fig = make_subplots(
+        rows=1, cols=3,
+        subplot_titles=[feat.replace('average_', '').replace(
+            '_value', '') + ' vs S&P 500' for feat in features],
+        horizontal_spacing=0.08
+    )
+
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+
+    for i, feature in enumerate(features):
+        clean_name = feature.replace('average_', '').replace('_value', '')
+
+        # Add scatter plot
+        fig.add_trace(
+            go.Scatter(
+                x=data[feature],
+                y=data['close'],
+                mode='markers',
+                name=clean_name,
+                marker=dict(
+                    color=colors[i],
+                    size=8,
+                    opacity=0.7,
+                    line=dict(width=1, color='white')
+                ),
+                hovertemplate=f'<b>{clean_name}</b>: %{{x:.2f}}<br><b>S&P 500</b>: %{{y:.2f}}<extra></extra>'
+            ),
+            row=1, col=i+1
+        )
+
+        # Add trendline
+        z = np.polyfit(data[feature], data['close'], 1)
+        p = np.poly1d(z)
+        correlation = data[feature].corr(data['close'])
+
+        fig.add_trace(
+            go.Scatter(
+                x=data[feature],
+                y=p(data[feature]),
+                mode='lines',
+                name=f'{clean_name} Trend',
+                line=dict(color='red', width=2, dash='dash'),
+                showlegend=False,
+                hovertemplate=f'Trendline (Corr: {correlation:.3f})<extra></extra>'
+            ),
+            row=1, col=i+1
+        )
+
+    fig.update_layout(
+        title='Features vs S&P 500 (Interactive)',
+        height=500,
+        showlegend=False
+    )
+
+    fig.show()
+    fig.write_html("features_vs_sp500.html")
+
+
+def interactive_sp500_diagnostic_plots(residuals, predictions, title="S&P 500 Model"):
+    """Interactive version of create_sp500_diagnostic_plots"""
+
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=[
+            'Residuals vs Fitted Values (Linearity & Homoscedasticity)',
+            'Residuals vs Time Index (Autocorrelation Check)',
+            'Scale-Location Plot (Homoscedasticity)',
+            'Histogram of Residuals'
+        ],
+        horizontal_spacing=0.08,
+        vertical_spacing=0.1
+    )
+
+    # 1. Residuals vs Fitted
+    fig.add_trace(
+        go.Scatter(
+            x=predictions,
+            y=residuals,
+            mode='markers',
+            name='Residuals vs Fitted',
+            marker=dict(color='blue', size=6, opacity=0.6),
+            hovertemplate='Fitted: %{x:.3f}<br>Residual: %{y:.3f}<extra></extra>'
+        ),
+        row=1, col=1
+    )
+    fig.add_hline(y=0, line_dash="dash", line_color="red", row=1, col=1)
+
+    # 2. Residuals vs Index
+    fig.add_trace(
+        go.Scatter(
+            x=list(range(len(residuals))),
+            y=residuals,
+            mode='markers',
+            name='Residuals vs Index',
+            marker=dict(color='green', size=6, opacity=0.6),
+            hovertemplate='Index: %{x}<br>Residual: %{y:.3f}<extra></extra>'
+        ),
+        row=1, col=2
+    )
+    fig.add_hline(y=0, line_dash="dash", line_color="red", row=1, col=2)
+
+    # 3. Scale-Location Plot
+    sqrt_abs_resid = np.sqrt(np.abs(residuals))
+    fig.add_trace(
+        go.Scatter(
+            x=predictions,
+            y=sqrt_abs_resid,
+            mode='markers',
+            name='Scale-Location',
+            marker=dict(color='orange', size=6, opacity=0.6),
+            hovertemplate='Fitted: %{x:.3f}<br>√|Residual|: %{y:.3f}<extra></extra>'
+        ),
+        row=2, col=1
+    )
+
+    # 4. Histogram of Residuals
+    fig.add_trace(
+        go.Histogram(
+            x=residuals,
+            name='Residuals Distribution',
+            marker_color='purple',
+            opacity=0.7,
+            hovertemplate='Residual: %{x:.3f}<br>Count: %{y}<extra></extra>'
+        ),
+        row=2, col=2
+    )
+
+    fig.update_layout(
+        title=f'{title} - Interactive Diagnostic Plots',
+        height=800,
+        showlegend=False
+    )
+
+    # Update axis labels
+    fig.update_xaxes(title_text="Fitted Values", row=1, col=1)
+    fig.update_yaxes(title_text="Residuals", row=1, col=1)
+    fig.update_xaxes(title_text="Time Index", row=1, col=2)
+    fig.update_yaxes(title_text="Residuals", row=1, col=2)
+    fig.update_xaxes(title_text="Fitted Values", row=2, col=1)
+    fig.update_yaxes(title_text="√|Residuals|", row=2, col=1)
+    fig.update_xaxes(title_text="Residuals", row=2, col=2)
+    fig.update_yaxes(title_text="Count", row=2, col=2)
+
+    fig.show()
+    fig.write_html(f"{title.lower().replace(' ', '_')}_diagnostics.html")
+
+
+def interactive_currency_diagnostic_plots(results):
+    """Interactive version of plot_currency_models"""
+    currency = results['currency_name']
+    residuals = results['residuals']
+    predictions = results['predictions']
+
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=[
+            'Residuals vs Fitted Values (Linearity & Homoscedasticity)',
+            'Residuals vs Time Index (Autocorrelation Check)',
+            'Scale-Location Plot (Homoscedasticity)',
+            'Histogram of Residuals'
+        ],
+        horizontal_spacing=0.08,
+        vertical_spacing=0.1
+    )
+
+    # 1. Residuals vs Fitted
+    fig.add_trace(
+        go.Scatter(
+            x=predictions,
+            y=residuals,
+            mode='markers',
+            name='Residuals vs Fitted',
+            marker=dict(color='blue', size=6, opacity=0.6),
+            hovertemplate='Fitted: %{x:.3f}<br>Residual: %{y:.3f}<extra></extra>'
+        ),
+        row=1, col=1
+    )
+    fig.add_hline(y=0, line_dash="dash", line_color="red", row=1, col=1)
+
+    # 2. Residuals vs Index
+    fig.add_trace(
+        go.Scatter(
+            x=list(range(len(residuals))),
+            y=residuals,
+            mode='markers',
+            name='Residuals vs Index',
+            marker=dict(color='green', size=6, opacity=0.6),
+            hovertemplate='Index: %{x}<br>Residual: %{y:.3f}<extra></extra>'
+        ),
+        row=1, col=2
+    )
+    fig.add_hline(y=0, line_dash="dash", line_color="red", row=1, col=2)
+
+    # 3. Scale-Location Plot
+    sqrt_abs_resid = np.sqrt(np.abs(residuals))
+    fig.add_trace(
+        go.Scatter(
+            x=predictions,
+            y=sqrt_abs_resid,
+            mode='markers',
+            name='Scale-Location',
+            marker=dict(color='orange', size=6, opacity=0.6),
+            hovertemplate='Fitted: %{x:.3f}<br>√|Residual|: %{y:.3f}<extra></extra>'
+        ),
+        row=2, col=1
+    )
+
+    # 4. Histogram of Residuals
+    fig.add_trace(
+        go.Histogram(
+            x=residuals,
+            name='Residuals Distribution',
+            marker_color='purple',
+            opacity=0.7,
+            hovertemplate='Residual: %{x:.3f}<br>Count: %{y}<extra></extra>'
+        ),
+        row=2, col=2
+    )
+
+    fig.update_layout(
+        title=f'{currency} Model - Interactive Diagnostic Plots',
+        height=800,
+        showlegend=False
+    )
+
+    # Update axis labels
+    fig.update_xaxes(title_text="Fitted Values", row=1, col=1)
+    fig.update_yaxes(title_text="Residuals", row=1, col=1)
+    fig.update_xaxes(title_text="Time Index", row=1, col=2)
+    fig.update_yaxes(title_text="Residuals", row=1, col=2)
+    fig.update_xaxes(title_text="Fitted Values", row=2, col=1)
+    fig.update_yaxes(title_text="√|Residuals|", row=2, col=1)
+    fig.update_xaxes(title_text="Residuals", row=2, col=2)
+    fig.update_yaxes(title_text="Count", row=2, col=2)
+
+    fig.show()
+    fig.write_html(f"{currency.lower().replace(' ', '_')}_diagnostics.html")
+
+
+def create_all_qq_plots(sp500_residuals, currency_results):
+    """Create matplotlib subplot with all 6 QQ plots (S&P 500 + 5 currencies)"""
+    from scipy import stats
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    fig.suptitle('QQ Plots - Normality Check for All Models',
+                 fontsize=16, fontweight='bold')
+
+    # Flatten axes for easier indexing
+    axes_flat = axes.flatten()
+
+    # S&P 500 QQ plot (first subplot)
+    stats.probplot(sp500_residuals, dist="norm", plot=axes_flat[0])
+    axes_flat[0].set_title('S&P 500 Model')
+    axes_flat[0].grid(True, alpha=0.3)
+
+    # Currency QQ plots
+    currency_names = list(currency_results.keys())
+    for i, name in enumerate(currency_names):
+        if i < 5:  # Only plot first 5 currencies to fit in 2x3 grid
+            residuals = currency_results[name]['residuals']
+            stats.probplot(residuals, dist="norm", plot=axes_flat[i+1])
+            axes_flat[i+1].set_title(f'{name} Model')
+            axes_flat[i+1].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.savefig('all_qq_plots.png', dpi=300, bbox_inches='tight')
+    plt.show()
+
+
+def interactive_qq_plot(residuals, title="QQ Plot of Residuals"):
+    """Interactive version of create_qq_plot"""
+    from scipy import stats
+
+    # Generate theoretical quantiles
+    theoretical_quantiles, ordered_values = stats.probplot(
+        residuals, dist="norm", plot=None)
+
+    fig = go.Figure()
+
+    # Add scatter plot
+    fig.add_trace(
+        go.Scatter(
+            x=theoretical_quantiles[0],
+            y=theoretical_quantiles[1],
+            mode='markers',
+            name='Sample Quantiles',
+            marker=dict(color='blue', size=6, opacity=0.7),
+            hovertemplate='Theoretical: %{x:.3f}<br>Sample: %{y:.3f}<extra></extra>'
+        )
+    )
+
+    # Add reference line
+    slope, intercept = np.polyfit(
+        theoretical_quantiles[0], theoretical_quantiles[1], 1)
+    line_x = np.array([min(theoretical_quantiles[0]),
+                      max(theoretical_quantiles[0])])
+    line_y = slope * line_x + intercept
+
+    fig.add_trace(
+        go.Scatter(
+            x=line_x,
+            y=line_y,
+            mode='lines',
+            name='Reference Line',
+            line=dict(color='red', width=2, dash='dash'),
+            hovertemplate='Reference Line<extra></extra>'
+        )
+    )
+
+    fig.update_layout(
+        title=f'{title} (Interactive)<br><sub>Normality Check</sub>',
+        xaxis_title='Theoretical Quantiles',
+        yaxis_title='Sample Quantiles',
+        height=600,
+        showlegend=True
+    )
+
+    fig.show()
+    fig.write_html(
+        f"{title.lower().replace(' ', '_').replace(':', '').replace('-', '_')}.html")
+
+
+# LEGACY MATPLOTLIB FUNCTIONS (kept for reference)
 def plot_currency_models(results):
     """Create comprehensive diagnostic plots for currency models"""
     currency = results['currency_name']
@@ -475,7 +853,31 @@ def plot_feats(data):
     plt.show()
 
 
-    # Main execution starts here
+def plot_features_vs_sp500(data):
+    """Plot each feature against S&P 500"""
+
+    features = [
+        'average_DiscountRate_value',
+        'average_TreasurySecurities_value',
+        'average_FedReserveBalanceSheet_value'
+    ]
+
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig.suptitle('Features vs S&P 500', fontsize=16)
+
+    for i, feature in enumerate(features):
+        clean_name = feature.replace('average_', '').replace('_value', '')
+
+        axes[i].scatter(data[feature], data['close'], alpha=0.6)
+        axes[i].set_xlabel(clean_name)
+        axes[i].set_ylabel('S&P 500')
+        axes[i].set_title(f'{clean_name} vs S&P 500')
+        axes[i].grid(True, alpha=0.3)
+
+    plt.tight_layout()
+
+
+# Main execution starts here
 if __name__ == "__main__":
     print("Starting financial data analysis with CSV caching...")
 
@@ -573,20 +975,23 @@ if __name__ == "__main__":
     print(f"  Full Dataset - R²: {r_squared_full:.4f}, MSE: {mse_full:.4f}")
     print(f"  Cross-Val    - R²: {sp500_cv_r2:.4f}, MSE: {sp500_cv_mse:.4f}")
 
-    create_sp500_diagnostic_plots(resids, ypreds_full, "S&P 500 Model")
+    # INTERACTIVE PLOTS (NEW) - Creates HTML files for embedding
+    print("\nCreating interactive plots...")
 
-    create_qq_plot(resids, "S&P 500 Model - QQ Plot of Residuals")
+    interactive_plot_feats(plot_later)
+    interactive_plot_features_vs_sp500(merged_df)
+    interactive_sp500_diagnostic_plots(resids, ypreds_full, "S&P 500 Model")
+
+    # Create single matplotlib subplot with all QQ plots
+    create_all_qq_plots(resids, currency_results)
 
     for name, results in currency_results.items():
-        plot_currency_models(results)
+        interactive_currency_diagnostic_plots(results)
         print(f"\n{results['currency_name']} Model:")
         print(
             f"  Full Dataset - R²: {results['full_r2']:.4f}, MSE: {results['full_mse']:.4f}")
         print(
             f"  Cross-Val    - R²: {results['cv_r2']:.4f}, MSE: {results['cv_mse']:.4f}")
-
-        create_qq_plot(results['residuals'],
-                       f"{name} Model - QQ Plot of Residuals")
 
     print(
         f"\n{'Model':<15} {'Full R²':<10} {'Full MSE':<12} {'CV R²':<10} {'CV MSE':<12}")
@@ -608,5 +1013,10 @@ if __name__ == "__main__":
     for model, coeffs in weights.items():
         print(f"{model}: {coeffs}")
 
-plot_feats(plot_later)
-plt.show()
+    print("\nInteractive HTML files created for embedding in Markdown:")
+    print("- features_over_time.html")
+    print("- features_vs_sp500.html")
+    print("- s&p_500_model_diagnostics.html")
+    print("- s&p_500_model_qq_plot_of_residuals.html")
+    print("- [currency]_diagnostics.html (for each currency)")
+    print("- [currency]_model_qq_plot_of_residuals.html (for each currency)")
