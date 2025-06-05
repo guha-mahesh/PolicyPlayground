@@ -76,6 +76,3 @@ if st.button('Act as Eleanore Goosens',
     st.session_state['first_name'] = 'SysAdmin'
     st.session_state['user_id'] = 2
     st.switch_page('pages/40_Lobbyist.py')
-
-
-
