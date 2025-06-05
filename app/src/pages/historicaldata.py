@@ -27,9 +27,6 @@ with col1:
   topic = ["Taxation", "Government Spending", "Public Deficit", "Interest Rates", "Inflation", "Money Supply", "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
   topic_choice = st.selectbox("Choose a Topic", topic)
 
-#politician = ["Alice Danton", "Bryce Linwood", "Cara Solis", "Damon Krill", "Evelyn Marsh", "Felix Grant", "Gina Torres", "Hector Wells", "Isla Reed", "Jasper Cole"]
-#politician_choice = st.selectbox("Choose a politican", politician)
-
 with col2:
   year_end = [ "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
     "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
@@ -73,6 +70,7 @@ col1, col2 = st.columns(2)
 with col1:
   if st.button("Save"):
     returnJson = {"policy_id" : enter_id, "user_id" : 1}
+    requests.post("http://web-api:4000/pol/add_favorite", json=returnJson)
 
 with col2:
   if st.button("Next Page"):

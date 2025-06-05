@@ -65,27 +65,15 @@ if st.button("Act as Sun Yue, a  Policy Maker",
 if st.button('Act as Andrew Thornton, an Economist',
              type='primary',
              use_container_width=True):
+    st.session_state['authenticated'] = True
+    st.session_state['role'] = 'economist'
     st.session_state["user_id"] = 1
     logger.info("Logging in as Political Strategy Advisor Persona")
-    st.switch_page('pages/44_Policy_Maker_viewPred.py')
-    
-if st.button('Act as Andrew Thornton, an economist.', 
-            type = 'primary', 
-            use_container_width=True):
-    st.session_state['authenticated'] = True
-    st.session_state['role'] = 'Economist'
-    st.session_state['first_name'] = 'Andrew'
-    st.switch_page('pages/10_USAID_Worker_Home.py')
-    st.session_state['role'] = 'Economist'
-    st.session_state['first_name'] = 'Andrew'
     st.switch_page('pages/historicaldata.py')
+    
 
-if st.button('Act as Eleanor Goosens, an Economist',
-             type='primary',
-             use_container_width=True):
-if st.button('Act as Eleanore Goosens, a poltical lobbyist.', 
-            type = 'primary', 
-            use_container_width=True):
+
+if st.button('Act as Eleanore Goosens, a poltical lobbyist.', type = 'primary',  use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'Lobbyist'
     st.session_state['first_name'] = 'Eleanor'

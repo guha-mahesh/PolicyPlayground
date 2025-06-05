@@ -56,6 +56,9 @@ def AddNgoNav():
     st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
 
 
+# def Lobbyist2Nav():
+#     st.sidebar.page_link("pages/")
+
 #### ------------------------ System Admin Role ------------------------
 def AdminPageNav():
     st.sidebar.page_link("pages/20_Admin_Home.py", label="Note Taker", icon="🗒️")
@@ -93,16 +96,16 @@ def SideBarLinks(show_home=False):
 
 
         # If the user role is usaid worker, show the Api Testing page
-        if st.session_state["role"] == "usaid_worker":
-            PredictionNav()
-            ApiTestNav()
-            ClassificationNav()
-            NgoDirectoryNav()
-            AddNgoNav()
+        if st.session_state["role"] == "economist":
+            PolStratAdvHomeNav()
+            viewFavoritesNav()
 
         # If the user is an administrator, give them access to the administrator pages
         if st.session_state["role"] == "administrator":
             AdminPageNav()
+
+        # if st.session_state["role"] == "lobbyist":
+        #     Lobbyist2Nav()
 
     # Always show the About page at the bottom of the list of links
     AboutPageNav()
