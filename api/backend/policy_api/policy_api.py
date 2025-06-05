@@ -146,3 +146,13 @@ def getdesc(policy_id):
     cursor.close()
     return jsonify(data)
 
+@policy_api.route("/deletefav/<int:policy_id>", methods=["DELETE"])
+def deletefav(policy_id):
+    conn = db.get_db()
+    cursor = db.get_db().cursor()
+    current_app.logger.info("testing testing.")
+    cursor.execute("DELETE FROM Favorite_Policies WHERE policy_id = %s", str(policy_id))
+    conn.commit()
+    conn.commit()
+    cursor.close()
+    return '', 200

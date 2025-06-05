@@ -20,20 +20,13 @@ response = requests.get("http://web-api:4000/pol/getfav/"+ str(st.session_state[
 data = response.json()
 df = pd.DataFrame(data)
 
-# select box of policies
-policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
-fav_choice = st.selectbox("Choose A Policy to Look at", policies_list)
-
-col1, col2 = st.columns(2)
-
-with col2: 
-    with st.container(height=300):
-        num = int(fav_choice.split('.')[0])
-        st.markdown("**Policy Description:**")
-        desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
-        st.write(desc)
+col1, col2 = st.columns(2, vertical_alignment="bottom")
 
 with col1:
+    #select box of policies
+    policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
+    fav_choice = st.selectbox("Choose A Policy to Look at", policies_list)  
+
     with st.container(height=300):
         st.markdown("**Policy Information**")
         num = int(fav_choice.split('.')[0])
@@ -42,6 +35,17 @@ with col1:
         st.write(f"Duration:\t{df.loc[df['policy_id'] == num, 'duration'].iloc[0]}")
         st.write(f"Intensity:\t{df.loc[df['policy_id'] == num, 'intensity'].iloc[0]}")
         st.write(f"Course of Action:\t{df.loc[df['policy_id'] == num, 'advocacy_method'].iloc[0]}")
+
+with col2:
+    num = int(fav_choice.split('.')[0])
+    if st.button("Delete Policy"):
+        response = requests.delete(f"http://web-api:4000/pol/deletefav/{num}")
+
+
+    with st.container(height=300):
+        st.markdown("**Policy Description:**")
+        desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
+        st.write(desc)
 
 
 
