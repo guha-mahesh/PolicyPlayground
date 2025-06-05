@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS ProposedPolicy (
     enforcement VARCHAR(20),
     duration VARCHAR(20),
     country_id INT,
-    FOREIGN KEY (country_id) REFERENCES Countries(country_id),
+    -- FOREIGN KEY (country_id) REFERENCES Countries(country_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
@@ -75,7 +75,7 @@ CREATE TABLE HistoricalPolicy (
     description VARCHAR(255),
     category VARCHAR(100),
     date DATE,
-    FOREIGN KEY (country_id) REFERENCES Countries(country_id),
+    -- FOREIGN KEY (country_id) REFERENCES Countries(country_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
