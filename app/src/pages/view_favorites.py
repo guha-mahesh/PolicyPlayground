@@ -16,7 +16,7 @@ st.title(f"View Favorite Policies 🔎")
 st.write("---")
 st.write("\n \n")
 
-response = requests.get("http://web-api:4000/pol/getfav/" + str(st.session_state["user_id"]))
+response = requests.get("http://web-api:4000/pol/getfav/"+ str(st.session_state["user_id"]))
 data = response.json()
 df = pd.DataFrame(data)
 st.dataframe(df)

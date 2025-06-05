@@ -73,7 +73,6 @@ col1, col2 = st.columns(2)
 with col1:
   if st.button("Save"):
     returnJson = {"policy_id" : enter_id, "user_id" : 1}
-    requests.post("http://web-api:4000/pol/add_favorite", json=returnJson)
 
 with col2:
   if st.button("Next Page"):

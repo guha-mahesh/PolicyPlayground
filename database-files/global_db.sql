@@ -3,6 +3,10 @@ CREATE DATABASE IF NOT EXISTS global_database;
 
 USE global_database;
 
+CREATE TABLE IF NOT EXISTS Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS Policies (
     policy_id INT PRIMARY KEY,
     year_enacted INT,
@@ -20,7 +24,8 @@ CREATE TABLE IF NOT EXISTS Favorite_Policies (
     fav_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
     policy_id INT,
-    FOREIGN KEY (policy_id) REFERENCES Policies(policy_id)
+    FOREIGN KEY (policy_id) REFERENCES Policies(policy_id),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
 CREATE TABLE IF NOT EXISTS Politicians (
@@ -30,6 +35,8 @@ CREATE TABLE IF NOT EXISTS Politicians (
     office_phone VARCHAR(50)
 );
 
+INSERT INTO Users (user_id)
+    VALUES (1);
 
 INSERT INTO Policies (policy_id, year_enacted, politician, topic, country, pol_scope, duration, intensity, advocacy_method, pol_description) VALUES
 (1, 2007, 'Damon Krill', 'Public deficit', 'China', 'State', 'Trial', 'Light Enforcement', 'Meme Campaign', 'This policy addresses key challenges with an innovative approach. Its implementation is expected to impact multiple sectors positively.'),

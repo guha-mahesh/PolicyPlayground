@@ -51,7 +51,7 @@ def get_policies():
         order = 'ASC'
 
     # Build base query
-    query = "SELECT * FROM Policies"
+    query = "SELECT policy_id, year_enacted, politician, topic, country FROM Policies"
     params = []
 
     # Add filtering if country specified
@@ -85,11 +85,11 @@ def get_policies():
     return jsonify(data)
 
 
-@policy_api.route("/getfav/<int:policy_id>", methods=["GET"])
-def getfav(policy_id):
+@policy_api.route("/getfav/<int:user_id>", methods=["GET"])
+def getfav(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
-    query = "SELECT * FROM Policies WHERE policy_id = " + str(policy_id)
+    query = "SELECT * FROM Policies JOIN Favorite_Policies ON Favorite_Policies.policy_id = Policies.policy_id WHERE Favorite_Policies.user_id = " + str(user_id)
     cursor.execute(query)
     data = cursor.fetchall()
     cursor.close()
