@@ -160,6 +160,7 @@ def get_predictionGDP(var_01, var_02):
             "prediction": prediction,
             "input_variables": {
                 "var01": var_01,
+                "var02": var_02
             },
         }
 

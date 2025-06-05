@@ -22,6 +22,17 @@ country_code_to_name = {
 
 
 def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
+    """
+    Fetch World Bank indicator data for predefined countries.
+    
+    Args:
+        indicator (str): World Bank indicator code
+        start_year (int): Starting year. Defaults to 2010.
+        end_year (int): Ending year. Defaults to 2023.
+    
+    Returns:
+        pd.DataFrame: Data with columns ['Country', 'date', 'value']
+    """
     url = (
         f"https://api.worldbank.org/v2/country/"
         f"{';'.join(country_code_to_name.keys())}/indicator/{indicator}"
@@ -39,7 +50,18 @@ def fetch_worldbank_data(indicator, start_year=2010, end_year=2023):
     return df
 
 
-def create_sophisticated_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1):
+def create_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1):
+    """
+    Create lagged spending features for economic modeling.
+    
+    Args:
+        df (pd.DataFrame): Input data with spending and GDP columns
+        gdp_col (str): GDP column name. Defaults to 'GDP_per_capita'.
+        lag_years (int): Number of years to lag. Defaults to 1.
+    
+    Returns:
+        pd.DataFrame: Data with lagged spending features added
+    """
     df = df.copy()
     df['date'] = pd.to_numeric(df['date'])
     df = df.sort_values(['Country', 'date'])
@@ -64,23 +86,44 @@ def create_sophisticated_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1):
 
 
 def regress(X, y):
+    """
+    Perform linear regression using normal equation.
+    
+    Args:
+        X (array-like): Feature matrix
+        y (array-like): Target values
+    
+    Returns:
+        np.ndarray: Regression coefficients
+    """
     X = np.asarray(X, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
 
     dot1 = np.dot(X.T, X)
-    regularization = 1e-8 * np.eye(dot1.shape[0])
-    dot1_reg = dot1 + regularization
 
-    try:
-        inv = np.linalg.inv(dot1_reg)
-    except np.linalg.LinAlgError:
-        inv = np.linalg.pinv(dot1)
+
+    dot1_reg = dot1
+
+    inv = np.linalg.inv(dot1_reg)
 
     dot2 = np.dot(X.T, y)
     return np.dot(inv, dot2)
 
 
 def normalize_features(df, feature_means=None, feature_stds=None, log_features=None, fit=False):
+    """
+    Normalize features with optional log transformation and standardization.
+    
+    Args:
+        df (pd.DataFrame): Input data
+        feature_means (dict): Pre-computed means for normalization
+        feature_stds (dict): Pre-computed standard deviations  
+        log_features (set): Features to log-transform
+        fit (bool): Whether to compute normalization parameters
+    
+    Returns:
+        pd.DataFrame or tuple: Normalized data, optionally with fit parameters
+    """
     global gdp_log_transformed_features
     df = df.copy()
 
@@ -129,7 +172,12 @@ def normalize_features(df, feature_means=None, feature_stds=None, log_features=N
 
 
 def prepare_training_data():
-
+    """
+    Fetch and combine World Bank data for model training.
+    
+    Returns:
+        pd.DataFrame: Combined dataset with GDP, health, education, and military spending
+    """
     govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS")
     govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS")
     military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
@@ -143,7 +191,7 @@ def prepare_training_data():
     df = df.merge(military_spending.rename(
         columns={'value': 'Military Spending'}), on=['Country', 'date'], how='inner')
 
-    df = create_sophisticated_gdp_lag(
+    df = create_gdp_lag(
         df, gdp_col='GDP_per_capita', lag_years=1)
     df['date'] = pd.to_numeric(df['date'])
     df['previous_year'] = df['date'] - 1
