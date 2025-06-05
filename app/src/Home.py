@@ -57,6 +57,7 @@ if st.button("Act as a Policy Maker",
     # st.session_state['first_name'] = 'John'
     # finally, we ask streamlit to switch to another page, in this case, the
     # landing page for this particular user type
+    st.session_state["user_id"] = 1
     logger.info("Logging in as Political Strategy Advisor Persona")
     st.switch_page('pages/historicaldata.py')
     

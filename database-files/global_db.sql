@@ -17,16 +17,10 @@ CREATE TABLE IF NOT EXISTS Policies (
 );
 
 CREATE TABLE IF NOT EXISTS Favorite_Policies (
-    policy_id INT PRIMARY KEY,
-    year_enacted INT,
-    politician VARCHAR(50),
-    topic VARCHAR(50),
-    country VARCHAR(50),
-    pol_scope VARCHAR(50),
-    duration VARCHAR(50),
-    intensity VARCHAR(50),
-    advocacy_method VARCHAR(50),
-    pol_description VARCHAR(255)
+    fav_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    policy_id INT,
+    FOREIGN KEY (policy_id) REFERENCES Policies(policy_id)
 );
 
 CREATE TABLE IF NOT EXISTS Politicians (

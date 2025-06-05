@@ -55,7 +55,7 @@ with col1:
             params['intensity'] = intensity_choice
         if duration_choice:
             params['duration'] = duration_choice
-    response = requests.get("http://web-api:4000/pol/get_desc", params=params)
+    response = requests.get("http://web-api:4000/pol/get_desc")
     data = response.json()
     st.write(data)
 

@@ -53,7 +53,6 @@ def get_policies():
     # Build base query
     query = "SELECT * FROM Policies"
     params = []
-    filters = []
 
     # Add filtering if country specified
     if year_start:
@@ -86,20 +85,31 @@ def get_policies():
     return jsonify(data)
 
 
+@policy_api.route("/getfav/<int:policy_id>", methods=["GET"])
+def getfav(policy_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+    query = "SELECT * FROM Policies WHERE policy_id = " + str(policy_id)
+    cursor.execute(query)
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(data)
+
+
 @policy_api.route("/add_favorite", methods=["POST"])
 def add_favorite():
     conn = db.get_db()
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO FavoritePolicies (politician_id, content, title, user_id)
+    INSERT INTO Favorite_Policies (policy_id, user_id)
     VALUES
-    (%s, %s, %s, %s)
+    (%s, %s)
     """
     params = []
 
     req = request.get_json()
-    required_fields = ["politician_id", "content", "title", "user_id"]
+    required_fields = ["policy_id", "user_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400
@@ -108,9 +118,17 @@ def add_favorite():
         params.append(req[field])
     cursor.execute(query, params)
 
-    noteid = cursor.lastrowid
+    policy_id = cursor.lastrowid
     conn.commit()
     cursor.close()
-    return jsonify({"message": "Note created successfully", "note_id": noteid}, 201)
+    return jsonify({"message": "Note created successfully", "policy_id": policy_id}, 201)
 
-    
+@policy_api.route("/getallfav", methods=["GET"])
+def getallfav():
+    cursor = db.get_db().cursor()
+    current_app.logger.info("testing testing.")
+    query = "SELECT * FROM Favorite_Policies"
+    cursor.execute(query)  
+    data = cursor.fetchall()
+    cursor.close()
+    return jsonify(data)
