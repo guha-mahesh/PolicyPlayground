@@ -6,8 +6,7 @@ def getPoliticians(user_id):
 
 
 def getPoliticianID(polName):
-    # requests.get("http://web-api:4000/politicians/getID/"+polName)
-    return 1
+    return requests.get("http://web-api:4000/politicians/getID/"+polName)
 
 
 def postNote(json1):

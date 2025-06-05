@@ -98,10 +98,10 @@ CREATE TABLE IF NOT EXISTS Conversations (
     politician_id INT,
     saved_id INT,
     content TEXT,
-    title VARCHAR(50)
-    -- FOREIGN KEY (user_id) REFERENCES Users(user_id),
+    title VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES Users(user_id),
     -- FOREIGN KEY (saved_id) REFERENCES SavedPolicy(saved_id),
-    -- FOREIGN KEY (politician_id) REFERENCES Politician(politician_id)
+    FOREIGN KEY (politician_id) REFERENCES Politicians(politician_id)
 );
 
 INSERT INTO UserTypes (type_name)
