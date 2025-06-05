@@ -6,6 +6,7 @@ import streamlit as st
 from modules.nav import SideBarLinks
 import requests
 import requestfunctions.getmethods as getmethods
+import json
 
 st.set_page_config(layout="wide")
 
@@ -28,12 +29,15 @@ content = st.text_area(label="Enter Description", value="", height=None, max_cha
              placeholder=None, disabled=False, label_visibility="visible")
 
 col1, col2 = st.columns(2, vertical_alignment="bottom")
-polName = 'John Pork'
-politicians = getmethods.getPoliticians()
+politicians = getmethods.getPoliticians(st.session_state["user_id"]).json()
+list_pol = []
+for pol in politicians:
+    list_pol.append(pol["Name"])
+
 #requests.get("http://web-api:4000/politicians/{polName}")
 
 with col1:
-    selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
+    selected_politician = st.selectbox(label="Select Politician:", options=list_pol, index=0, key=None, help=None, on_change=None, args=None, kwargs=None, placeholder=None, disabled=False, label_visibility="visible", accept_new_options=False)
 
 with col2:
     if st.button("New Politician"):
@@ -52,7 +56,8 @@ with col2:
 with col3:
     st.slider(label='Feature #3')
 
-returnJson = {"politician_id": getmethods.getPoliticianID(selected_politician), "content": content, "title": title, "user_id": 1}
+returnJson = {"politician_id": getmethods.getPoliticianID(selected_politician),
+              "content": content, "title": title, "user_id": st.session_state["user_id"]}
 
 
 if st.button("Save Note", type="primary", use_container_width=True):
