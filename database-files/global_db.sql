@@ -639,7 +639,3 @@ INSERT INTO Users (type_id, first_name, last_name, interest_id)
 VALUES
 (1, 'Sota', 'Shimizu', 3),
 (3, 'Eleanor', 'Goossens', 2);
-
-INSERT INTO Politicians (name, contact_info, user_id)
-VALUES
-('John Pork', '123-456-7890', 2);

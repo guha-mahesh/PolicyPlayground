@@ -55,9 +55,15 @@ def NgoDirectoryNav():
 def AddNgoNav():
     st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
 
+#### ------------------------ Lobbyist ----------------------------
 
-# def Lobbyist2Nav():
-#     st.sidebar.page_link("pages/")
+def MakeNoteNav():
+    st.sidebar.page_link("pages/40_Lobbyist.py", label="Make a New Note", icon="✍️")
+    
+def ViewNotesNav():
+    st.sidebar.page_link("pages/43_Lobbyist2.py", label="View Notes", icon="📝")
+
+
 
 #### ------------------------ System Admin Role ------------------------
 def AdminPageNav():
@@ -104,8 +110,9 @@ def SideBarLinks(show_home=False):
         if st.session_state["role"] == "administrator":
             AdminPageNav()
 
-        # if st.session_state["role"] == "lobbyist":
-        #     Lobbyist2Nav()
+        if st.session_state["role"] == "Lobbyist":
+            MakeNoteNav()
+            ViewNotesNav()
 
     # Always show the About page at the bottom of the list of links
     AboutPageNav()

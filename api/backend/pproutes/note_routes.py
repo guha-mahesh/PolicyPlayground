@@ -33,13 +33,38 @@ def add_note():
     cursor.close()
     return jsonify({"message": "Note created successfully", "note_id": noteid}, 201)
 
-@notes.route("/showNotes", methods=["GET"])
-def all_notes():
+@notes.route("/getNotes/<int:user_id>/<int:politician_id>", methods=["GET"])
+def all_notes(user_id, politician_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT * FROM Conversations WHERE user_id = %s"
+    query = f'SELECT * FROM Conversations WHERE user_id = {user_id} AND politician_id = {politician_id}'
     cursor.execute(query)
+    returnjson = cursor.fetchall()
+
+    conn.commit()
+    cursor.close()
+
+    return jsonify(returnjson), 200
+
+@notes.route("/modifyNotes", methods=["PUT"])
+def modify_note():
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    query = "UPDATE Conversations SET title = %s, content = %s, politician_id = %s WHERE conversation_id = %s AND user_id = %s"
+    params = []
+
+    req = request.get_json()
+    required_fields = ["title", "content", "politician_id", "conversation_id", "user_id"]
+    for field in required_fields:
+        if field not in req:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
+    for field in required_fields:
+        params.append(req[field])
+        
+    cursor.execute(query, params)
     returnjson = cursor.fetchall()
 
     conn.commit()
