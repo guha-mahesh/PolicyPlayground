@@ -60,11 +60,14 @@ with col2:
 with col3:
     st.slider(label='Feature #3')
 
-returnJson = {"politician_id": selected_politician["politician_id"],
-              "content": content, "title": title, "user_id": st.session_state["user_id"]}
 
 
 if st.button("Save Note", type="primary", use_container_width=True):
-    getmethods.postNote(returnJson)
-    st.switch_page("pages/43_Lobbyist2.py")
+    if selected_politician == None:
+        st.write("Please select a Politician")
+    else: 
+        returnJson = {"politician_id": selected_politician["politician_id"],
+              "content": content, "title": title, "user_id": st.session_state["user_id"]}
+        getmethods.postNote(returnJson)
+        st.switch_page("pages/43_Lobbyist2.py")
 

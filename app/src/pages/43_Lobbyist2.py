@@ -20,13 +20,16 @@ selected_politician = st.selectbox(label="Select Politician:", options=politicia
 
 
 currentConvo = {"title" : "", "content" : ""}
-conversations = getmethods.getNotes(st.session_state["user_id"], selected_politician["politician_id"]).json()
+if selected_politician != None:
+    conversations = getmethods.getNotes(st.session_state["user_id"], selected_politician["politician_id"]).json()
+else:
+    conversations = []
 st.session_state["notes_empty"] = True
 
 try:
     currentConvo = conversations[0]
     st.session_state["notes_empty"] = False
-except IndexError:
+except IndexError or KeyError:
     st.session_state["notes_empty"] = True
 
 col1, col2 = st.columns([1, 2])
