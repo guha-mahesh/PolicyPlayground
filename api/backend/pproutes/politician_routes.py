@@ -32,22 +32,6 @@ def get_id(polName):
 
     return jsonify(id), 200
 
-
-@politician.route("/showNotes", methods=["GET"])
-def all_notes():
-    conn = db.get_db()
-    cursor = conn.cursor()
-
-    query = "SELECT * FROM Conversations"
-    cursor.execute(query)
-    returnjson = cursor.fetchall()
-
-    conn.commit()
-    cursor.close()
-
-    return jsonify(returnjson), 200
-
-
 @politician.route("/newPolitician", methods=["POST"])
 def new_politician():
     conn = db.get_db()
