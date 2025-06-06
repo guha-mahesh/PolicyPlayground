@@ -55,13 +55,8 @@ with col1:
             params['intensity'] = intensity_choice
         if duration_choice:
             params['duration'] = duration_choice
-    response = requests.get("http://web-api:4000/pol/get_desc")
-    data = response.json()
-    st.write(data)
 
 # add a button to use the values entered into the number field to send to the
 # prediction function via the REST API
 if st.button("Save Note", type="primary", use_container_width=True):
-    results = requests.get(f"http://web-api:4000/prediction/{var_01}/{var_02}")
-    json_results = results.json()
-    st.dataframe(json_results)
+    st.write("need to implement")
