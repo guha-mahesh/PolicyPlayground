@@ -11,8 +11,7 @@ country_code_to_name = {
     "DEU": "Germany",
     "GBR": "United Kingdom",
     "FRA": "France",
-    "RUS": "Russia",
-    "CAN": "Canada"
+    "CAN": "Canada",
 }
 
 
@@ -47,7 +46,7 @@ def create_sophisticated_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1):
     
     for feature in gdp_based_features:
         if feature in df.columns:
-            current_spending_amount = (df[feature] / 100) * df[gdp_col]  # Convert % to absolute
+            current_spending_amount = (df[feature] / 100) * df[gdp_col]  
             df[f'{feature}_lag{lag_years}'] = (current_spending_amount / df[f'{gdp_col}_lag{lag_years}']) * 100
     
 
@@ -61,8 +60,8 @@ def create_sophisticated_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1):
 
 
 
-govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS") # % of gdp
-govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS") # % of gdp
+govt_health = fetch_worldbank_data("SH.XPD.CHEX.GD.ZS") 
+govt_education = fetch_worldbank_data("SE.XPD.TOTL.GD.ZS") 
 military_spending = fetch_worldbank_data("MS.MIL.XPND.ZS")
 gdp_per_capita = fetch_worldbank_data("NY.GDP.PCAP.CD")
 
@@ -75,27 +74,27 @@ df = df.merge(govt_education.rename(
 df = df.merge(military_spending.rename(columns={'value': 'Military Spending'}), on=[
     'Country', 'date'], how='inner')
 
-print("Creating sophisticated lagged features...")
+
 df = create_sophisticated_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1)
 
 df['date'] = pd.to_numeric(df['date'])
 df['previous_year'] = df['date'] - 1
 
-print(f"Columns after adding lags and time feature: {df.columns.tolist()}")
-print(f"Data shape after adding lags and time: {df.shape}")
+
+
 
 features_to_lag = ['Health_spending', 'Education_spending', 'Military Spending']
 lagged_features = [f'{feature}_lag1' for feature in features_to_lag]
 model_data = df.dropna(subset=['GDP_per_capita'] + lagged_features + ['previous_year'])
 
-print(f"Model data shape after dropping NaN: {model_data.shape}")
-print(f"Years available for modeling: {sorted(model_data['date'].astype(int).unique())}")
+
+
 
 for i, feature in enumerate(lagged_features):
     original_feature = features_to_lag[i]
     plot_data = model_data.dropna(subset=[feature, 'GDP_per_capita'])
 
-    print(f"\n{feature} vs GDP: {len(plot_data)} data points")
+    
 
     if len(plot_data) > 0:
         if 'Military' in feature:
@@ -115,11 +114,13 @@ for i, feature in enumerate(lagged_features):
             },
             title=f'{original_feature.replace("_", " ").title()} {label_suffix} vs Current GDP per Capita ({len(plot_data)} points)'
         )
+        
+        fig.update_traces(marker=dict(size=10))
         fig.show()
 
 
 def regress(X, y):
-    # X and y are numeric arrays
+    
     X = np.asarray(X, dtype=np.float64)
     y = np.asarray(y, dtype=np.float64)
 
@@ -175,9 +176,9 @@ X = model_data[columns_to_use].astype(np.float64).values
 X = np.column_stack([np.ones(len(X)), X])
 y = model_data['GDP_per_capita'].astype(np.float64).values
 
-print(f"X shape: {X.shape}, X dtype: {X.dtype}")
-print(f"y shape: {y.shape}, y dtype: {y.dtype}")
-print(f"Features used: {columns_to_use}")
+
+
+
 
 
 if np.any(np.isnan(X)) or np.any(np.isinf(X)):
@@ -192,11 +193,11 @@ ypreds = np.dot(X, b)
 r2 = r2_score(y, ypreds)
 mse = mean_squared_error(y, ypreds)
 
-print(f"\nMODEL RESULTS (WITH SOPHISTICATED LAGGED FEATURES + TIME)")
-print(f"R² Score: {r2:.4f}")
-print(f"MSE: {mse:.4f}")
-print(f"Number of observations: {len(y)}")
-print(f"Number of features (including countries and time): {X.shape[1] - 1}")
+
+
+
+
+
 
 X_raw = model_data[columns_to_use].astype(np.float64).values
 y_raw = model_data['GDP_per_capita'].astype(np.float64).values
@@ -213,28 +214,61 @@ y_test = y_test_raw
 b_train = regress(X_train, y_train)
 ypreds_test = np.dot(X_test, b_train)
 r2_test = r2_score(y_test, ypreds_test)
-print(f"Test set R^2 score: {r2_test:.4f}")
-
-
-resids = y - ypreds
-print(f"\nResiduals summary:")
-print(f"Mean: {np.mean(resids):.6f}")
-print(f"Std: {np.std(resids):.4f}")
-print(f"Min: {np.min(resids):.4f}")
-print(f"Max: {np.max(resids):.4f}")
 
 
 import matplotlib.pyplot as plt
+
 
 original_model_data = df.dropna(subset=['GDP_per_capita'] + lagged_features + ['previous_year'])
 original_model_data = original_model_data.reset_index(drop=True)
 
 
-feature_names_for_plots = lagged_features + ['previous_year']
-original_feature_names = ['Health_spending_lag1', 'Education_spending_lag1', 'Military Spending_lag1', 'previous_year']
+country_dummies_original = pd.get_dummies(original_model_data['Country'], prefix='Country')
+original_with_dummies = pd.concat([original_model_data, country_dummies_original], axis=1)
 
-for i, feature in enumerate(lagged_features):
-    X_feature = original_model_data[feature].values
+
+
+
+
+for i, feature in enumerate(lagged_features + ['previous_year']):
+    
+    
+    X_feature_values = original_model_data[feature].values
+    y_values = original_model_data['GDP_per_capita'].values
+    
+    
+    country_cols = [col for col in country_dummies_original.columns]
+    
+    
+    X_feature_only = X_feature_values.reshape(-1, 1)
+    X_countries = country_dummies_original.values
+    
+    
+    X_combined = np.column_stack([
+        np.ones(len(X_feature_values)),  
+        X_feature_values,                
+        X_countries                      
+    ])
+    
+    
+    valid_mask = ~(np.isnan(X_combined).any(axis=1) | np.isnan(y_values) | 
+                   np.isinf(X_combined).any(axis=1) | np.isinf(y_values))
+    
+    X_combined_clean = X_combined[valid_mask]
+    y_clean = y_values[valid_mask]
+    X_feature_values_clean = X_feature_values[valid_mask]
+    
+    if len(X_combined_clean) == 0:
+        
+        continue
+    
+    
+    b_feature_country = regress(X_combined_clean, y_clean)
+    y_pred_feature_country = np.dot(X_combined_clean, b_feature_country)
+    
+    
+    resids_feature = y_clean - y_pred_feature_country
+    
     
     if feature == 'previous_year':
         plot_title = 'Previous Year'
@@ -249,39 +283,79 @@ for i, feature in enumerate(lagged_features):
             x_label = 'Education Spending (Current as % of Previous GDP)'
         elif 'Military' in original_name:
             plot_title = 'Military Spending'
-            x_label = 'Military Spending (% of Gov Expenditure)'
+            x_label = 'Military Spending (% of GDP)'
         else:
             plot_title = original_name
             x_label = original_name
     
-    # Residuals vs. X values plot
-    plt.figure(figsize=(10, 6))
-    plt.scatter(X_feature, resids, alpha=0.7, color='blue')
-    plt.xlabel(x_label)
-    plt.ylabel('Residuals')
-    plt.title(f'Residual Plot vs. X Values - {plot_title}')
-    plt.grid(True, alpha=0.3)
-    plt.show()
     
     plt.figure(figsize=(10, 6))
-    plt.scatter(range(len(resids)), resids, alpha=0.7, color='green')
-    plt.xlabel(f'Index of {plot_title}')
-    plt.ylabel('Residuals')
+    
+    
+    countries_clean = original_model_data['Country'].values[valid_mask]
+    unique_countries = np.unique(countries_clean)
+    colors = plt.cm.Set1(np.linspace(0, 1, len(unique_countries)))
+    
+    for j, country in enumerate(unique_countries):
+        mask = countries_clean == country
+        plt.scatter(X_feature_values_clean[mask], resids_feature[mask], 
+                   alpha=0.7, s=60, label=country, color='black')
+    
+    plt.xlabel(x_label)
+    plt.ylabel('Residuals (Country-Adjusted)')
+    plt.title(f'Residual Plot vs. X Values - {plot_title}')
+    plt.grid(True, alpha=0.3)
+    plt.axhline(y=0, color='red', linestyle='--', alpha=0.5)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
+    plt.show()
+    
+    
+    plt.figure(figsize=(10, 6))
+    for j, country in enumerate(unique_countries):
+        mask = countries_clean == country
+        indices = np.where(mask)[0]
+        plt.scatter(indices, resids_feature[mask], 
+                   alpha=0.7, s=60, label=country, color='black')
+    
+    plt.xlabel(f'Index')
+    plt.ylabel('Residuals (Country-Adjusted)')
     plt.title(f'Residual Plot vs. Order - {plot_title}')
     plt.grid(True, alpha=0.3)
+    plt.axhline(y=0, color='red', linestyle='--', alpha=0.5)
+    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+    plt.tight_layout()
     plt.show()
+    
+    
+    r2_feature = r2_score(y_clean, y_pred_feature_country)
+    mse_feature = mean_squared_error(y_clean, y_pred_feature_country)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    feature_coef = b_feature_country[1]  
+    
 
-print(f"Residual plots created for {len(lagged_features)} features")
 
 
 
-print("HEAD OF MAIN DATASET (df)")
-print(df.head())
-print(f"Shape: {df.shape}")
 
-print("\nHEAD OF MODEL DATA")
-print(model_data.head())
-print(f"Shape: {model_data.shape}")
+
+
+
+
+
+
+
 
 
 correlation_comparison = pd.DataFrame()
@@ -289,4 +363,3 @@ correlation_comparison = pd.DataFrame()
 df_temp = df.copy()
 df_temp['date'] = pd.to_numeric(df_temp['date'])
 df_temp = df_temp.sort_values(['Country', 'date'])
-
