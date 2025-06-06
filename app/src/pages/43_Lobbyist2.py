@@ -6,6 +6,8 @@ import streamlit as st
 from modules.nav import SideBarLinks
 import requests
 import requestfunctions.getmethods as getmethods
+import pandas as pd
+import numpy as np
 
 st.set_page_config(layout="wide")
 
@@ -47,7 +49,12 @@ with col2:
 
         st.write("Future Prediction")
         with st.container(height=200):
-            st.write("graph")
+            df = pd.DataFrame({
+            'x': range(10),
+            'y': np.random.randn(10)
+            })
+            # Plot
+            st.line_chart(df.set_index('x'))
 
         col2_1, col2_2 = st.columns([2, 1])
 
