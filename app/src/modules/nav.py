@@ -5,7 +5,9 @@
 import streamlit as st
 
 
-#### ------------------------ General ------------------------
+# ------------------------ General ------------------------
+
+
 def HomeNav():
     st.sidebar.page_link("Home.py", label="Home", icon="🏠")
 
@@ -14,7 +16,7 @@ def AboutPageNav():
     st.sidebar.page_link("pages/30_About.py", label="About", icon="🧠")
 
 
-#### ------------------------ Examples for Role of pol_strat_advisor ------------------------
+# ------------------------ Examples for Role of pol_strat_advisor ------------------------
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
         "pages/historicaldata.py", label="Historical Data Viewer", icon="💰"
@@ -26,14 +28,18 @@ def WorldBankVizNav():
         "pages/41_Student.py", label="Push Policy", icon="🏦"
     )
 
+
 def viewFavoritesNav():
     st.sidebar.page_link(
-        "pages/view_favorites.py", label = "View Favorites", icon="🧾"
+        "pages/view_favorites.py", label="View Favorites", icon="🧾"
     )
 
-## ------------------------ Examples for Role of usaid_worker ------------------------
+# ------------------------ Examples for Role of usaid_worker ------------------------
+
+
 def ApiTestNav():
-    st.sidebar.page_link("pages/12_API_Test.py", label="Test the API", icon="🛜")
+    st.sidebar.page_link("pages/12_API_Test.py",
+                         label="Test the API", icon="🛜")
 
 
 def PredictionNav():
@@ -49,25 +55,29 @@ def ClassificationNav():
 
 
 def NgoDirectoryNav():
-    st.sidebar.page_link("pages/14_NGO_Directory.py", label="NGO Directory", icon="📁")
+    st.sidebar.page_link("pages/14_NGO_Directory.py",
+                         label="NGO Directory", icon="📁")
 
 
 def AddNgoNav():
     st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
 
-#### ------------------------ Lobbyist ----------------------------
+# ------------------------ Lobbyist ----------------------------
+
 
 def MakeNoteNav():
-    st.sidebar.page_link("pages/40_Lobbyist.py", label="Make a New Note", icon="✍️")
-    
+    st.sidebar.page_link("pages/40_Lobbyist.py",
+                         label="Make a New Note", icon="✍️")
+
+
 def ViewNotesNav():
     st.sidebar.page_link("pages/43_Lobbyist2.py", label="View Notes", icon="📝")
 
 
-
-#### ------------------------ System Admin Role ------------------------
+# ------------------------ System Admin Role ------------------------
 def AdminPageNav():
-    st.sidebar.page_link("pages/20_Admin_Home.py", label="Note Taker", icon="🗒️")
+    st.sidebar.page_link("pages/20_Admin_Home.py",
+                         label="Note Taker", icon="🗒️")
     st.sidebar.page_link(
         "pages/21_ML_Model_Mgmt.py", label="Access Previous Notes", icon="⌨️"
     )
@@ -95,11 +105,6 @@ def SideBarLinks(show_home=False):
     if st.session_state["authenticated"]:
 
         # Show World Bank Link and Map Demo Link if the user is a political strategy advisor role.
-        if st.session_state["role"] == "Policy Maker":
-            PolStratAdvHomeNav()
-            WorldBankVizNav()
-            viewFavoritesNav()
-
 
         # If the user role is usaid worker, show the Api Testing page
         if st.session_state["role"] == "economist":

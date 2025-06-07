@@ -5,7 +5,6 @@ import requests
 logger = logging.getLogger(__name__)
 
 st.set_page_config(layout='wide')
-
 SideBarLinks()
 
 st.title(f"Welcome {st.session_state['first_name']}")
@@ -22,7 +21,7 @@ selected_country = "Use My Nationality"
 with tab1:
     st.write("#### Federal Reserve Controls")
     st.write("")
-    
+
     col1, col2 = st.columns([3, 1])
     with col1:
         discount_rate_slider = st.slider(
@@ -87,9 +86,9 @@ with tab1:
 with tab2:
     st.write("#### Government Spending Allocation")
     st.write("")
-    
-    country_options = ["Use My Nationality", "United States", "Japan", "Germany", 
-                      "United Kingdom", "France", "Russia", "Canada"]
+
+    country_options = ["Use My Nationality", "United States", "Japan", "Germany",
+                       "United Kingdom", "France", "Russia", "Canada"]
     selected_country = st.selectbox(
         "Select Country for GDP Analysis (Optional)",
         options=country_options,
@@ -97,7 +96,7 @@ with tab2:
         help="Choose a country for GDP prediction, or use your nationality"
     )
     st.write("")
-    
+
     col7, col8 = st.columns([3, 1])
     with col7:
         military_slider = st.slider(
@@ -217,7 +216,7 @@ if st.button("Test Policy Set", type="primary"):
             'Accept': 'application/json',
             'Connection': 'keep-alive'
         }
-        
+
         with st.spinner('Running policy analysis...'):
             response = requests.get(api_url, headers=headers, timeout=10)
             response2 = requests.get(api_url2, headers=headers, timeout=10)
@@ -240,4 +239,5 @@ if st.button("Test Policy Set", type="primary"):
 
     except Exception as e:
         st.error(f"Error: {str(e)}")
-        st.write(f"URL that worked in browser: {api_url}, {api_url2}, {api_url3}")
+        st.write(
+            f"URL that worked in browser: {api_url}, {api_url2}, {api_url3}")
