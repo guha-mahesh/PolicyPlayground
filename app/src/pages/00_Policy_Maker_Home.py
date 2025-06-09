@@ -216,6 +216,7 @@ if st.button("Test Policy Set", type="primary"):
     }
 
     # API calls
+
     api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{fed_balance},{treasury_holdings}"
     api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{fed_balance},{treasury_holdings}"
     api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{military_spending},{education_spending},{health_spending}/{country}"
