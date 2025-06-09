@@ -8,10 +8,11 @@ from flask import (
     url_for,
 )
 import json
-from backend.db_connection import db
+
 from backend.simple.playlist import sample_playlist_data
-# from backend.ml_models.model01_GDP import predict_gdp
-# from backend.ml_models.model02_American import predict_sp500, predict_currency
+from ..db_connection import db
+from ..ml_models.model01_GDP import predict_gdp
+from ..ml_models.model02_American import predict_sp500, predict_currency, train
 import datetime
 
 
@@ -63,7 +64,6 @@ def getData():
     return response
 
 
-'''
 @model_routes.route("/predictSp/<var_01>", methods=["GET"])
 def get_predictionSp500(var_01):
     current_app.logger.info("GET /prediction handler")
@@ -161,7 +161,6 @@ def get_predictionGDP(var_01, var_02):
         )
         response.status_code = 500
         return response
-'''
 
 
 @model_routes.route("/fetchData/<var01>", methods=["GET"])
@@ -177,3 +176,70 @@ def fetchalldata(var01):
         'data': rows,
 
     })
+
+
+@model_routes.route("/trainModels", methods=["POST"])
+def trainModels():
+    results = train()
+    return jsonify({
+        'status': 'success',
+        'message': 'Models trained successfully',
+    }), 200
+
+
+@model_routes.route("/storeWeights", methods=["POST"])
+def storeWeights():
+    try:
+        data = request.json
+        model_name = data.get('model_name')
+        coefficients = data.get('coefficients')
+        if not model_name or not coefficients:
+            return jsonify({'error': 'Missing model_name or coefficients'}), 400
+        coefficients_str = ','.join(map(str, coefficients))
+        cursor = db.get_db().cursor()
+        query = "INSERT INTO model_weights (model_name, coefficients) VALUES (%s, %s)"
+        cursor.execute(query, (model_name, coefficients_str))
+        db.get_db().commit()
+        cursor.close()
+
+        return jsonify({
+            'status': 'success',
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@model_routes.route("/getWeights/<model_name>", methods=["GET"])
+def get_weights(model_name):
+    try:
+        cursor = db.get_db().cursor()
+
+        query = """
+            SELECT coefficients 
+            FROM model_weights 
+            WHERE model_name = %s 
+            ORDER BY id DESC 
+            LIMIT 1
+        """
+        cursor.execute(query, (model_name,))
+        result = cursor.fetchone()
+        cursor.close()
+
+        if result:
+
+            if isinstance(result, dict):
+                coefficients_str = result['coefficients']
+            else:
+                coefficients_str = result[0]
+
+            coefficients = [float(x) for x in coefficients_str.split(',')]
+
+            return jsonify({
+                'model_name': model_name,
+                'coefficients': coefficients
+            }), 200
+        else:
+            return jsonify({'error': f'No weights found for model: {model_name}'}), 404
+
+    except Exception as e:
+        pass

@@ -54,6 +54,7 @@ if st.button("Act as Sun Yue, a  Policy Maker",
     st.session_state['role'] = 'Policy Maker'
     st.session_state['nationality'] = 'United States'
     st.session_state['first_name'] = 'Sun'
+    st.session_state['user_id'] = '3'
     # we add the first name of the user (so it can be displayed on
     # subsequent pages).
     # st.session_state['first_name'] = 'John'
@@ -70,12 +71,18 @@ if st.button('Act as Andrew Thornton, an Economist',
     st.session_state["user_id"] = 1
     logger.info("Logging in as Political Strategy Advisor Persona")
     st.switch_page('pages/historicaldata.py')
-    
 
 
-if st.button('Act as Eleanore Goosens, a poltical lobbyist.', type = 'primary',  use_container_width=True):
+if st.button('Act as Eleanore Goosens, a poltical lobbyist.', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'Lobbyist'
     st.session_state['first_name'] = 'Eleanor'
     st.session_state['user_id'] = 2
     st.switch_page('pages/40_Lobbyist.py')
+
+if st.button('Act as System Admin', type='primary',  use_container_width=True):
+    st.session_state['authenticated'] = True
+    st.session_state['role'] = 'administrator'
+    st.session_state['first_name'] = 'Admin'
+    st.session_state['user_id'] = 4
+    st.switch_page('pages/20_Admin_Home.py')

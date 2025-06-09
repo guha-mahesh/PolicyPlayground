@@ -32,6 +32,7 @@ def get_id(polName):
 
     return jsonify(id), 200
 
+
 @politician.route("/newPolitician", methods=["POST"])
 def new_politician():
     conn = db.get_db()
@@ -58,3 +59,10 @@ def new_politician():
     conn.commit()
     cursor.close()
     return jsonify({"message": "Note created successfully", "polID": polId}, 201)
+
+
+@politician.route("/savePolicy", methods=["POST"])
+def savePolicy():
+    data = request.get_json()
+    param1 = data.get('param1')
+    param2 = data.get('param2')
