@@ -10,8 +10,8 @@ from flask import (
 import json
 from backend.db_connection import db
 from backend.simple.playlist import sample_playlist_data
-from backend.ml_models.model01_GDP import predict_gdp
-from backend.ml_models.model02_American import predict_sp500, predict_currency, train
+# from backend.ml_models.model01_GDP import predict_gdp
+# from backend.ml_models.model02_American import predict_sp500, predict_currency
 import datetime
 
 
@@ -27,6 +27,43 @@ def welcome():
     return response
 
 
+@model_routes.route("/playlist")
+def get_playlist_data():
+    current_app.logger.info("GET /playlist handler")
+    response = make_response(jsonify(sample_playlist_data))
+    response.status_code = 200
+    return response
+
+
+@model_routes.route("/niceMesage", methods=["GET"])
+def affirmation():
+    message = """
+    <H1>Think about it...</H1>
+    <br />
+    You only need to be 1% better today than you were yesterday!
+    """
+    response = make_response(message)
+    response.status_code = 200
+    return response
+
+
+@model_routes.route("/message")
+def mesage():
+    return redirect(url_for(affirmation))
+
+
+@model_routes.route("/data")
+def getData():
+    current_app.logger.info("GET /data handler")
+
+    data = {"a": {"b": "123", "c": "Help"}, "z": {"b": "456", "c": "me"}}
+
+    response = make_response(jsonify(data))
+    response.status_code = 200
+    return response
+
+
+'''
 @model_routes.route("/predictSp/<var_01>", methods=["GET"])
 def get_predictionSp500(var_01):
     current_app.logger.info("GET /prediction handler")
@@ -124,60 +161,18 @@ def get_predictionGDP(var_01, var_02):
         )
         response.status_code = 500
         return response
+'''
 
 
-@model_routes.route("/fetchAllData/<var01>", methods=["GET"])
+@model_routes.route("/fetchData/<var01>", methods=["GET"])
 def fetchalldata(var01):
     cursor = db.get_db().cursor()
-    query = f"SELECT date, value FROM {var01}"
+    query = f"SELECT mo, vals FROM {var01}"
     cursor.execute(query)
-    data = cursor.fetchall()
-    cursor.close()
-    return jsonify(data)
 
+    rows = cursor.fetchall()
 
-@model_routes.route("/saveWeights", methods=["GET"])
-def saveWeights():
-    weights = train()
-    cursor = db.get_db().cursor()
-    cursor.execute("""
-            CREATE TABLE IF NOT EXISTS model_weights (
-                id INTEGER PRIMARY KEY,
-                sp500_weights TEXT,
-                currency_weights TEXT,
-                created_at TIMESTAMP
-            )
-        """)
+    return jsonify({
+        'data': rows,
 
-    cursor.execute("""
-       INSERT OR REPLACE INTO model_weights (id, sp500_weights, currency_weights, created_at)
-       VALUES (1, ?, ?, ?)
-   """, (
-        json.dumps(weights['sp500_weights']),
-        json.dumps(weights['currency_weights']),
-        datetime.datetime.now()
-    ))
-    db.get_db().commit()
-    cursor.close()
-
-    return {"status": "success", "message": "Weights saved"}
-
-
-@model_routes.route("/getWeights", methods=["GET"])
-def getWeights():
-    cursor = db.get_db().cursor()
-
-    cursor.execute("""
-        SELECT sp500_weights, currency_weights, created_at 
-        FROM model_weights 
-        WHERE id = 1
-    """)
-
-    result = cursor.fetchone()
-    cursor.close()
-
-    if result:
-        return {
-            "sp500_weights": json.loads(result[0]),
-            "currency_weights": json.loads(result[1]),
-        }
+    })
