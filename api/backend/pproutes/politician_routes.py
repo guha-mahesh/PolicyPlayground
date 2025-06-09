@@ -64,5 +64,28 @@ def new_politician():
 @politician.route("/savePolicy", methods=["POST"])
 def savePolicy():
     data = request.get_json()
-    param1 = data.get('param1')
-    param2 = data.get('param2')
+
+    discountRate = data.get('discountRate')
+    FederalReserveBalanceSheet = data.get('federalReserveBalanceSheet')
+    TreasurySecurities = data.get('treasurySecurities')
+    MillitarySpending = data.get('millitarySpending')
+    EducationSpending = data.get('educationSpending')
+    HealthSpending = data.get('healthSpending')
+    Country = data.get('country')
+    SP500 = data.get('SP500')
+    GDP = data.get('GDP')
+
+    cursor = db.get_db().cursor()
+
+    cursor.execute("""
+            INSERT INTO SavedPolicy 
+            (discountRate, FederalReserveBalanceSheet, 
+             TreasurySecurities, HealthSpending, MillitarySpending, 
+             EducationSpending, Country, SP500, GDP)
+            VALUES  (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (discountRate, FederalReserveBalanceSheet,
+              TreasurySecurities, HealthSpending, MillitarySpending,
+              EducationSpending, Country, SP500, GDP))
+    db.get_db().commit()
+    cursor.close()
+    return jsonify({'message': 'Policy saved successfully'}), 200

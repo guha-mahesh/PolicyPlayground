@@ -119,7 +119,38 @@ with graph_col2:
     ax4.legend()
     ax4.grid(True, alpha=0.3)
     st.pyplot(fig4)
+if st.button("Save Policy Settings", type="secondary"):
 
+    policy_data = {
+        "discountRate": st.session_state['policy_params']["Discount Rate"],
+        "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
+        "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
+        "millitarySpending": st.session_state['policy_params']["Military Spending"],
+        "educationSpending": st.session_state['policy_params']["Education Spending"],
+        "healthSpending": st.session_state['policy_params']["Health Spending"],
+        "country": st.session_state['policy_params']["Selected Country"],
+        "SP500": st.session_state['Predictions']["SP500"],
+        "GDP": st.session_state['Predictions']["GDP/C"]
+    }
+
+    try:
+
+        save_url = "http://host.docker.internal:4000/politician/savePolicy"
+        response = requests.post(
+            save_url,
+            json=policy_data,
+            headers={'Content-Type': 'application/json'},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            st.success("✅ Policy settings saved successfully!")
+        else:
+            st.error(f"Failed to save policy: {response.status_code}")
+            st.write(response.text)
+
+    except Exception as e:
+        st.error(f"Error saving policy: {str(e)}")
 st.divider()
 
 if st.button("Try a New Set"):
