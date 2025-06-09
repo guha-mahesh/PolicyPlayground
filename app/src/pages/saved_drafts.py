@@ -15,3 +15,5 @@ st.title(f"View Proposed Drafts 🔎")
 st.write("---")
 st.write("\n \n")
 
+st.write("Here is a list of proposed policies:")
+

@@ -83,3 +83,6 @@ display_df['Change (%)'] = display_df['Change (%)'].round(2)
 
 # Display the table
 st.dataframe(display_df, use_container_width=True)
+
+if st.button("Save Draft"):
+    st.write("Draft Saved!")

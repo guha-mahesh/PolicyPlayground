@@ -29,7 +29,7 @@ def PolStratAdvHomeNav():
 
 def viewFavoritesNav():
     st.sidebar.page_link(
-        "pages/view_favorites.py", label="View Favorites", icon="🧾"
+        "pages/saved_drafts.py", label="Proposed Policy", icon="🧾"
     )
 
 # ------------------------ Examples for Role of usaid_worker ------------------------
