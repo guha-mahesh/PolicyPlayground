@@ -3,7 +3,7 @@ services:
     build: ./app
     container_name: web-app
     hostname: web-app
-    volumes: ["./app/src:/appcode"]
+    volumes: [ "./app/src:/appcode" ]
     ports:
       - 8501:8501
     environment:
@@ -13,11 +13,11 @@ services:
     build: ./api
     container_name: web-api
     hostname: web-api
-    volumes: ["./api:/apicode"]
+    volumes: [ "./api:/apicode" ]
     ports:
       - 4000:4000
     environment:
-      -  FRED_API_KEY=8bfee1b8f2dcdbe90b98a448fd886383
+      - FRED_API_KEY=8bfee1b8f2dcdbe90b98a448fd886383
 
   db:
     env_file:
