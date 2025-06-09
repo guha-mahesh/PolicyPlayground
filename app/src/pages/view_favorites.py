@@ -11,22 +11,19 @@ st.set_page_config(layout = 'wide')
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
 
-
 st.title(f"View Favorite Policies 🔎")
 st.write("---")
 st.write("\n \n")
 
-response = requests.get("http://web-api:4000/pol/getfav/"+ str(st.session_state["user_id"]))
+response = requests.get("http://web-api:4000/pol/favorites/"+ str(st.session_state["user_id"]))
 data = response.json()
 df = pd.DataFrame(data)
 
 col1, col2 = st.columns(2, vertical_alignment="bottom")
 
 with col1:
-    #select box of policies
     policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
     fav_choice = st.selectbox("Choose A Policy to Look at", policies_list)  
-
     with st.container(height=300):
         st.markdown("**Policy Information**")
         num = int(fav_choice.split('.')[0])
@@ -39,9 +36,7 @@ with col1:
 with col2:
     num = int(fav_choice.split('.')[0])
     if st.button("Delete Policy"):
-        response = requests.delete(f"http://web-api:4000/pol/deletefav/{num}")
-
-
+        response = requests.delete(f"http://web-api:4000/pol/favorites/{num}")
     with st.container(height=300):
         st.markdown("**Policy Description:**")
         desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]

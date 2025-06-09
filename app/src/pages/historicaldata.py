@@ -54,7 +54,7 @@ if st.button("Apply"):
     if country:
       params['country_choice'] = country_choice
 
-    response = requests.get("http://web-api:4000/pol/getpol", params=params)
+    response = requests.get("http://web-api:4000/pol/policy_handler", params=params)
     data = response.json()
     df = pd.DataFrame(data)
     st.dataframe(df)
@@ -68,7 +68,7 @@ col1, col2 = st.columns(2)
 with col1:
   if st.button("Save"):
     returnJson = {"policy_id" : enter_id, "user_id" : 1}
-    requests.post("http://web-api:4000/pol/add_favorite", json=returnJson)
+    requests.post("http://web-api:4000/pol/favorites", json=returnJson)
 
 with col2:
   if st.button("Next Page"):
