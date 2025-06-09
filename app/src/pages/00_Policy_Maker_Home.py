@@ -195,12 +195,6 @@ with col_right:
     st.write(f"• Health Spending: {health_spending}%")
 
 
-if st.button("test database", type="primary"):
-    data = requests.get(
-        "http://web-api:4000/model/fetchData/AUDTOUSD")
-    st.write(data.text)
-
-
 if st.button("Test Policy Set", type="primary"):
     st.session_state['policy_params'] = {
         "Discount Rate": discount_rate,

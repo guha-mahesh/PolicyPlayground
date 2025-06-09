@@ -167,11 +167,12 @@ def get_predictionGDP(var_01, var_02):
 @model_routes.route("/fetchData/<var01>", methods=["GET"])
 def fetchalldata(var01):
     cursor = db.get_db().cursor()
-    query = f"SELECT mo, vals FROM {var01}"
+    query = f"SELECT mos, vals FROM {var01}"
     cursor.execute(query)
 
     rows = cursor.fetchall()
 
+    cursor.close()
     return jsonify({
         'data': rows,
 
