@@ -197,7 +197,7 @@ with col_right:
 
 if st.button("test database", type="primary"):
     data = requests.get(
-        "http://web-api:4000/model/fetchData/AUDTOUSD")
+        "http://web-api:4000/model/fetchData/JPYtoUSD")
     st.write(data.text)
 
 

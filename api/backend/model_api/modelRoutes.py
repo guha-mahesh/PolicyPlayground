@@ -169,10 +169,9 @@ def fetchalldata(var01):
     cursor = db.get_db().cursor()
     query = f"SELECT mo, vals FROM {var01}"
     cursor.execute(query)
-
     rows = cursor.fetchall()
 
-    return jsonify({
-        'data': rows,
+    db.get_db().commit()
+    cursor.close()
 
-    })
+    return jsonify(rows)
