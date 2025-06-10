@@ -11,7 +11,7 @@ import json
 
 from backend.simple.playlist import sample_playlist_data
 from ..db_connection import db
-from ..ml_models.model01_GDP import predict_gdp
+from ..ml_models.model01_GDP import train_func, predict
 from ..ml_models.model02_American import predict_sp500, predict_currency, train
 import datetime
 
@@ -138,7 +138,7 @@ def get_predictionGDP(var_01, var_02):
 
         user_features = [float(x.strip()) for x in var_01.split(',')]
 
-        prediction = predict_gdp(user_features, var_02)
+        prediction = predict(user_features, var_02)
 
         current_app.logger.info(f"prediction value returned is {prediction}")
 
@@ -170,17 +170,47 @@ def fetchalldata(var01):
     cursor.execute(query)
 
     rows = cursor.fetchall()
-
     cursor.close()
-    return jsonify({
-        'data': rows,
 
+    if rows and isinstance(rows[0], dict):
+
+        data = rows
+    else:
+
+        data = [{'mos': row[0], 'vals': row[1]} for row in rows]
+
+    return jsonify({
+        'data': data,
+    })
+
+
+@model_routes.route("/fetchData2/<var01>", methods=["GET"])
+def fetchalldata2(var01):
+    cursor = db.get_db().cursor()
+    query = f"SELECT country, mos, vals FROM {var01}"
+    cursor.execute(query)
+
+    rows = cursor.fetchall()
+    cursor.close()
+
+    if rows and isinstance(rows[0], dict):
+
+        data = rows
+    else:
+
+        data = [{'country': row[0], 'mos': row[1], 'vals': row[2]}
+                for row in rows]
+
+    return jsonify({
+        'data': data,
     })
 
 
 @model_routes.route("/trainModels", methods=["POST"])
 def trainModels():
     results = train()
+    results2 = train_func()
+
     return jsonify({
         'status': 'success',
         'message': 'Models trained successfully',
