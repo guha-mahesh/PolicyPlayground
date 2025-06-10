@@ -2,342 +2,295 @@ import numpy as np
 import requests
 import pandas as pd
 import os
-from dotenv import load_dotenv
-import yfinance as yf
 from datetime import datetime, timedelta
 
 pd.set_option('display.max_columns', None)
 
 
-def monthly_sp500():
-    """Fetch S&P 500 data with CSV caching"""
-    csv_file = "data/sp500_monthly.csv"
+sp500_coefficients_data = None
+currency_models = None
+merged_df = None
 
-    if os.path.exists(csv_file):
 
-        df = pd.read_csv(csv_file)
-        df['Date'] = pd.to_datetime(df['Date'])
-        df['month'] = pd.to_datetime(df['month']).dt.to_period('M')
+def train():
+    """
+    Main training function that loads all data from database API and trains models.
+
+    Returns:
+        dict: Contains 'sp500_coefficients', 'currency_models', and 'merged_df'
+    """
+    global sp500_coefficients_data, currency_models, merged_df
+
+    def fetch_from_api(table_name):
+        """Fetch data from database API"""
+        url = f"http://web-api:4000/model/fetchData/{table_name}"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()['data']
+            df = pd.DataFrame(data, columns=['mos', 'vals'])
+            df['vals'] = pd.to_numeric(df['vals'], errors='coerce')
+            return df
+        else:
+            raise Exception(f"Failed to fetch {table_name} from API")
+
+    def load_sp500_data():
+        """Load S&P 500 data from API"""
+        df = fetch_from_api("sp500")
+        df['month'] = pd.to_datetime(df['mos']).dt.to_period('M')
+        df['close'] = df['vals']
         return df[['month', 'close']]
 
-    sp500 = yf.Ticker("^GSPC")
-    df = sp500.history(start="2003-01-01", end="2024-02-01", interval="1mo")
-    df = df.reset_index()
-    df['Date'] = pd.to_datetime(df['Date'])
-    df['month'] = df['Date'].dt.to_period('M')
+    def load_fred_data(table_name):
+        """Load FRED data from API"""
+        df = fetch_from_api(table_name)
+        df['date'] = pd.to_datetime(df['mos'])
 
-    df_final = pd.DataFrame({
-        'Date': df['Date'],
-        'month': df['month'],
-        'close': df['Close']
-    })
+        value_column_map = {
+            "discountrate": "DiscountRate_value",
+            "treasurysecurities": "TreasurySecurities_value",
+            "FRBS": "FedReserveBalanceSheet_value"
+        }
+        value_column = value_column_map.get(table_name)
+        df[value_column] = df['vals']
 
-    os.makedirs("data", exist_ok=True)
-    df_final.to_csv(csv_file, index=False)
+        return df[['date', value_column]].dropna()
 
-    return df_final[['month', 'close']]
+    def load_currency_data(table_name):
+        """Load currency data from API"""
+        df = fetch_from_api(table_name)
+        df["month"] = pd.to_datetime(df['mos']).dt.to_period("M")
+        df['exchange_value'] = df['vals']
+        return df[['month', 'exchange_value']]
 
+    def clean_data(df):
+        df['date'] = pd.to_datetime(df['date']).dt.to_period('M')
 
-# Load environment variables
-dotenv_path = "/Users/guhamahesh/VSCODE/dialogue/FinFluxes/api/.env"
-load_dotenv(dotenv_path)
-api_key = os.getenv("FRED_API_KEY")
+        return df
 
+    def standardize_dates(dfs):
+        new_dfs = []
+        cutoff_date = pd.Period('2003-01', freq='M')
+        for df in dfs:
+            subset = df[df['date'] >= cutoff_date]
+            new_dfs.append(subset)
+        return new_dfs
 
-def interestRate(type):
-    """Fetch interest rate data with CSV caching"""
-    csv_file = f"data/{type.replace(' ', '_')}_data.csv"
+    def find_averages(df):
+        column_name = df.columns[1]
+        start_date = pd.Period('2003-01', freq='M')
+        end_date = pd.Period('2024-01', freq='M')
 
-    if os.path.exists(csv_file):
+        months = []
+        averages = []
 
-        df = pd.read_csv(csv_file)
-        return df.dropna(subset=[f'{type}_value'])
+        current_period = start_date
+        while current_period <= end_date:
+            month_data = df[df['date'] == current_period]
+            avg_value = month_data[column_name].mean(
+            ) if not month_data.empty else 0
+            months.append(current_period)
+            averages.append(avg_value)
+            current_period += 1
 
-    map = {"federalfundsrate": "FEDFUNDS", "DiscountRate": "INTDSRUSM193N",
-           "TreasurySecurities": "WSHOMCB", "FedReserveBalanceSheet": "WALCL"}
+        result_df = pd.DataFrame({
+            'month': months,
+            f'average_{column_name}': averages
+        })
+        return result_df
 
-    code = map[type.replace(" ", "")]
-    url = f"https://api.stlouisfed.org/fred/series/observations?series_id={code}&api_key={api_key}&file_type=json"
-    response = requests.get(url)
-    jsondata = response.json()
-    df = pd.DataFrame(jsondata["observations"])
-    df["value"] = pd.to_numeric(df["value"], errors="coerce")
-    df = df.rename(columns={'value': f'{type}_value'})
+    def normalize_full_df(df):
+        df = df.copy()
+        for col in df.columns:
+            if col == "month":
+                continue
 
-    os.makedirs("data", exist_ok=True)
-    df.to_csv(csv_file, index=False)
+            values = df[col]
+            if (values >= 0).all() and values.max() > 1000:
+                values = np.log1p(values)
 
-    return df.dropna(subset=[f'{type}_value'])
+            std = values.std()
+            if std != 0:
+                df[col] = (values - values.mean()) / std
+            else:
+                df[col] = 0
+        return df
 
+    def regress(X, y):
+        dot1 = np.dot(X.T, X)
+        inv = np.linalg.inv(dot1)
+        dot2 = np.dot(X.T, y)
+        return np.dot(inv, dot2)
 
-def conversions(currency):
-    """Fetch currency conversion data with CSV caching"""
-    safe_currency_name = currency.replace(
-        " ", "_").replace("(", "").replace(")", "")
-    csv_file = f"data/currency_{safe_currency_name}_data.csv"
+    def prepare_data():
 
-    if os.path.exists(csv_file):
+        fred_tables = ["discountrate", "treasurysecurities", "FRBS"]
+        dfs_to_concat = []
 
-        df = pd.read_csv(csv_file)
-        df["month"] = pd.to_datetime(df["month"]).dt.to_period("M")
-        return df[["month", "exchange_value"]]
+        for table in fred_tables:
+            dfs_to_concat.append(load_fred_data(table))
 
-    currency_fred_codes = {
-        "Euro (EUR)": "DEXUSEU",
-        "British Pound (GBP)": "DEXUSUK",
-        "Japanese Yen (JPY)": "DEXJPUS",
-        "Canadian Dollar (CAD)": "DEXCAUS",
-        "Swiss Franc (CHF)": "DEXSZUS",
-        "Australian Dollar (AUD)": "DEXUSAL",
-        "Chinese Yuan (CNY)": "DEXCHUS",
-        "Indian Rupee (INR)": "DEXINUS",
-        "Mexican Peso (MXN)": "DEXMXUS",
-        "Brazilian Real (BRL)": "DEXBZUS",
-        "Russian Ruble (RUB)": "DEXRUS",
-        "South Korean Won (KRW)": "DEXKOUS",
-        "Swedish Krona (SEK)": "DEXSDUS",
-        "Norwegian Krone (NOK)": "DEXNOUS",
-        "Singapore Dollar (SGD)": "DEXSIUS",
-        "Hong Kong Dollar (HKD)": "DEXHKUS",
-        "New Zealand Dollar (NZD)": "DEXUSNZ",
-        "South African Rand (ZAR)": "DEXSFUS",
-        "Turkish Lira (TRY)": "DEXTUUS",
+        dfs = [clean_data(df) for df in dfs_to_concat]
+        new_dfs = standardize_dates(dfs)
 
+        final_dfs = []
+        for df in new_dfs:
+            final_dfs.append(find_averages(df))
+
+        sandp = load_sp500_data()
+
+        merged_df = final_dfs[0]
+        for df in final_dfs[1:]:
+            merged_df = pd.merge(merged_df, df, how="inner", on="month")
+        merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
+
+        merged_df = merged_df[merged_df['average_TreasurySecurities_value'] != 0]
+        merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
+
+        return merged_df
+
+    def train_sp500_model(merged_df):
+        data = normalize_full_df(merged_df)
+
+        X = np.ones((data.shape[0], 1))
+        X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
+        y = np.array(data['close'])
+
+        selected_lags = [1, 2, 3, 6, 9]
+        max_lag = max(selected_lags)
+
+        X = X[max_lag:]
+
+        for lag in selected_lags:
+            X = np.column_stack((X, y[max_lag-lag:-lag]))
+
+        y = y[max_lag:]
+
+        coefficients = regress(X, y)
+        return coefficients, data
+
+    def train_currency_model(merged_df, currency_data):
+        currency_merged = pd.merge(
+            merged_df, currency_data[['month', 'exchange_value']],
+            how="inner", on="month"
+        ).dropna()
+        currency_normalized = normalize_full_df(currency_merged)
+
+        adjusted = currency_normalized.drop(
+            columns=['close', 'exchange_value', 'month'])
+        X_currency = np.ones((adjusted.shape[0], 1))
+        X_currency = np.column_stack((X_currency, adjusted.values))
+        y_currency = np.array(currency_normalized['exchange_value'])
+
+        selected_lags = [1, 2, 3, 6, 9]
+        max_lag = max(selected_lags)
+        X_currency = X_currency[max_lag:]
+
+        for lag in selected_lags:
+            X_currency = np.column_stack(
+                (X_currency, y_currency[max_lag-lag:-lag]))
+
+        y_currency = y_currency[max_lag:]
+
+        coefficients = regress(X_currency, y_currency)
+        return coefficients
+
+    merged_df = prepare_data()
+
+    sp500_coefficients, normalized_data = train_sp500_model(merged_df)
+    sp500_coefficients_data = sp500_coefficients
+
+    currency_tables = {
+        "Euro": "EUROTOUSD",
+        "Japanese Yen": "JPYtoUSD",
+        "Australian Dollar": "AUDtoUSD",
+        "Chinese Yuan": "YuantoUSD",
+        "British Pound": "GBPtoUSD"
     }
 
-    code = currency_fred_codes[currency]
-    url = f"https://api.stlouisfed.org/fred/series/observations?series_id={code}&api_key={api_key}&file_type=json"
-    response = requests.get(url)
-    jsondata = response.json()
-    df = pd.DataFrame(jsondata["observations"])
+    currency_models = {}
+    for name, table in currency_tables.items():
+        try:
+            currency_data = load_currency_data(table).iloc[:-1]
+            coefficients = train_currency_model(merged_df, currency_data)
+            currency_models[name] = coefficients
+        except Exception as e:
+            print(f"Error training {name} model: {e}")
 
-    df["exchange_value"] = pd.to_numeric(df["value"], errors="coerce")
-    df = df.dropna(subset=["exchange_value"])
-    df["month"] = pd.to_datetime(df["date"]).dt.to_period("M")
-    df = df.drop_duplicates(subset="month", keep="first")
-    df = df[(df["month"] >= "2003-01") & (df["month"] <= "2024-02")]
+    api_base_url = "http://web-api:4000/model"
 
-    result_df = df[["month", "exchange_value"]]
-
-    os.makedirs("data", exist_ok=True)
-    result_df_to_save = result_df.copy()
-    result_df_to_save["month"] = result_df_to_save["month"].astype(str)
-    result_df_to_save.to_csv(csv_file, index=False)
-
-    return result_df
-
-
-def clean_data(df):
-    df['date'] = pd.to_datetime(df['date']).dt.to_period('M')
-    df = df.iloc[:, 2:4]
-    return df
-
-
-def standardize_dates(dfs):
-    new_dfs = []
-    cutoff_date = pd.Period('2003-01', freq='M')
-    for df in dfs:
-        subset = df[df['date'] >= cutoff_date]
-        new_dfs.append(subset)
-    return new_dfs
-
-
-def find_averages(df):
-    column_name = df.columns[1]
-    start_date = pd.Period('2003-01', freq='M')
-    end_date = pd.Period('2024-01', freq='M')
-
-    months = []
-    averages = []
-
-    current_period = start_date
-    while current_period <= end_date:
-        month_data = df[df['date'] == current_period]
-        avg_value = month_data[column_name].mean(
-        ) if not month_data.empty else 0
-        months.append(current_period)
-        averages.append(avg_value)
-        current_period += 1
-
-    result_df = pd.DataFrame({
-        'month': months,
-        f'average_{column_name}': averages
-    })
-    return result_df
-
-
-def normalize_full_df(df):
-    df = df.copy()
-    for col in df.columns:
-        if col == "month":
-            continue
-
-        values = df[col]
-        if (values >= 0).all() and values.max() > 1000:
-            values = np.log1p(values)
-
-        std = values.std()
-        if std != 0:
-            df[col] = (values - values.mean()) / std
-        else:
-            df[col] = 0
-    return df
-
-
-def regress(X, y):
-    dot1 = np.dot(X.T, X)
-    inv = np.linalg.inv(dot1)
-    dot2 = np.dot(X.T, y)
-    return np.dot(inv, dot2)
-
-
-def prepare_data():
-
-    # FRED code map
-    map = {
-        "DiscountRate": "INTDSRUSM193N",
-        "TreasurySecurities": "WSHOMCB",
-        "FedReserveBalanceSheet": "WALCL"
+    sp500_payload = {
+        "model_name": "sp500",
+        "coefficients": sp500_coefficients_data.tolist()
     }
 
-    dfs_to_concat = []
-    for key in map.keys():
-        dfs_to_concat.append(interestRate(key))
+    response = requests.post(
+        f"{api_base_url}/storeWeights", json=sp500_payload)
+    if response.status_code != 200:
+        print(f"Failed to store S&P 500 weights: {response.text}")
 
-    dfs = [clean_data(df) for df in dfs_to_concat]
-    new_dfs = standardize_dates(dfs)
+    for currency_name, coefficients in currency_models.items():
+        currency_payload = {
+            "model_name": f"currency_{currency_name}",
+            "coefficients": coefficients.tolist()
+        }
 
-    final_dfs = []
-    for df in new_dfs:
-        final_dfs.append(find_averages(df))
+        response = requests.post(
+            f"{api_base_url}/storeWeights", json=currency_payload)
+        if response.status_code != 200:
+            print(f"Failed to store {currency_name} weights: {response.text}")
 
-    sandp = monthly_sp500()
-
-    # Merge all data
-    merged_df = final_dfs[0]
-    for df in final_dfs[1:]:
-        merged_df = pd.merge(merged_df, df, how="inner", on="month")
-    merged_df = pd.merge(merged_df, sandp, how="inner", on="month")
-
-    # Apply filters
-    merged_df = merged_df[merged_df['average_TreasurySecurities_value'] != 0]
-    merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
-
-    return merged_df
+    return {
+        "status": "success",
+        "models_trained": ["sp500"] + [f"currency_{name}" for name in currency_models.keys()]
+    }
 
 
-def train_sp500_model(merged_df):
-    """Train S&P 500 prediction model with multiple lags"""
-    data = normalize_full_df(merged_df)
-
-    X = np.ones((data.shape[0], 1))
-    X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
-    y = np.array(data['close'])
-
-    selected_lags = [1, 2, 3, 6, 9]
-    max_lag = max(selected_lags)
-
-    X = X[max_lag:]
-
-    for lag in selected_lags:
-        X = np.column_stack((X, y[max_lag-lag:-lag]))
-
-    y = y[max_lag:]
-
-    coefficients = regress(X, y)
-    return coefficients, data
-
-
-def train_currency_model(merged_df, currency_data):
-    """Train currency prediction model"""
-    currency_merged = pd.merge(
-        merged_df, currency_data, how="inner", on="month").dropna()
-    currency_normalized = normalize_full_df(currency_merged)
-
-    # Create feature matrix
-    adjusted = currency_normalized.drop(
-        columns=['close', 'exchange_value', 'month'])
-    X_currency = np.ones((adjusted.shape[0], 1))
-    X_currency = np.column_stack((X_currency, adjusted.values))
-    y_currency = np.array(currency_normalized['exchange_value'])
-
-    selected_lags = [1, 2, 3, 6, 9]
-    max_lag = max(selected_lags)
-    X_currency = X_currency[max_lag:]
-
-    for lag in selected_lags:
-        X_currency = np.column_stack(
-            (X_currency, y_currency[max_lag-lag:-lag]))
-
-    y_currency = y_currency[max_lag:]
-
-    coefficients = regress(X_currency, y_currency)
-    return coefficients
-
-
-sp500_coefficients_data = None
-currencies = None
-
-merged_df = prepare_data()
-
-
-sp500_coefficients, normalized_data = train_sp500_model(merged_df)
-sp500_coefficients_data = sp500_coefficients
-
-currencies = {
-    "Euro": "Euro (EUR)",
-    "Japanese Yen": "Japanese Yen (JPY)",
-    "Australian Dollar": "Australian Dollar (AUD)",
-    "Chinese Yuan": "Chinese Yuan (CNY)",
-    "British Pound": "British Pound (GBP)"
-}
-
-currency_models = {}
-for name, code in currencies.items():
-    try:
-        currency_data = conversions(code).iloc[:-1]
-        coefficients = train_currency_model(merged_df, currency_data)
-        currency_models[name] = coefficients
-
-    except Exception as e:
-        print(f"Error training {name} model: {e}")
-currencies = currency_models
-
-
-def predict_sp500(user_features, coefficients=sp500_coefficients_data):
+def predict_sp500(user_features, coefficients=None):
     """
-    API prediction function
+    Predict S&P 500 closing price
 
     Args:
-        user_features: [discount_rate, treasury_securities, fed_balance_sheet] - user inputs
-        coefficients: Pre-trained model coefficients
+        user_features: [discount_rate, treasury_securities, fed_balance_sheet]
+        coefficients: Pre-trained model coefficients (fetches from API if not provided)
 
     Returns:
         float: Predicted S&P 500 closing price
     """
 
+    discountrate_mean = 0.9019337017
+    discountrate_std = 0.8099102255
+    treasurysecurities_mean = 14.1636439055
+    treasurysecurities_std = 0.6746410494
+    fedreservebalancesheet_mean = 15.2761459806
+    fedreservebalancesheet_std = 0.4398088852
+    close_mean = 7.6942511462
+    close_std = 0.4791105372
+
+    if coefficients is None:
+        response = requests.get("http://web-api:4000/model/getWeights/sp500")
+        if response.status_code == 200:
+            coefficients = np.array(response.json()['coefficients'])
+        else:
+            raise ValueError("Failed to fetch S&P 500 model weights from API")
+
+    url = "http://web-api:4000/model/fetchData/sp500"
+    response = requests.get(url)
+    data = response.json()['data']
+    sp500_df = pd.DataFrame(data, columns=['mos', 'vals'])
+    sp500_df['Date'] = pd.to_datetime(sp500_df['mos'])
+    sp500_df['close'] = pd.to_numeric(sp500_df['vals'])
+    sp500_df = sp500_df.sort_values('Date')
+
     current_date = datetime.now()
     months_back = [1, 2, 3, 6, 9]
-    target_dates = []
-    for months in months_back:
-        days_back = months * 30
-        target_date = current_date - timedelta(days=days_back)
-        target_dates.append(target_date)
-
-    earliest_date = min(target_dates) - timedelta(days=10)
-
-    sp500 = yf.Ticker("^GSPC")
-    df = sp500.history(start=earliest_date.strftime("%Y-%m-%d"),
-                       end=current_date.strftime("%Y-%m-%d"))
-
     lag_values = []
-    for i, target_date in enumerate(target_dates):
-        months = months_back[i]
-        available_data = df[df.index.date <= target_date.date()]
+
+    for months in months_back:
+        target_date = current_date - timedelta(days=months*30)
+        available_data = sp500_df[sp500_df['Date'] <= target_date]
 
         if not available_data.empty:
-            closest_date = available_data.index[-1]
-            closing_price = available_data.loc[closest_date, 'Close']
+            closing_price = available_data.iloc[-1]['close']
             lag_values.append(closing_price)
         else:
             lag_values.append(4000)
@@ -350,75 +303,100 @@ def predict_sp500(user_features, coefficients=sp500_coefficients_data):
     for lag_value in lag_values:
         X = np.column_stack((X, lag_value))
 
-    for i in range(1, 4):
-        if X[0, i] >= 0 and X[0, i] > 1000:
-            X[0, i] = np.log1p(X[0, i])
+    if X[0, 2] > 1000:
+        X[0, 2] = np.log1p(X[0, 2])
+    if X[0, 3] > 1000:
+        X[0, 3] = np.log1p(X[0, 3])
 
-    transformed_df = merged_df.copy()
-    for col in ['average_TreasurySecurities_value']:
-        if (transformed_df[col] >= 0).all() and transformed_df[col].max() > 1000:
-            transformed_df[col] = np.log1p(transformed_df[col])
-    # Normalize each feature using training stats
-    X[0, 1] = (X[0, 1] - transformed_df['average_DiscountRate_value'].mean()
-               ) / transformed_df['average_DiscountRate_value'].std()
-    X[0, 2] = (X[0, 2] - transformed_df['average_TreasurySecurities_value'].mean()
-               ) / transformed_df['average_TreasurySecurities_value'].std()
-    X[0, 3] = (X[0, 3] - transformed_df['average_FedReserveBalanceSheet_value'].mean()
-               ) / transformed_df['average_FedReserveBalanceSheet_value'].std()
+    X[0, 1] = (X[0, 1] - discountrate_mean) / discountrate_std
+    X[0, 2] = (X[0, 2] - treasurysecurities_mean) / treasurysecurities_std
+    X[0, 3] = (X[0, 3] - fedreservebalancesheet_mean) / \
+        fedreservebalancesheet_std
 
-    # Normalize lag values
-    sp500_mean = transformed_df['close'].mean()
-    sp500_std = transformed_df['close'].std()
     for i in range(4, 9):
-        X[0, i] = (X[0, i] - sp500_mean) / sp500_std
+        X[0, i] = np.log1p(X[0, i])
+        X[0, i] = (X[0, i] - close_mean) / close_std
 
     prediction_normalized = np.dot(X, coefficients)[0]
-    prediction_real = (prediction_normalized * sp500_std) + sp500_mean
+
+    prediction_log = (prediction_normalized * close_std) + close_mean
+    prediction_real = np.expm1(prediction_log)
 
     return prediction_real
 
 
-def predict_currency(user_features, currency_models=currencies):
+def predict_currency(user_features, currency_models_dict=None):
     """
-    API prediction function for all currencies
+    Predict currency exchange rates
 
     Args:
-        user_features: [discount_rate, treasury_securities, fed_balance_sheet] - user inputs
-        currency_models: Dictionary of trained currency model coefficients
+        user_features: [discount_rate, treasury_securities, fed_balance_sheet]
+        currency_models_dict: Dictionary of trained currency models (fetches from API if not provided)
 
     Returns:
-        dict: Predicted currency exchange rates for all currencies
+        dict: Predicted exchange rates for all currencies
     """
 
-    currencies_map = {
-        "Euro": "Euro (EUR)",
-        "Japanese Yen": "Japanese Yen (JPY)",
-        "Australian Dollar": "Australian Dollar (AUD)",
-        "Chinese Yuan": "Chinese Yuan (CNY)",
-        "British Pound": "British Pound (GBP)"
+    discountrate_mean = 0.9019337017
+    discountrate_std = 0.8099102255
+    treasurysecurities_mean = 14.1636439055
+    treasurysecurities_std = 0.6746410494
+    fedreservebalancesheet_mean = 15.2761459806
+    fedreservebalancesheet_std = 0.4398088852
+
+    currency_stats = {
+        "Euro": {"mean": 1.2117845304, "std": 0.1241594655},
+        "Japanese Yen": {"mean": 106.3756353591, "std": 17.2994065813},
+        "Australian Dollar": {"mean": 0.8100160221, "std": 0.1309792677},
+        "Chinese Yuan": {"mean": 6.6038895028, "std": 0.3165736282},
+        "British Pound": {"mean": 1.4294618785, "std": 0.1541461908}
+    }
+
+    if currency_models_dict is None:
+        currency_models_dict = {}
+        currencies = ["Euro", "Japanese Yen",
+                      "Australian Dollar", "Chinese Yuan", "British Pound"]
+
+        for currency in currencies:
+            response = requests.get(
+                f"http://web-api:4000/model/getWeights/currency_{currency}")
+            if response.status_code == 200:
+                currency_models_dict[currency] = np.array(
+                    response.json()['coefficients'])
+            else:
+                print(f"Warning: Could not fetch weights for {currency}")
+
+    currency_table_map = {
+        "Euro": "EUROTOUSD",
+        "Japanese Yen": "JPYtoUSD",
+        "Australian Dollar": "AUDtoUSD",
+        "Chinese Yuan": "YuantoUSD",
+        "British Pound": "GBPtoUSD"
     }
 
     predictions = {}
 
-    for currency_name, currency_code in currencies_map.items():
-        if currency_name not in currency_models:
+    for currency_name, table_name in currency_table_map.items():
+        if currency_name not in currency_models_dict:
             continue
 
-        currency_coefficients = currency_models[currency_name]
+        currency_coefficients = currency_models_dict[currency_name]
+
+        url = f"http://web-api:4000/model/fetchData/{table_name}"
+        response = requests.get(url)
+        data = response.json()['data']
+        historical_currency_data = pd.DataFrame(data, columns=['mos', 'vals'])
+        historical_currency_data["month"] = pd.to_datetime(
+            historical_currency_data["mos"]).dt.to_period("M")
+        historical_currency_data['exchange_value'] = pd.to_numeric(
+            historical_currency_data['vals'])
 
         current_date = datetime.now()
         months_back = [1, 2, 3, 6, 9]
-        target_dates = []
-        for months in months_back:
-            days_back = months * 30
-            target_date = current_date - timedelta(days=days_back)
-            target_dates.append(target_date)
-
-        historical_currency_data = conversions(currency_code)
-
         lag_values = []
-        for i, target_date in enumerate(target_dates):
-            months = months_back[i]
+
+        for months in months_back:
+            target_date = current_date - timedelta(days=months*30)
             target_period = pd.Period(target_date.strftime('%Y-%m'), freq='M')
 
             available_data = historical_currency_data[historical_currency_data['month'] <= target_period]
@@ -427,7 +405,6 @@ def predict_currency(user_features, currency_models=currencies):
                 closest_rate = available_data['exchange_value'].iloc[-1]
                 lag_values.append(closest_rate)
             else:
-
                 lag_values.append(1.0)
 
         X = np.ones([1])
@@ -438,29 +415,19 @@ def predict_currency(user_features, currency_models=currencies):
         for lag_value in lag_values:
             X = np.column_stack((X, lag_value))
 
-        # Apply same transformations as in prepare_data() and train_currency_model()
-        for i in range(1, 4):
-            if X[0, i] >= 0 and X[0, i] > 1000:
-                X[0, i] = np.log1p(X[0, i])
+        if X[0, 2] > 1000:
+            X[0, 2] = np.log1p(X[0, 2])
+        if X[0, 3] > 1000:
+            X[0, 3] = np.log1p(X[0, 3])
 
-        # Now normalize the entire feature vector (same as normalize_full_df does)
-        # Get the stats from your transformed training data
-        transformed_df = merged_df.copy()
-        for col in ['average_TreasurySecurities_value']:
-            if (transformed_df[col] >= 0).all() and transformed_df[col].max() > 1000:
-                transformed_df[col] = np.log1p(transformed_df[col])
+        X[0, 1] = (X[0, 1] - discountrate_mean) / discountrate_std
+        X[0, 2] = (X[0, 2] - treasurysecurities_mean) / treasurysecurities_std
+        X[0, 3] = (X[0, 3] - fedreservebalancesheet_mean) / \
+            fedreservebalancesheet_std
 
-        # Normalize each feature using training stats
-        X[0, 1] = (X[0, 1] - transformed_df['average_DiscountRate_value'].mean()
-                   ) / transformed_df['average_DiscountRate_value'].std()
-        X[0, 2] = (X[0, 2] - transformed_df['average_TreasurySecurities_value'].mean()
-                   ) / transformed_df['average_TreasurySecurities_value'].std()
-        X[0, 3] = (X[0, 3] - transformed_df['average_FedReserveBalanceSheet_value'].mean()
-                   ) / transformed_df['average_FedReserveBalanceSheet_value'].std()
+        currency_mean = currency_stats[currency_name]["mean"]
+        currency_std = currency_stats[currency_name]["std"]
 
-        # Normalize lag values using currency stats
-        currency_mean = historical_currency_data['exchange_value'].mean()
-        currency_std = historical_currency_data['exchange_value'].std()
         for i in range(4, 9):
             X[0, i] = (X[0, i] - currency_mean) / currency_std
 

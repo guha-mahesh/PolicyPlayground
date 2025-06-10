@@ -16,6 +16,8 @@ services:
     volumes: [ "./api:/apicode" ]
     ports:
       - 4000:4000
+    env_file:
+      - ./api/.env
     environment:
       - FRED_API_KEY=8bfee1b8f2dcdbe90b98a448fd886383
 

@@ -1020,3 +1020,89 @@ if __name__ == "__main__":
     print("- s&p_500_model_qq_plot_of_residuals.html")
     print("- [currency]_diagnostics.html (for each currency)")
     print("- [currency]_model_qq_plot_of_residuals.html (for each currency)")
+
+# Apply existing filters
+merged_df = merged_df[merged_df['average_TreasurySecurities_value'] > -1]
+# Add this code after the line where you filter merged_df and before plot_later = merged_df.copy()
+
+print("\n===== NORMALIZATION STATISTICS FOR PREDICT FUNCTIONS =====")
+print("# Copy these values to your predict functions")
+print("# These statistics are calculated AFTER filtering but BEFORE normalization")
+print()
+
+# Process each column the same way normalize_full_df does
+for col in merged_df.columns:
+    if col == "month":
+        continue
+
+    values = merged_df[col].copy()
+    original_mean = values.mean()
+    original_std = values.std()
+
+    # Check if log transformation will be applied
+    if (values >= 0).all() and values.max() > 1000:
+        # Log transformation will be applied
+        log_values = np.log1p(values)
+        final_mean = log_values.mean()
+        final_std = log_values.std()
+
+        print(f"# {col} - LOG TRANSFORMED")
+        print(
+            f"{col.replace('average_', '').replace('_value', '').lower()}_mean = {final_mean:.10f}")
+        print(
+            f"{col.replace('average_', '').replace('_value', '').lower()}_std = {final_std:.10f}")
+        print(
+            f"# Original values: mean={original_mean:.2f}, std={original_std:.2f}, max={values.max():.2f}")
+        print()
+    else:
+        # No log transformation
+        print(f"# {col} - NO LOG TRANSFORM")
+        print(
+            f"{col.replace('average_', '').replace('_value', '').lower()}_mean = {original_mean:.10f}")
+        print(
+            f"{col.replace('average_', '').replace('_value', '').lower()}_std = {original_std:.10f}")
+        print(f"# Max value: {values.max():.2f}")
+        print()
+
+print("# For S&P 500 predictions, you'll also need these after applying lags:")
+# Normalize the data to get the S&P 500 normalized values
+data_normalized = normalize_full_df(merged_df)
+sp500_normalized = data_normalized['close'].values
+
+# After applying lag (removing first value)
+sp500_after_lag = sp500_normalized[1:]
+print(f"sp500_normalized_after_lag_mean = {sp500_after_lag.mean():.10f}")
+print(f"sp500_normalized_after_lag_std = {sp500_after_lag.std():.10f}")
+
+print("\n# Currency statistics (for each currency after merging and normalization):")
+# Process each currency
+for name, currency_df in currency_data.items():
+    # Merge with main dataframe
+    currency_merged = pd.merge(
+        merged_df, currency_df, how="inner", on="month").dropna()
+
+    # Check exchange_value column
+    exchange_vals = currency_merged['exchange_value'].copy()
+
+    if (exchange_vals >= 0).all() and exchange_vals.max() > 1000:
+        # Log transformation will be applied
+        log_exchange = np.log1p(exchange_vals)
+        print(f"\n# {name} - LOG TRANSFORMED")
+        print(f"{name.lower().replace(' ', '_')}_mean = {log_exchange.mean():.10f}")
+        print(f"{name.lower().replace(' ', '_')}_std = {log_exchange.std():.10f}")
+        print(
+            f"# Original: mean={exchange_vals.mean():.2f}, max={exchange_vals.max():.2f}")
+    else:
+        # No log transformation
+        print(f"\n# {name} - NO LOG TRANSFORM")
+        print(f"{name.lower().replace(' ', '_')}_mean = {exchange_vals.mean():.10f}")
+        print(f"{name.lower().replace(' ', '_')}_std = {exchange_vals.std():.10f}")
+        print(f"# Max value: {exchange_vals.max():.2f}")
+
+print("\n======================================================")
+print("# USAGE IN PREDICT FUNCTION:")
+print("# 1. For values > 1000, apply log1p first: value = np.log1p(raw_value)")
+print("# 2. Then normalize: normalized = (value - mean) / std")
+print("======================================================\n")
+
+plot_later = merged_df.copy()

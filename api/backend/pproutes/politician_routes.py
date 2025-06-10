@@ -32,6 +32,7 @@ def get_id(polName):
 
     return jsonify(id), 200
 
+
 @politician.route("/newPolitician", methods=["POST"])
 def new_politician():
     conn = db.get_db()
@@ -58,3 +59,33 @@ def new_politician():
     conn.commit()
     cursor.close()
     return jsonify({"message": "Note created successfully", "polID": polId}, 201)
+
+
+@politician.route("/savePolicy", methods=["POST"])
+def savePolicy():
+    data = request.get_json()
+
+    discountRate = data.get('discountRate')
+    FederalReserveBalanceSheet = data.get('federalReserveBalanceSheet')
+    TreasurySecurities = data.get('treasurySecurities')
+    MillitarySpending = data.get('millitarySpending')
+    EducationSpending = data.get('educationSpending')
+    HealthSpending = data.get('healthSpending')
+    Country = data.get('country')
+    SP500 = data.get('SP500')
+    GDP = data.get('GDP')
+
+    cursor = db.get_db().cursor()
+
+    cursor.execute("""
+            INSERT INTO SavedPolicy 
+            (discountRate, FederalReserveBalanceSheet, 
+             TreasurySecurities, HealthSpending, MillitarySpending, 
+             EducationSpending, Country, SP500, GDP)
+            VALUES  (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (discountRate, FederalReserveBalanceSheet,
+              TreasurySecurities, HealthSpending, MillitarySpending,
+              EducationSpending, Country, SP500, GDP))
+    db.get_db().commit()
+    cursor.close()
+    return jsonify({'message': 'Policy saved successfully'}), 200
