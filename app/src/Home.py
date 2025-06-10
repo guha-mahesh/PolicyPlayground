@@ -36,16 +36,19 @@ SideBarLinks(show_home=True)
 # set the title of the page and provide a simple prompt.
 logger.info("Loading the Home page of the app")
 st.title('Policy Playground')
-st.write('\n\n')
+st.write('\n')
 st.write("### By: Pushin' Policy")
 st.write('\n')
-st.write('#### HI! As which user would you like to log in?')
+st.write('#### Choose a User to Login as:')
 
 # For each of the user personas for which we are implementing
 # functionality, we put a button on the screen that the user
 # can click to MIMIC logging in as that mock user.
-
-if st.button("Act as Sun Yue, a  Policy Maker",
+st.write('\n\n')
+makers_dict = {"Sun Yue" : 1, "Dillon Brooks" : 2, "Gerrard James" : 3}
+makers = ["Sun Yue", "Dillon Brooks", "Gerrard James"]
+maker = st.selectbox("Choose a User:", makers)
+if st.button('Policy Maker Login',
              type='primary',
              use_container_width=True):
     # when user clicks the button, they are now considered authenticated
@@ -53,8 +56,8 @@ if st.button("Act as Sun Yue, a  Policy Maker",
     # we set the role of the current user
     st.session_state['role'] = 'Policy Maker'
     st.session_state['nationality'] = 'United States'
-    st.session_state['first_name'] = 'Sun'
-    st.session_state['user_id'] = '3'
+    st.session_state['first_name'] = maker
+    st.session_state['user_id'] = makers_dict[maker]
     # we add the first name of the user (so it can be displayed on
     # subsequent pages).
     # st.session_state['first_name'] = 'John'
@@ -63,25 +66,39 @@ if st.button("Act as Sun Yue, a  Policy Maker",
     logger.info("Logging in as Policy Maker Persona")
     st.switch_page('pages/00_Policy_Maker_Home.py')
 
-if st.button('Act as Andrew Thornton, an Economist',
+st.write('\n\n')
+
+econ_dict = {"Andrew Thrnton" : 4, "Ryan Gurtings" : 5, "Bob" : 6}
+econs = ["Andrew Tornton", "Ryan Gurtings", "Bob"]
+econ = st.selectbox("Choose a User:", econs)
+if st.button('Economist Login',
              type='primary',
              use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'economist'
-    st.session_state["user_id"] = 1
+    st.session_state["user_id"] = makers_dict[maker]
+    st.session_state['first_name'] = econ
     logger.info("Logging in as Political Strategy Advisor Persona")
     st.switch_page('pages/historicaldata.py')
 
+st.write('\n\n')
 
-if st.button('Act as Eleanore Goosens, a poltical lobbyist.', type='primary',  use_container_width=True):
+lobby_dict = {"Eleanore Goosens" : 7, "User 2" : 8, "User 3" : 9}
+lobbys = ["Eleanore  Goosens", "User 2", "User 3"]
+lobby = st.selectbox("Choose a User:", lobbys)
+if st.button('Lobbyist Login', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'Lobbyist'
-    st.session_state['first_name'] = 'Eleanor'
-    st.session_state['user_id'] = 2
+    st.session_state['first_name'] = lobby
+    st.session_state['user_id'] = lobby_dict[lobby]
     st.session_state['nationality'] = 'United States'
     st.switch_page('pages/40_Lobbyist.py')
 
-if st.button('Act as System Admin', type='primary',  use_container_width=True):
+st.write("\n\n\n\n\n")
+st.write('\n')
+st.write('\n')
+
+if st.button('System Admin Login', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'administrator'
     st.session_state['first_name'] = 'Admin'

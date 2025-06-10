@@ -11,8 +11,7 @@ st.set_page_config(layout = 'wide')
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
 
-
-st.title("Choose Policies to Explore")
+st.title(f"Hello, {st.session_state['first_name']}, Choose Policies to Explore")
 st.write("---")
 st.write("\n \n")
 
