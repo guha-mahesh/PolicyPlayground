@@ -12,14 +12,14 @@ def add_note():
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO Conversations (politician_id, content, title, user_id)
+    INSERT INTO Conversations (politician_id, content, title, user_id, saved_id)
     VALUES
-    (%s, %s, %s, %s)
+    (%s, %s, %s, %s, %s)
     """
     params = []
 
     req = request.get_json()
-    required_fields = ["politician_id", "content", "title", "user_id"]
+    required_fields = ["politician_id", "content", "title", "user_id", "saved_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400

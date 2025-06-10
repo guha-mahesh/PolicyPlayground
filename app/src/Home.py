@@ -78,6 +78,7 @@ if st.button('Act as Eleanore Goosens, a poltical lobbyist.', type='primary',  u
     st.session_state['role'] = 'Lobbyist'
     st.session_state['first_name'] = 'Eleanor'
     st.session_state['user_id'] = 2
+    st.session_state['nationality'] = 'United States'
     st.switch_page('pages/40_Lobbyist.py')
 
 if st.button('Act as System Admin', type='primary',  use_container_width=True):

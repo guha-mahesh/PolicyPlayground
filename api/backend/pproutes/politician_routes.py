@@ -63,29 +63,42 @@ def new_politician():
 
 @politician.route("/savePolicy", methods=["POST"])
 def savePolicy():
+    conn = db.get_db()
+    cursor = conn.cursor()
     data = request.get_json()
 
-    discountRate = data.get('discountRate')
-    FederalReserveBalanceSheet = data.get('federalReserveBalanceSheet')
-    TreasurySecurities = data.get('treasurySecurities')
-    MillitarySpending = data.get('millitarySpending')
-    EducationSpending = data.get('educationSpending')
-    HealthSpending = data.get('healthSpending')
-    Country = data.get('country')
-    SP500 = data.get('SP500')
-    GDP = data.get('GDP')
-
-    cursor = db.get_db().cursor()
-
-    cursor.execute("""
+    query = """
             INSERT INTO SavedPolicy 
-            (discountRate, FederalReserveBalanceSheet, 
-             TreasurySecurities, HealthSpending, MillitarySpending, 
-             EducationSpending, Country, SP500, GDP)
-            VALUES  (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (discountRate, FederalReserveBalanceSheet,
-              TreasurySecurities, HealthSpending, MillitarySpending,
-              EducationSpending, Country, SP500, GDP))
-    db.get_db().commit()
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+    
+    params = []
+
+    required_fields = ["discountRate", "FederalReserveBalanceSheet",
+              "TreasurySecurities", "HealthSpending", "MillitarySpending",
+              "EducationSpending", "Country", "SP500", "GDP", "user_id"]
+
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
+    for field in required_fields:
+        params.append(data[field])
+    cursor.execute(query, params)
+
+    conn.commit()
+    saved_id = cursor.lastrowid
     cursor.close()
-    return jsonify({'message': 'Policy saved successfully'}), 200
+    return jsonify({'message': 'Policy saved successfully', 'saved_id': saved_id}), 200
+
+@politician.route("/policy/<int:user_id>", methods=["GET"])
+def get_policy(user_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(f'SELECT saved_id FROM SavedPolicy WHERE user_id = {user_id}')
+    result = cursor.fetchall()
+
+    conn.commit()
+    cursor.close()
+
+    return jsonify(result), 200
