@@ -51,7 +51,7 @@ def get_policies():
         order = 'ASC'
 
     # Build base query
-    query = "SELECT policy_id, year_enacted, politician, topic, country FROM Policies"
+    query = "SELECT policy_id, year_enacted, politician, topic, country, budget, duration_length, population_size FROM Policies"
     params = []
 
     # Add filtering if country specified

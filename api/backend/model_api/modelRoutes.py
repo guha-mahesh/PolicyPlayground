@@ -14,6 +14,7 @@ from ..db_connection import db
 from ..ml_models.model01_GDP import train_func, predict
 from ..ml_models.model02_American import predict_sp500, predict_currency, train
 import datetime
+from backend.ml_models.model03_SimilarPolicies import predict
 
 
 model_routes = Blueprint("modelRoutes", __name__)
@@ -273,3 +274,28 @@ def get_weights(model_name):
 
     except Exception as e:
         pass
+
+
+
+
+
+
+@model_routes.route("/similar_policies", methods=["GET"])
+def get_similar_policies():
+    try:
+        policies_df = predict()
+        # Convert DataFrame to list of dictionaries for JSON serialization
+        policies_list = policies_df.head().to_dict('records')
+        return jsonify(policies_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@model_routes.route("/similar_policies", methods=["POST"])
+def post_similar_policies():
+    try:
+        policies_df = predict()
+        # Convert DataFrame to list of dictionaries for JSON serialization
+        policies_list = policies_df.head().to_dict('records')
+        return jsonify(policies_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500 

@@ -27,6 +27,11 @@ with col1:
     topic = ["Taxation", "Government Spending", "Public Deficit", "Interest Rates", "Inflation", "Money Supply",
              "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
     topic_choice = st.selectbox("Choose a Topic", topic)
+    
+    # Add new numeric input fields
+    budget = st.number_input("Budget (in millions)", min_value=0, step=1)
+    duration_length = st.number_input("Duration Length (in months)", min_value=0, step=1)
+    population_size = st.number_input("Population Size", min_value=0, step=1000)
 
 with col2:
     year_end = ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
@@ -36,7 +41,7 @@ with col2:
     country = ["USA", "EU", "China"]
     country_choice = st.selectbox("Choose a Country", country)
 
-    sort_by = st.selectbox("Sort by:", ['policy_id', 'year_enacted'])
+    sort_by = st.selectbox("Sort by:", ['policy_id', 'year_enacted', 'budget', 'duration_length', 'population_size'])
 
 with col1:
     order = st.radio("Order:", ["ASC", "DESC"])
@@ -54,10 +59,25 @@ if st.button("Apply"):
         params['Topic Choice'] = topic_choice
     if country:
         params['country_choice'] = country_choice
+    if budget:
+        params['budget'] = budget
+    if duration_length:
+        params['duration_length'] = duration_length
+    if population_size:
+        params['population_size'] = population_size
 
     response = requests.get("http://web-api:4000/pol/getpol", params=params)
     data = response.json()
     df = pd.DataFrame(data)
+    
+    # Format the numeric columns
+    if 'budget' in df.columns:
+        df['budget'] = df['budget'].apply(lambda x: f"${x:,.0f}M" if pd.notnull(x) else "")
+    if 'population_size' in df.columns:
+        df['population_size'] = df['population_size'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
+    if 'duration_length' in df.columns:
+        df['duration_length'] = df['duration_length'].apply(lambda x: f"{x} months" if pd.notnull(x) else "")
+    
     st.dataframe(df)
 
 st.write("---")
