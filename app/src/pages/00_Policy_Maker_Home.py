@@ -168,6 +168,15 @@ health_spending = health_input or health_slider
 ls = ["United States", "Japan", "Germany",
       "United Kingdom", "France", "Russia", "Canada"]
 
+country_codes = {
+    "United States": "USA",
+    "Japan": "JPN",
+    "Germany": "DEU",
+    "United Kingdom": "GBR",
+    "France": "FRA",
+    "Russia": "RUS",
+    "Canada": "CAN"
+}
 
 if selected_country == "Use My Nationality":
     if st.session_state['nationality'] in ls:
@@ -193,12 +202,15 @@ with col_right:
     st.write(f"• Military Spending: {military_spending}%")
     st.write(f"• Education Spending: {education_spending}%")
     st.write(f"• Health Spending: {health_spending}%")
-
-
-if st.button("test database", type="primary"):
-    data = requests.get(
-        "http://web-api:4000/model/fetchData/JPYtoUSD")
-    st.write(data.text)
+tables = [
+    "YuantoUSD",
+    "AUDtoUSD",
+    "JPYtoUSD",
+    "GBPtoUSD",
+    "EUROTOUSD",
+    "FRBS",
+    "treasurysecurities",
+    "discountrate", "sp500"]
 
 
 if st.button("Test Policy Set", type="primary"):
@@ -213,9 +225,10 @@ if st.button("Test Policy Set", type="primary"):
     }
 
     # API calls
-    api_url = f"http://host.docker.internal:4000/predictSp/{discount_rate},{fed_balance},{treasury_holdings}"
-    api_url2 = f"http://host.docker.internal:4000/predictCurr/{discount_rate},{fed_balance},{treasury_holdings}"
-    api_url3 = f"http://host.docker.internal:4000/predictGDP/{military_spending},{education_spending},{health_spending}/{country}"
+
+    api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{fed_balance},{treasury_holdings}"
+    api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{fed_balance},{treasury_holdings}"
+    api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{military_spending},{education_spending},{health_spending}/{country_codes[country]}"
 
     try:
         headers = {
