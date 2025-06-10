@@ -41,7 +41,7 @@ else:
     politicians = []
 
 with col1:
-    selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["Name"])
+    selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
 
 with col2:
     if st.button("New Politician"):
@@ -103,7 +103,7 @@ with col3:
 st.text('Fiscal Policy:')
 col1, col2, col3 = st.columns(3)
 with col1:
-    millitary =  st.slider(
+    military =  st.slider(
             "Military Spending (% of Government Expenditure)",
             min_value=0.0,
             max_value=20.0,
@@ -138,13 +138,13 @@ if st.button("Save Note", type="primary", use_container_width=True):
         st.write("Please select a Politician")
     else: 
         sp500 = getmethods.predictSP(frdr, fbss, tsh)
-        GDP = getmethods.predictGDP(millitary, education, health, country)
-        save_policy = {"discountRate": frdr, "federalReserveBalanceSheet": fbss, "treasurySecurities": tsh, "millitarySpending": millitary,
-                       "educationSpending": education, "healthSpending": health, "user_id": st.session_state["user_id"], "SP500": sp500, "GDP": GDP}
-        saved_id = getmethods.savePolicy(save_policy)
+        GDP = getmethods.predictGDP(military, education, health, country)
+        save_policy = {"discountRate": frdr, "federalReserveBalanceSheet": fbss, "treasurySecurities": tsh, "militarySpending": military,
+                       "educationSpending": education, "healthSpending": health, "country": country, "user_id": st.session_state["user_id"], "SP500": sp500, "GDP": GDP}
+        json1 = getmethods.savePolicy(save_policy).json()
+        saved_id = json1["saved_id"]
         st.write(saved_id)
         noteJson = {"politician_id": selected_politician["politician_id"],
-              "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": 1}
+              "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
         getmethods.postNote(noteJson)
         st.switch_page("pages/43_Lobbyist2.py")
-

@@ -125,7 +125,7 @@ if st.button("Save Policy Settings", type="secondary"):
         "discountRate": st.session_state['policy_params']["Discount Rate"],
         "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
         "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
-        "millitarySpending": st.session_state['policy_params']["Military Spending"],
+        "militarySpending": st.session_state['policy_params']["Military Spending"],
         "educationSpending": st.session_state['policy_params']["Education Spending"],
         "healthSpending": st.session_state['policy_params']["Health Spending"],
         "country": st.session_state['policy_params']["Selected Country"],

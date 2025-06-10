@@ -22,6 +22,12 @@ def savePolitician(returnJson):
 def savePolicy(json1):
     return requests.post("http://web-api:4000/politician/savePolicy", json=json1)
 
+def getPolicy(saved_id):
+    return requests.get(f'http://web-api:4000/politician/policy/{saved_id}')
+
+def noteSavedPolicy(conversation_id):
+    return requests.get(f'http://web-api:4000/notes/policy/{conversation_id}')
+
 def modifyNotes(json1):
     return requests.put("http://web-api:4000/notes/modifyNotes", json=json1)
 
@@ -39,3 +45,6 @@ def predictGDP(military_spending, education_spending, health_spending, country):
         "Canada": "CAN"
         }
     requests.get(f"http://host.docker.internal:4000/model/predictGDP/{military_spending},{education_spending},{health_spending}/{country_codes[country]}")
+
+def PolicyFromConvoID(conversation_id):
+    requests.get(f'http://web-api:4000/notes/policy/{conversation_id}')

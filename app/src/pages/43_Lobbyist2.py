@@ -16,7 +16,7 @@ SideBarLinks()
 
 politicians = getmethods.getPoliticians(st.session_state["user_id"]).json()
 
-selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["Name"])
+selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
 
 
 currentConvo = {"title" : "", "content" : ""}
@@ -28,6 +28,8 @@ st.session_state["notes_empty"] = True
 
 try:
     currentConvo = conversations[0]
+    st.session_state["current_convo"] = currentConvo
+    currentPolicy = getmethods.getPolicy(currentConvo["saved_id"]).json()[0]
     st.session_state["notes_empty"] = False
 except IndexError or KeyError:
     st.session_state["notes_empty"] = True
@@ -44,6 +46,8 @@ with col1:
                 if st.button(label=convo["title"], key=convo["conversation_id"], use_container_width=True):
                     currentConvo = convo
                     st.session_state["current_convo"] = currentConvo
+                    currentPolicy = getmethods.getPolicy(currentConvo["saved_id"]).json()[0]
+
 
 # Right panel
 with col2:
@@ -69,6 +73,15 @@ with col2:
         with col2_2:
             with st.container(height=150):
                 st.write("Policy Summary")
+                st.write("**Monetary Policy:**")
+                st.write(f'• Discount Rate: {currentPolicy["discountRate"]}%')
+                st.write(f'• Fed Balance: ${currentPolicy["FederalReserveBalanceSheet"]:,}B')
+                st.write(f'• Treasury Holdings: ${currentPolicy["TreasurySecurities"]:,}B')
+                st.write("**Fiscal Policy:**")
+                st.write(f'• Country: {currentPolicy["Country"]}')
+                st.write(f'• Military Spending: {currentPolicy["MilitarySpending"]}%')
+                st.write(f'• Education Spending: {currentPolicy["EducationSpending"]}%')
+                st.write(f'• Health Spending: {currentPolicy["HealthSpending"]}%')
 
         col2_3, col2_4 = st.columns([3, 1])
 
