@@ -276,19 +276,19 @@ def get_weights(model_name):
         pass
 
 
-@model_routes.route("/similar_policies", methods=["GET"])
-def get_similar_policies():
+@model_routes.route("/similar_policies/<int:index_policy>", methods=["GET"])
+def get_similar_policies(index_policy):
     try:
-        policies_list = predict_similar_policies()
+        policies_list = predict_similar_policies(index_policy)
         # The predict_similar_policies function already returns a list of dictionaries
         return jsonify(policies_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@model_routes.route("/similar_policies", methods=["POST"])
-def post_similar_policies():
+@model_routes.route("/similar_policies/<int:index_policy>", methods=["POST"])
+def post_similar_policies(index_policy):
     try:
-        policies_list = predict_similar_policies()
+        policies_list = predict_similar_policies(index_policy)
         # The predict_similar_policies function already returns a list of dictionaries
         return jsonify(policies_list)
     except Exception as e:

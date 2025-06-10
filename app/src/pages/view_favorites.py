@@ -51,7 +51,8 @@ with col2:
 st.header("Similar Policies")
 
 try:
-    similar_response = requests.get("http://web-api:4000/model/similar_policies")
+    num = int(fav_choice.split('.')[0])
+    similar_response = requests.get(f"http://web-api:4000/model/similar_policies/{num}")
     similar_data = similar_response.json()
     
     if similar_data and len(similar_data) > 0:
