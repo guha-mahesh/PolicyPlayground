@@ -28,10 +28,30 @@ with col1:
              "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
     topic_choice = st.selectbox("Choose a Topic", topic)
     
-    # Add new numeric input fields
-    budget = st.number_input("Budget (in millions)", min_value=0, step=1)
-    duration_length = st.number_input("Duration Length (in months)", min_value=0, step=1)
-    population_size = st.number_input("Population Size", min_value=0, step=1000)
+    # Replace single number inputs with range sliders
+    budget_range = st.slider(
+        "Budget Range (in millions)",
+        min_value=0,
+        max_value=1000000,
+        value=(0, 1000000),
+        step=1000
+    )
+    
+    duration_range = st.slider(
+        "Duration Length Range (in months)",
+        min_value=0,
+        max_value=120,
+        value=(0, 120),
+        step=1
+    )
+    
+    population_range = st.slider(
+        "Population Size Range",
+        min_value=0,
+        max_value=1000000000,
+        value=(0, 1000000000),
+        step=1000000
+    )
 
 with col2:
     year_end = ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
@@ -59,12 +79,14 @@ if st.button("Apply"):
         params['Topic Choice'] = topic_choice
     if country:
         params['country_choice'] = country_choice
-    if budget:
-        params['budget'] = budget
-    if duration_length:
-        params['duration_length'] = duration_length
-    if population_size:
-        params['population_size'] = population_size
+    
+    # Add min/max parameters for each range
+    params['budget_min'] = budget_range[0]
+    params['budget_max'] = budget_range[1]
+    params['duration_min'] = duration_range[0]
+    params['duration_max'] = duration_range[1]
+    params['population_min'] = population_range[0]
+    params['population_max'] = population_range[1]
 
     response = requests.get("http://web-api:4000/pol/getpol", params=params)
     data = response.json()
