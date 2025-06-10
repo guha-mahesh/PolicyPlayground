@@ -84,7 +84,7 @@ if st.button('Economist Login',
 st.write('\n\n')
 
 lobby_dict = {"Eleanore Goosens" : 7, "User 2" : 8, "User 3" : 9}
-lobbys = ["Eleanore  Goosens", "User 2", "User 3"]
+lobbys = ["Eleanore Goosens", "User 2", "User 3"]
 lobby = st.selectbox("Choose a User:", lobbys)
 if st.button('Lobbyist Login', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
