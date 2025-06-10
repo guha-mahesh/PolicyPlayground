@@ -88,7 +88,7 @@ with tab2:
     st.write("")
 
     country_options = ["Use My Nationality", "United States", "Japan", "Germany",
-                       "United Kingdom", "France", "Russia", "Canada"]
+                       "United Kingdom", "Russia", "Canada"]
     selected_country = st.selectbox(
         "Select Country for GDP Analysis (Optional)",
         options=country_options,
@@ -226,8 +226,8 @@ if st.button("Test Policy Set", type="primary"):
 
     # API calls
 
-    api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{fed_balance},{treasury_holdings}"
-    api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{fed_balance},{treasury_holdings}"
+    api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{treasury_holdings},{fed_balance}"
+    api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{treasury_holdings},{fed_balance}"
     api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{military_spending},{education_spending},{health_spending}/{country_codes[country]}"
 
     try:
@@ -252,6 +252,7 @@ if st.button("Test Policy Set", type="primary"):
                 "Currencies": data2['prediction'],
                 "GDP/C": data3["prediction"]
             }
+            st.write(st.session_state['Predictions']['SP500'])
             st.switch_page("pages/44_Policy_Maker_viewPred.py")
         else:
             st.error(f"API Error: {response.status_code}")

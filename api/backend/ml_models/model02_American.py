@@ -10,6 +10,7 @@ pd.set_option('display.max_columns', None)
 sp500_coefficients_data = None
 currency_models = None
 merged_df = None
+normalization_stats = None
 
 
 def train():
@@ -19,7 +20,7 @@ def train():
     Returns:
         dict: Contains 'sp500_coefficients', 'currency_models', and 'merged_df'
     """
-    global sp500_coefficients_data, currency_models, merged_df
+    global sp500_coefficients_data, currency_models, merged_df, normalization_stats
 
     def fetch_from_api(table_name):
         """Fetch data from database API"""
@@ -34,7 +35,7 @@ def train():
             raise Exception(f"Failed to fetch {table_name} from API")
 
     def load_sp500_data():
-        """Load S&P 500 data from API"""
+
         df = fetch_from_api("sp500")
         df['month'] = pd.to_datetime(df['mos']).dt.to_period('M')
         df['close'] = df['vals']
@@ -64,7 +65,6 @@ def train():
 
     def clean_data(df):
         df['date'] = pd.to_datetime(df['date']).dt.to_period('M')
-
         return df
 
     def standardize_dates(dfs):
@@ -98,15 +98,26 @@ def train():
         })
         return result_df
 
+    def compute_normalization_stats(df):
+        stats_dict = {}
+        for col in df.columns:
+            if col == "month":
+                continue
+            values = df[col].copy()
+
+            stats_dict[col] = {
+                'mean': values.mean(),
+                'std': values.std(),
+                'log_transformed': False
+            }
+        return pd.DataFrame(stats_dict).T
+
     def normalize_full_df(df):
         df = df.copy()
         for col in df.columns:
             if col == "month":
                 continue
-
             values = df[col]
-            if (values >= 0).all() and values.max() > 1000:
-                values = np.log1p(values)
 
             std = values.std()
             if std != 0:
@@ -122,7 +133,6 @@ def train():
         return np.dot(inv, dot2)
 
     def prepare_data():
-
         fred_tables = ["discountrate", "treasurysecurities", "FRBS"]
         dfs_to_concat = []
 
@@ -149,6 +159,10 @@ def train():
         return merged_df
 
     def train_sp500_model(merged_df):
+
+        global normalization_stats
+        normalization_stats = compute_normalization_stats(merged_df)
+
         data = normalize_full_df(merged_df)
 
         X = np.ones((data.shape[0], 1))
@@ -168,11 +182,17 @@ def train():
         coefficients = regress(X, y)
         return coefficients, data
 
-    def train_currency_model(merged_df, currency_data):
+    def train_currency_model(merged_df, currency_data, currency_name):
         currency_merged = pd.merge(
             merged_df, currency_data[['month', 'exchange_value']],
             how="inner", on="month"
         ).dropna()
+
+        currency_stats = compute_normalization_stats(
+            currency_merged[['exchange_value']]
+        )
+        normalization_stats.loc[f'{currency_name}_exchange_value'] = currency_stats.loc['exchange_value']
+
         currency_normalized = normalize_full_df(currency_merged)
 
         adjusted = currency_normalized.drop(
@@ -211,7 +231,7 @@ def train():
     for name, table in currency_tables.items():
         try:
             currency_data = load_currency_data(table).iloc[:-1]
-            coefficients = train_currency_model(merged_df, currency_data)
+            coefficients = train_currency_model(merged_df, currency_data, name)
             currency_models[name] = coefficients
         except Exception as e:
             print(f"Error training {name} model: {e}")
@@ -247,24 +267,12 @@ def train():
 
 def predict_sp500(user_features, coefficients=None):
     """
-    Predict S&P 500 closing price
-
-    Args:
-        user_features: [discount_rate, treasury_securities, fed_balance_sheet]
-        coefficients: Pre-trained model coefficients (fetches from API if not provided)
-
-    Returns:
-        float: Predicted S&P 500 closing price
+    Predict S&P 500 closing price with proper normalization
     """
+    global normalization_stats
 
-    discountrate_mean = 0.9019337017
-    discountrate_std = 0.8099102255
-    treasurysecurities_mean = 14.1636439055
-    treasurysecurities_std = 0.6746410494
-    fedreservebalancesheet_mean = 15.2761459806
-    fedreservebalancesheet_std = 0.4398088852
-    close_mean = 7.6942511462
-    close_std = 0.4791105372
+    if normalization_stats is None:
+        raise ValueError("Model must be trained before making predictions")
 
     if coefficients is None:
         response = requests.get("http://web-api:4000/model/getWeights/sp500")
@@ -297,30 +305,36 @@ def predict_sp500(user_features, coefficients=None):
 
     X = np.ones([1])
 
-    for feature in user_features:
-        X = np.column_stack((X, feature))
+    discount_rate = user_features[0]
+    discount_norm = (discount_rate - normalization_stats.loc['average_DiscountRate_value', 'mean']) / \
+        normalization_stats.loc['average_DiscountRate_value', 'std']
+    X = np.column_stack((X, discount_norm))
+
+    treasury_value = user_features[1]
+
+    treasury_norm = (treasury_value - normalization_stats.loc['average_TreasurySecurities_value', 'mean']) / \
+        normalization_stats.loc['average_TreasurySecurities_value', 'std']
+    X = np.column_stack((X, treasury_norm))
+
+    fed_value = user_features[2]
+
+    fed_norm = (fed_value - normalization_stats.loc['average_FedReserveBalanceSheet_value', 'mean']) / \
+        normalization_stats.loc['average_FedReserveBalanceSheet_value', 'std']
+    X = np.column_stack((X, fed_norm))
+
+    close_mean = normalization_stats.loc['close', 'mean']
+    close_std = normalization_stats.loc['close', 'std']
 
     for lag_value in lag_values:
-        X = np.column_stack((X, lag_value))
 
-    if X[0, 2] > 1000:
-        X[0, 2] = np.log1p(X[0, 2])
-    if X[0, 3] > 1000:
-        X[0, 3] = np.log1p(X[0, 3])
-
-    X[0, 1] = (X[0, 1] - discountrate_mean) / discountrate_std
-    X[0, 2] = (X[0, 2] - treasurysecurities_mean) / treasurysecurities_std
-    X[0, 3] = (X[0, 3] - fedreservebalancesheet_mean) / \
-        fedreservebalancesheet_std
-
-    for i in range(4, 9):
-        X[0, i] = np.log1p(X[0, i])
-        X[0, i] = (X[0, i] - close_mean) / close_std
+        lag_normalized = (lag_value - close_mean) / (close_std)
+        X = np.column_stack((X, lag_normalized))
 
     prediction_normalized = np.dot(X, coefficients)[0]
 
-    prediction_log = (prediction_normalized * close_std) + close_mean
-    prediction_real = np.expm1(prediction_log)
+    prediction_denorm = (prediction_normalized * close_std) + close_mean
+
+    prediction_real = prediction_denorm
 
     return prediction_real
 
@@ -336,21 +350,10 @@ def predict_currency(user_features, currency_models_dict=None):
     Returns:
         dict: Predicted exchange rates for all currencies
     """
+    global normalization_stats
 
-    discountrate_mean = 0.9019337017
-    discountrate_std = 0.8099102255
-    treasurysecurities_mean = 14.1636439055
-    treasurysecurities_std = 0.6746410494
-    fedreservebalancesheet_mean = 15.2761459806
-    fedreservebalancesheet_std = 0.4398088852
-
-    currency_stats = {
-        "Euro": {"mean": 1.2117845304, "std": 0.1241594655},
-        "Japanese Yen": {"mean": 106.3756353591, "std": 17.2994065813},
-        "Australian Dollar": {"mean": 0.8100160221, "std": 0.1309792677},
-        "Chinese Yuan": {"mean": 6.6038895028, "std": 0.3165736282},
-        "British Pound": {"mean": 1.4294618785, "std": 0.1541461908}
-    }
+    if normalization_stats is None:
+        raise ValueError("Model must be trained before making predictions")
 
     if currency_models_dict is None:
         currency_models_dict = {}
@@ -409,31 +412,38 @@ def predict_currency(user_features, currency_models_dict=None):
 
         X = np.ones([1])
 
-        for feature in user_features:
-            X = np.column_stack((X, feature))
+        discount_rate = user_features[0]
+        discount_norm = (discount_rate - normalization_stats.loc['average_DiscountRate_value', 'mean']) / \
+            normalization_stats.loc['average_DiscountRate_value', 'std']
+        X = np.column_stack((X, discount_norm))
+
+        treasury_value = user_features[1]
+
+        treasury_norm = (treasury_value - normalization_stats.loc['average_TreasurySecurities_value', 'mean']) / \
+            normalization_stats.loc['average_TreasurySecurities_value', 'std']
+        X = np.column_stack((X, treasury_norm))
+
+        fed_value = user_features[2]
+
+        fed_norm = (fed_value - normalization_stats.loc['average_FedReserveBalanceSheet_value', 'mean']) / \
+            normalization_stats.loc['average_FedReserveBalanceSheet_value', 'std']
+        X = np.column_stack((X, fed_norm))
+
+        currency_stats_key = f'{currency_name}_exchange_value'
+        currency_mean = normalization_stats.loc[currency_stats_key, 'mean']
+        currency_std = normalization_stats.loc[currency_stats_key, 'std']
 
         for lag_value in lag_values:
-            X = np.column_stack((X, lag_value))
 
-        if X[0, 2] > 1000:
-            X[0, 2] = np.log1p(X[0, 2])
-        if X[0, 3] > 1000:
-            X[0, 3] = np.log1p(X[0, 3])
-
-        X[0, 1] = (X[0, 1] - discountrate_mean) / discountrate_std
-        X[0, 2] = (X[0, 2] - treasurysecurities_mean) / treasurysecurities_std
-        X[0, 3] = (X[0, 3] - fedreservebalancesheet_mean) / \
-            fedreservebalancesheet_std
-
-        currency_mean = currency_stats[currency_name]["mean"]
-        currency_std = currency_stats[currency_name]["std"]
-
-        for i in range(4, 9):
-            X[0, i] = (X[0, i] - currency_mean) / currency_std
+            lag_normalized = (lag_value - currency_mean) / currency_std
+            X = np.column_stack((X, lag_normalized))
 
         prediction_normalized = np.dot(X, currency_coefficients)[0]
-        prediction_real = (prediction_normalized *
-                           currency_std) + currency_mean
+
+        prediction_denorm = (prediction_normalized *
+                             currency_std) + currency_mean
+
+        prediction_real = prediction_denorm
 
         predictions[currency_name] = prediction_real
 

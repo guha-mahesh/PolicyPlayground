@@ -4,6 +4,11 @@ import logging
 import requests
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
+from datetime import datetime, timedelta
+import json
+
 
 logger = logging.getLogger(__name__)
 
@@ -11,114 +16,23 @@ st.set_page_config(layout='wide')
 
 SideBarLinks()
 
-st.title(f"Your Predictions")
+st.title("Your Predictions")
 
 sp500_pred = round(float(st.session_state['Predictions']["SP500"]), 2)
 gdp_pred = round(float(st.session_state['Predictions']["GDP/C"]), 2)
 
+# Display predictions in columns
 col1, col2 = st.columns(2)
 
 with col1:
-    st.metric(label="📈 S&P 500 Prediction", value=f"{sp500_pred:,}")
+    st.markdown("### 📈 S&P 500 Forecast")
+    st.markdown(
+        f"<h2 style='color: #64B5F6;'>{sp500_pred:,.0f}</h2>", unsafe_allow_html=True)
 
 with col2:
-    st.metric(label="💰 GDP per Capita Prediction", value=f"${gdp_pred:,.2f}")
-
-
-st.divider()
-st.subheader("Prediction Analysis & Comparisons")
-
-
-graph_col1, graph_col2 = st.columns(2)
-
-with graph_col1:
-
-    st.subheader("💰 GDP per Capita: Prediction vs Historical")
-    fig1, ax1 = plt.subplots(figsize=(8, 5))
-
-    years_hist = np.arange(2015, 2025)
-    gdp_historical = 55000 + \
-        np.cumsum(np.random.normal(2000, 1500, len(years_hist)))
-
-    pred_year = 2025
-    pred_gdp = gdp_pred
-
-    ax1.plot(years_hist, gdp_historical, 'b-', linewidth=2,
-             label='Historical GDP per Capita')
-    ax1.plot([years_hist[-1], pred_year], [gdp_historical[-1],
-             pred_gdp], 'r--', linewidth=2, label='Prediction')
-    ax1.scatter([pred_year], [pred_gdp], color='red', s=100,
-                zorder=5, label=f'Your Prediction: ${pred_gdp:,.0f}')
-
-    ax1.set_xlabel('Year')
-    ax1.set_ylabel('GDP per Capita ($)')
-    ax1.set_title('GDP per Capita Prediction vs Historical Data')
-    ax1.legend()
-    ax1.grid(True, alpha=0.3)
-    st.pyplot(fig1)
-
-    st.subheader("🌍 GDP per Capita: Your Prediction vs World Average")
-    fig3, ax3 = plt.subplots(figsize=(8, 5))
-
-    world_gdp_historical = 45000 + \
-        np.cumsum(np.random.normal(1500, 1000, len(years_hist)))
-    world_gdp_pred = world_gdp_historical[-1] + 2000
-
-    ax3.plot(years_hist, world_gdp_historical, 'g-',
-             linewidth=2, label='World Average (Historical)')
-    ax3.plot([years_hist[-1], pred_year], [world_gdp_historical[-1],
-             world_gdp_pred], 'g--', linewidth=2, label='World Average (Projected)')
-    ax3.axhline(y=pred_gdp, color='red', linestyle='-', linewidth=3,
-                label=f'Your Prediction: ${pred_gdp:,.0f}')
-
-    ax3.set_xlabel('Year')
-    ax3.set_ylabel('GDP per Capita ($)')
-    ax3.set_title('Your GDP Prediction vs World Average')
-    ax3.legend()
-    ax3.grid(True, alpha=0.3)
-    st.pyplot(fig3)
-
-with graph_col2:
-
-    st.subheader("📈 S&P 500: Prediction vs Historical")
-    fig2, ax2 = plt.subplots(figsize=(8, 5))
-
-    sp500_historical = 3000 + \
-        np.cumsum(np.random.normal(50, 200, len(years_hist)))
-
-    ax2.plot(years_hist, sp500_historical, 'b-',
-             linewidth=2, label='Historical S&P 500')
-    ax2.plot([years_hist[-1], pred_year], [sp500_historical[-1],
-             sp500_pred], 'r--', linewidth=2, label='Prediction')
-    ax2.scatter([pred_year], [sp500_pred], color='red', s=100,
-                zorder=5, label=f'Your Prediction: {sp500_pred:,.0f}')
-
-    ax2.set_xlabel('Year')
-    ax2.set_ylabel('S&P 500 Index')
-    ax2.set_title('S&P 500 Prediction vs Historical Data')
-    ax2.legend()
-    ax2.grid(True, alpha=0.3)
-    st.pyplot(fig2)
-
-    st.subheader("🌐 S&P 500 vs URTH Historical")
-    fig4, ax4 = plt.subplots(figsize=(8, 5))
-
-    urth_historical = sp500_historical * 0.85 + \
-        np.random.normal(0, 50, len(years_hist))
-
-    ax4.plot(years_hist, sp500_historical, 'b-',
-             linewidth=2, label='S&P 500 (Historical)')
-    ax4.plot(years_hist, urth_historical, 'orange',
-             linewidth=2, label='URTH (Historical)')
-    ax4.axhline(y=sp500_pred, color='red', linestyle='-', linewidth=3,
-                label=f'Your S&P 500 Prediction: {sp500_pred:,.0f}')
-
-    ax4.set_xlabel('Year')
-    ax4.set_ylabel('Index Value')
-    ax4.set_title('S&P 500 vs URTH Comparison')
-    ax4.legend()
-    ax4.grid(True, alpha=0.3)
-    st.pyplot(fig4)
+    st.markdown("### 💰 GDP per Capita")
+    st.markdown(
+        f"<h2 style='color: #81C784;'>${gdp_pred:,.0f}</h2>", unsafe_allow_html=True)
 if st.button("Save Policy Settings", type="secondary"):
 
     policy_data = {
@@ -150,7 +64,7 @@ if st.button("Save Policy Settings", type="secondary"):
             st.write(response.text)
 
     except Exception as e:
-        st.error(f"Error saving policy: {str(e)}")
+        pass
 st.divider()
 
 if st.button("Try a New Set"):
@@ -158,3 +72,554 @@ if st.button("Try a New Set"):
 
 if st.button("View Currency Forecasts"):
     st.switch_page('pages/45_Policy_Maker_Currency.py')
+
+
+col1, col2 = st.columns(2)
+
+
+sp500_last_value = None
+gdp_last_value = None
+with col1:
+    st.markdown("##### Future Prediction for the SP500")
+
+    API_URL = "http://web-api:4000/model/fetchData/sp500"
+
+    try:
+        response = requests.get(API_URL)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if isinstance(data, dict):
+            possible_keys = ['data', 'results', 'records', 'items', 'rows']
+            actual_data = None
+
+            for key in possible_keys:
+                if key in data:
+                    actual_data = data[key]
+                    break
+
+            if actual_data is None:
+                actual_data = data
+        else:
+            actual_data = data
+
+        df = pd.DataFrame(actual_data)
+
+        df['mos'] = pd.to_datetime(df['mos'])
+        df['vals'] = pd.to_numeric(df['vals'])
+
+        df = df.sort_values('mos')
+
+        start_date = pd.Timestamp('2025-01-01')
+        end_date = pd.Timestamp('2025-06-30')
+
+        df_filtered = df[(df['mos'] >= start_date) & (df['mos'] <= end_date)]
+
+        if df_filtered.empty:
+            current_date = df['mos'].max()
+            six_months_ago = current_date - timedelta(days=180)
+            df_filtered = df[df['mos'] >= six_months_ago]
+
+        sp500_last_value = df_filtered['vals'].iloc[-1] if not df_filtered.empty else None
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter(
+            x=df_filtered['mos'],
+            y=df_filtered['vals'],
+            mode='lines',
+            line=dict(color='#64B5F6', width=3),
+            name='Historical',
+            showlegend=False
+        ))
+
+        last_date = df_filtered['mos'].max()
+        last_value = df_filtered[df_filtered['mos']
+                                 == last_date]['vals'].iloc[0]
+
+        prediction_date = last_date + pd.DateOffset(months=1)
+
+        fig.add_trace(go.Scatter(
+            x=[prediction_date],
+            y=[sp500_pred],
+            mode='markers+text',
+            marker=dict(
+                size=12,
+                color='#ff4444',
+                symbol='circle',
+                line=dict(color='white', width=2)
+            ),
+
+
+            name='Prediction SP500',
+            showlegend=False
+        ))
+
+        y_min = min(df_filtered['vals'].min(), sp500_pred) * 0.98
+        y_max = max(df_filtered['vals'].max(), sp500_pred) * 1.02
+
+        fig.update_layout(
+            height=350,
+            margin=dict(l=20, r=20, t=10, b=20),
+            plot_bgcolor='#1e293b',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#94a3b8'),
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickformat='%b %Y',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[df_filtered['mos'].min() - pd.DateOffset(days=15),
+
+                       prediction_date + pd.DateOffset(days=15)]
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='#334155',
+                showticklabels=True,
+                tickformat=',.0f',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[y_min, y_max]
+            )
+        )
+
+        st.plotly_chart(fig, use_container_width=True,
+                        config={'displayModeBar': False})
+
+    except Exception as e:
+        pass
+
+with col2:
+
+    st.markdown(
+        f"##### GDP Growth Forecast for {st.session_state['policy_params']['Selected Country']}")
+
+    selected_country = st.session_state['policy_params']['Selected Country']
+
+    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{selected_country.replace(' ', '')}"
+
+    try:
+        response = requests.get(GDP_API_URL)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if data.get('success'):
+            actual_data = data.get('data', [])
+        else:
+            actual_data = []
+
+        df_gdp = pd.DataFrame(actual_data)
+
+        df_gdp['mos'] = pd.to_datetime(df_gdp['mos'], format='%Y')
+        df_gdp['vals'] = pd.to_numeric(df_gdp['vals'])
+
+        df_gdp = df_gdp.sort_values('mos')
+
+        current_year = datetime.now().year
+        five_years_ago = current_year - 5
+        df_gdp_filtered = df_gdp[df_gdp['mos'].dt.year >= five_years_ago]
+        gdp_last_value = df_gdp_filtered['vals'].iloc[-1] if not df_gdp_filtered.empty else None
+
+        fig2 = go.Figure()
+
+        fig2.add_trace(go.Scatter(
+            x=df_gdp_filtered['mos'],
+            y=df_gdp_filtered['vals'],
+            mode='lines+markers',
+            line=dict(color='#81C784', width=3),
+            marker=dict(size=6, color='#81C784'),
+            showlegend=False
+        ))
+
+        last_date_gdp = df_gdp_filtered['mos'].max()
+        next_year = last_date_gdp + pd.DateOffset(years=1)
+
+        fig2.add_trace(go.Scatter(
+            x=[next_year],
+            y=[gdp_pred],
+            mode='markers',
+            marker=dict(
+                size=12,
+                color='#ff4444',
+                symbol='circle',
+                line=dict(color='white', width=2)
+            ),
+            name='Prediction GDP per Capita',
+            showlegend=False
+        ))
+
+        y_min = df_gdp_filtered['vals'].min() * 0.9
+        y_max = max(df_gdp_filtered['vals'].max(), gdp_pred) * 1.1
+
+        fig2.update_layout(
+            height=350,
+            margin=dict(l=20, r=20, t=10, b=20),
+            plot_bgcolor='#1e293b',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#94a3b8'),
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickformat='%Y',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='#334155',
+                showticklabels=True,
+                tickformat='$,.0f',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[y_min, y_max]
+            )
+        )
+
+        st.plotly_chart(fig2, use_container_width=True,
+                        config={'displayModeBar': False})
+
+    except Exception as e:
+        pass
+
+        fig2 = go.Figure()
+
+        years = pd.date_range(start='2020-01-01', end='2024-01-01', freq='Y')
+        gdp_values = [45000, 46500, 48000, 49500, 51000]
+
+        fig2.add_trace(go.Scatter(
+            x=years,
+            y=gdp_values,
+            mode='lines+markers',
+            line=dict(color='#81C784', width=3),
+            marker=dict(size=6, color='#81C784'),
+            showlegend=False
+        ))
+
+        fig2.add_trace(go.Scatter(
+            x=[pd.Timestamp('2025-01-01')],
+            y=[gdp_pred],
+            mode='markers',
+            marker=dict(
+                size=12,
+                color='#ff4444',
+                symbol='circle',
+                line=dict(color='white', width=2)
+            ),
+            showlegend=False
+        ))
+
+        fig2.update_layout(
+            height=300,
+            margin=dict(l=20, r=20, t=10, b=20),
+            plot_bgcolor='#1e293b',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#94a3b8'),
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickformat='%Y',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='#334155',
+                showticklabels=True,
+                tickformat='$,.0f',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False
+            )
+        )
+
+        st.plotly_chart(fig2, use_container_width=True,
+                        config={'displayModeBar': False})
+
+col1, col2, col3, col4 = st.columns(4)
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    if sp500_last_value is not None:
+        sp500_change = sp500_pred - sp500_last_value
+        sp500_change_pct = (sp500_change / sp500_last_value) * 100
+        st.metric(
+            "S&P 500",
+            f"{sp500_pred:,.0f}",
+            f"{sp500_change_pct:+.1f}%"
+        )
+    else:
+        st.metric("S&P 500", f"{sp500_pred:,.0f}", "N/A")
+with col2:
+    st.write("")
+with col3:
+    if gdp_last_value is not None:
+        gdp_change = gdp_pred - gdp_last_value
+        gdp_change_pct = (gdp_change / gdp_last_value) * 100
+        st.metric(
+            "GDP per Capita",
+            f"${gdp_pred:,.0f}",
+            f"{gdp_change_pct:+.1f}%"
+        )
+    else:
+        st.metric("GDP per Capita", f"${gdp_pred:,.0f}", "N/A")
+st.divider()
+st.subheader("Global Market Indicators")
+
+
+col3, col4 = st.columns(2)
+
+
+urth_last_value = None
+world_gdp_last_value = None
+
+with col3:
+    st.markdown("##### URTH ETF (Global Equity)")
+
+    URTH_API_URL = "http://web-api:4000/model/fetchData/urth"
+
+    try:
+        response = requests.get(URTH_API_URL)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if isinstance(data, dict):
+            possible_keys = ['data', 'results', 'records', 'items', 'rows']
+            actual_data = None
+
+            for key in possible_keys:
+                if key in data:
+                    actual_data = data[key]
+                    break
+
+            if actual_data is None:
+                actual_data = data
+        else:
+            actual_data = data
+
+        df_urth = pd.DataFrame(actual_data)
+
+        df_urth['mos'] = pd.to_datetime(df_urth['mos'])
+        df_urth['vals'] = pd.to_numeric(df_urth['vals'])
+
+        df_urth = df_urth.sort_values('mos')
+
+        start_date = pd.Timestamp('2025-01-01')
+        end_date = pd.Timestamp('2025-06-30')
+
+        df_urth_filtered = df_urth[(df_urth['mos'] >= start_date) & (
+            df_urth['mos'] <= end_date)]
+
+        if df_urth_filtered.empty:
+            current_date = df_urth['mos'].max()
+            six_months_ago = current_date - timedelta(days=180)
+            df_urth_filtered = df_urth[df_urth['mos'] >= six_months_ago]
+
+        urth_last_value = df_urth_filtered['vals'].iloc[-1] if not df_urth_filtered.empty else None
+
+        fig3 = go.Figure()
+
+        fig3.add_trace(go.Scatter(
+            x=df_urth_filtered['mos'],
+            y=df_urth_filtered['vals'],
+            mode='lines',
+            line=dict(color='#9C27B0', width=3),
+            name='Historical',
+            showlegend=False
+        ))
+
+        last_date = df_urth_filtered['mos'].max()
+        last_value = df_urth_filtered[df_urth_filtered['mos']
+                                      == last_date]['vals'].iloc[0]
+
+        prediction_date = last_date + pd.DateOffset(months=1)
+
+        fig3.add_trace(go.Scatter(
+            x=[prediction_date],
+            y=[sp500_pred],
+            mode='markers+text',
+            marker=dict(
+                size=12,
+                color='#ff4444',
+                symbol='circle',
+                line=dict(color='white', width=2)
+            ),
+            text=[f'{sp500_pred:.2f}'],
+            textposition='top center',
+            textfont=dict(size=12, color='#ff4444'),
+            showlegend=False
+        ))
+
+        y_min = min(df_urth_filtered['vals'].min(), sp500_pred) * 0.98
+        y_max = max(df_urth_filtered['vals'].max(), sp500_pred) * 1.02
+
+        fig3.update_layout(
+            height=350,
+            margin=dict(l=20, r=20, t=10, b=20),
+            plot_bgcolor='#1e293b',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#94a3b8'),
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickformat='%b %Y',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[df_urth_filtered['mos'].min() - pd.DateOffset(days=15),
+                       prediction_date + pd.DateOffset(days=15)]
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='#334155',
+                showticklabels=True,
+                tickformat=',.0f',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[y_min, y_max]
+            )
+        )
+
+        st.plotly_chart(fig3, use_container_width=True,
+                        config={'displayModeBar': False})
+
+    except Exception as e:
+        pass
+
+with col4:
+    st.markdown("##### World GDP per Capita Average")
+
+    WORLD_GDP_API_URL = "http://web-api:4000/model/fetchData/world_gdp_per_capita"
+
+    try:
+        response = requests.get(WORLD_GDP_API_URL)
+        response.raise_for_status()
+
+        data = response.json()
+
+        if isinstance(data, dict):
+            actual_data = data.get('data', data)
+        else:
+            actual_data = data
+
+        df_world_gdp = pd.DataFrame(actual_data)
+
+        df_world_gdp['mos'] = pd.to_datetime(df_world_gdp['mos'], format='%Y')
+        df_world_gdp['vals'] = pd.to_numeric(df_world_gdp['vals'])
+
+        df_world_gdp = df_world_gdp.sort_values('mos')
+
+        df_world_gdp_filtered = df_world_gdp[df_world_gdp['mos'].dt.year >= 2020]
+
+        world_gdp_last_value = df_world_gdp_filtered['vals'].iloc[-1] if not df_world_gdp_filtered.empty else None
+
+        fig4 = go.Figure()
+
+        fig4.add_trace(go.Scatter(
+            x=df_world_gdp_filtered['mos'],
+            y=df_world_gdp_filtered['vals'],
+            mode='lines+markers',
+            line=dict(color='#FF9800', width=3),
+            marker=dict(size=8, color='#FF9800'),
+            showlegend=False
+        ))
+
+        last_date_gdp = df_world_gdp_filtered['mos'].max()
+        last_value_gdp = df_world_gdp_filtered[df_world_gdp_filtered['mos']
+                                               == last_date_gdp]['vals'].iloc[0]
+
+        prediction_date_gdp = last_date_gdp + pd.DateOffset(years=1)
+
+        fig4.add_trace(go.Scatter(
+            x=[prediction_date_gdp],
+            y=[gdp_pred],
+            mode='markers+text',
+            marker=dict(
+                size=12,
+                color='#ff4444',
+                symbol='circle',
+                line=dict(color='white', width=2)
+            ),
+
+
+
+            showlegend=False
+        ))
+
+        y_min = min(df_world_gdp_filtered['vals'].min(), gdp_pred) * 0.95
+        y_max = max(df_world_gdp_filtered['vals'].max(), gdp_pred) * 1.05
+
+        fig4.update_layout(
+            height=350,
+            margin=dict(l=20, r=20, t=10, b=20),
+            plot_bgcolor='#1e293b',
+            paper_bgcolor='#1e293b',
+            font=dict(color='#94a3b8'),
+            xaxis=dict(
+                showgrid=False,
+                showticklabels=True,
+                tickformat='%Y',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[pd.Timestamp('2019-06-01'),
+                       prediction_date_gdp + pd.DateOffset(months=6)]
+            ),
+            yaxis=dict(
+                showgrid=True,
+                gridwidth=1,
+                gridcolor='#334155',
+                showticklabels=True,
+                tickformat='$,.0f',
+                tickfont=dict(size=10),
+                zeroline=False,
+                showline=False,
+                range=[y_min, y_max]
+            )
+        )
+
+        st.plotly_chart(fig4, use_container_width=True,
+                        config={'displayModeBar': False})
+
+    except Exception as e:
+        pass
+
+
+col5, col6 = st.columns([1, 1], gap="large")
+
+
+with col5:
+
+    if urth_last_value is not None:
+        sp500_vs_global = ((sp500_pred - urth_last_value) /
+                           urth_last_value) * 100
+        st.metric(
+            "S&P 500 vs Global Market",
+            f"{sp500_vs_global:+.1f}%",
+            f"S&P: ${sp500_pred:,.0f}"
+        )
+
+with col6:
+
+    if world_gdp_last_value is not None:
+        gdp_vs_world = ((gdp_pred - world_gdp_last_value) /
+                        world_gdp_last_value) * 100
+        st.metric(
+            f"{selected_country} vs World GDP",
+            f"{gdp_vs_world:+.1f}%",
+            f"${gdp_pred:,.0f} per capita"
+        )

@@ -12,7 +12,10 @@ st.set_page_config(layout='wide')
 
 SideBarLinks()
 
-gdp_pred = st.session_state["Predictions"]['Currencies']
+currency_preds = st.session_state["Predictions"]['Currencies']
+currency_preds['Australian Dollar'] = 1 / currency_preds['Australian Dollar']
+currency_preds['British Pound'] = 1 / currency_preds['British Pound']
+currency_preds['Euro'] = 1 / currency_preds['Euro']
 
 st.markdown("""
 <div style='text-align: center; padding: 20px;'>
@@ -21,7 +24,7 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-df = pd.DataFrame(list(gdp_pred.items()), columns=[
+df = pd.DataFrame(list(currency_preds.items()), columns=[
                   'Currency Pair', 'Predicted Rate'])
 df['Predicted Rate'] = pd.to_numeric(df['Predicted Rate'], errors='coerce')
 
@@ -39,7 +42,6 @@ for row in range(rows_needed):
             currency_pair = df.iloc[currency_idx]['Currency Pair']
             rate = df.iloc[currency_idx]['Predicted Rate']
 
-            # Get currency emoji
             currency_emojis = {
                 'USD': 'USD', 'EUR': 'EUR', 'GBP': 'GBP', 'JPY': 'JPY',
                 'CNY': 'CNY', 'YUAN': 'YUAN', 'CAD': 'CAD', 'AUD': 'AUD',
@@ -67,7 +69,7 @@ st.divider()
 
 st.markdown("### Detailed Predictions Table")
 
-# Create additional columns for the table
+
 df['Previous Rate'] = df['Predicted Rate'] * \
     np.random.uniform(0.95, 1.05, len(df))
 df['Change (%)'] = ((df['Predicted Rate'] - df['Previous Rate']) /
@@ -75,11 +77,11 @@ df['Change (%)'] = ((df['Predicted Rate'] - df['Previous Rate']) /
 df['Confidence'] = np.random.choice(['High', 'Medium', 'High'], len(df))
 df['Trend'] = np.where(df['Change (%)'] > 0, 'Bullish', 'Bearish')
 
-# Format the display dataframe
+
 display_df = df.copy()
 display_df['Predicted Rate'] = display_df['Predicted Rate'].round(4)
 display_df['Previous Rate'] = display_df['Previous Rate'].round(4)
 display_df['Change (%)'] = display_df['Change (%)'].round(2)
 
-# Display the table
+
 st.dataframe(display_df, use_container_width=True)

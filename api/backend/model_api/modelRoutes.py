@@ -273,3 +273,27 @@ def get_weights(model_name):
 
     except Exception as e:
         pass
+
+
+@model_routes.route("/fetchCountryGDP/<country>", methods=["GET"])
+def fetchData(country):
+    cursor = db.get_db().cursor()
+    cursor.execute(
+        "SELECT vals, mos, country FROM GDP WHERE country = %s", (country,))
+    result = cursor.fetchall()
+
+    cursor.close()
+    gdp_data = []
+
+    for row in result:
+        gdp_data.append({
+            'vals': row['vals'],
+            'mos': row['mos'],
+            'country': row['country']
+        })
+
+    return jsonify({
+        'success': True,
+        'data': gdp_data,
+        'count': len(gdp_data)
+    }), 200
