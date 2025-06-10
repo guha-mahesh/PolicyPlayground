@@ -22,7 +22,6 @@ with col1:
     year_start = ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
                   "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
     start_choice = st.selectbox("Choose Start Year", year_start)
-    # st.write("You selected:", choice)
 
     topic = ["Taxation", "Government Spending", "Public Deficit", "Interest Rates", "Inflation", "Money Supply",
              "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
@@ -69,7 +68,7 @@ col1, col2 = st.columns(2)
 with col1:
     if st.button("Save"):
         returnJson = {"policy_id": enter_id, "user_id": 1}
-        requests.post("http://web-api:4000/pol/add_favorite", json=returnJson)
+        requests.post("http://web-api:4000/pol/favorites", json=returnJson)
         st.write("Policy Saved!")
 
 with col2:

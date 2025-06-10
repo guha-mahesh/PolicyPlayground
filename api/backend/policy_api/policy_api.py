@@ -119,3 +119,14 @@ def deletefav(policy_id):
     conn.commit()
     cursor.close()
     return '', 200
+
+@policy_api.route("/politician/<int:policy_id>", methods=["GET"])
+def get_contact_info(policy_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+    query = f"SELECT * FROM Policies JOIN Politicians ON Policies.politician = Politicians.full_name WHERE Policies.policy_id = {policy_id}"
+    cursor.execute(query)
+    data = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    return jsonify(data), 200

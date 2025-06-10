@@ -11,7 +11,7 @@ def fetch_all(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id, Name FROM Politicians WHERE user_id = " + \
+    query = "SELECT politician_id, full_name FROM Politicians WHERE user_id = " + \
         str(user_id)
     cursor.execute(query)
     allnames = cursor.fetchall()
@@ -23,7 +23,7 @@ def get_id(polName):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id FROM Politicians WHERE name = %s"
+    query = "SELECT politician_id FROM Politicians WHERE full_name = %s"
     params = [polName]
     cursor.execute(query, params)
     id = cursor.fetchall()
@@ -38,14 +38,14 @@ def new_politician():
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO Politicians (name, contact_info, user_id)
+    INSERT INTO Politicians (full_name, contact_info, user_id)
     VALUES
     (%s, %s, %s)
     """
     params = []
 
     req = request.get_json()
-    required_fields = ["name", "contact", "user_id"]
+    required_fields = ["full_name", "contact", "user_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400
