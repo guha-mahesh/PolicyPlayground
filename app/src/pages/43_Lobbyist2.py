@@ -77,11 +77,17 @@ with col2:
                 st.write(f'• Discount Rate: {currentPolicy["discountRate"]}%')
                 st.write(f'• Fed Balance: ${currentPolicy["FederalReserveBalanceSheet"]:,}B')
                 st.write(f'• Treasury Holdings: ${currentPolicy["TreasurySecurities"]:,}B')
+                st.write(f'• Federal Funds Rate: {currentPolicy["FederalFundsRate"]}%')
+                st.write(f'• Money Supply: ${currentPolicy["MoneySupply"]:,}B')
+                st.write(f'• Reserve Requirement: {currentPolicy["ReserveRequirementRatio"]}%')
                 st.write("**Fiscal Policy:**")
                 st.write(f'• Country: {currentPolicy["Country"]}')
                 st.write(f'• Military Spending: {currentPolicy["MilitarySpending"]}%')
                 st.write(f'• Education Spending: {currentPolicy["EducationSpending"]}%')
                 st.write(f'• Health Spending: {currentPolicy["HealthSpending"]}%')
+                st.write(f'• Infrastructure Spending: {currentPolicy["InfrastructureSpending"]}%')
+                st.write(f'• Debt-to-GDP Ratio: {currentPolicy["DebtToGDPRatio"]}%')
+                st.write(f'• Corporate Tax Rate: {currentPolicy["CorporateTaxRate"]}%')
 
         col2_3, col2_4 = st.columns([3, 1])
 

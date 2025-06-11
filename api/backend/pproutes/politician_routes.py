@@ -6,7 +6,7 @@ from flask import current_app
 politician = Blueprint("politician", __name__)
 
 
-@politician.route("/fetchall/<int:user_id>", methods=["GET"])
+@politician.route("/politicians/<int:user_id>", methods=["GET"])
 def fetch_all(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
@@ -18,7 +18,7 @@ def fetch_all(user_id):
     return jsonify(allnames), 200
 
 
-@politician.route("/getID/<polName>", methods=["GET"])
+@politician.route("/politicianID/<polName>", methods=["GET"])
 def get_id(polName):
     conn = db.get_db()
     cursor = conn.cursor()
@@ -69,16 +69,20 @@ def savePolicy():
 
     query = """
             INSERT INTO SavedPolicy (discountRate, FederalReserveBalanceSheet, TreasurySecurities,
-            HealthSpending, MilitarySpending, EducationSpending, Country, SP500, GDP, user_id)
+            FederalFundsRate, MoneySupply, ReserveRequirementRatio,
+            HealthSpending, MilitarySpending, EducationSpending, InfrastructureSpending,
+            DebtToGDPRatio, CorporateTaxRate, Country, SP500, GDP, user_id)
             VALUES
-            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
     params = []
 
     required_fields = ["discountRate", "federalReserveBalanceSheet",
-                       "treasurySecurities", "healthSpending", "militarySpending",
-                       "educationSpending", "country", "SP500", "GDP", "user_id"]
-
+                       "treasurySecurities", "federalFundsRate", "moneySupply", 
+                       "reserveRequirementRatio", "healthSpending", "militarySpending",
+                       "educationSpending", "infrastructureSpending", "debtToGDPRatio",
+                       "corporateTaxRate", "country", "market_index", "GDP", "user_id"]
+    
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing required field: {field}"}), 400

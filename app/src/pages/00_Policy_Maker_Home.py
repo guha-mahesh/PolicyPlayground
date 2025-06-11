@@ -206,6 +206,68 @@ with tab1:
             key="treasury_input"
         )
 
+    col13, col14 = st.columns([3, 1])
+    with col13:
+        fed_funds_slider = st.slider(
+            "Federal Funds Rate (%)",
+            min_value=0.00,
+            max_value=10.00,
+            value=2.50,
+            step=0.25,
+            key="fed_funds_slider"
+        )
+    with col14:
+        fed_funds_input = st.number_input(
+            "Fed Funds Rate",
+            min_value=0.00,
+            max_value=10.00,
+            value=fed_funds_slider,
+            step=0.25,
+            format="%.2f",
+            key="fed_funds_input"
+        )
+
+    col15, col16 = st.columns([3, 1])
+    with col15:
+        money_supply_slider = st.slider(
+            "Money Supply (Billions)",
+            min_value=0,
+            max_value=50000,
+            value=20000,
+            step=500,
+            key="money_supply_slider"
+        )
+    with col16:
+        money_supply_input = st.number_input(
+            "Money Supply",
+            min_value=0,
+            max_value=50000,
+            value=money_supply_slider,
+            step=500,
+            key="money_supply_input"
+        )
+
+    col17, col18 = st.columns([3, 1])
+    with col17:
+        reserve_ratio_slider = st.slider(
+            "Reserve Requirement Ratio (%)",
+            min_value=0.00,
+            max_value=20.00,
+            value=10.00,
+            step=0.25,
+            key="reserve_ratio_slider"
+        )
+    with col18:
+        reserve_ratio_input = st.number_input(
+            "Reserve Ratio",
+            min_value=0.00,
+            max_value=20.00,
+            value=reserve_ratio_slider,
+            step=0.25,
+            format="%.2f",
+            key="reserve_ratio_input"
+        )
+
 with tab2:
     st.markdown("""
         <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
@@ -286,6 +348,70 @@ with tab2:
             key="health_input"
         )
 
+    col19, col20 = st.columns([3, 1])
+    with col19:
+        debt_gdp_slider = st.slider(
+            "Debt-to-GDP Ratio (%)",
+            min_value=0.00,
+            max_value=150.00,
+            value=90.00,
+            step=1.0,
+            key="debt_gdp_slider"
+        )
+    with col20:
+        debt_gdp_input = st.number_input(
+            "Debt/GDP",
+            min_value=0.00,
+            max_value=150.00,
+            value=debt_gdp_slider,
+            step=1.0,
+            format="%.2f",
+            key="debt_gdp_input"
+        )
+
+    col21, col22 = st.columns([3, 1])
+    with col21:
+        infrastructure_slider = st.slider(
+            "Infrastructure Spending (% of GDP)",
+            min_value=0.00,
+            max_value=20.00,
+            value=5.00,
+            step=0.1,
+            key="infrastructure_slider"
+        )
+    with col22:
+        infrastructure_input = st.number_input(
+            "Infrastructure",
+            min_value=0.00,
+            max_value=20.00,
+            value=infrastructure_slider,
+            step=0.1,
+            format="%.2f",
+            key="infrastructure_input"
+        )
+
+    col23, col24 = st.columns([3, 1])
+    with col23:
+        corp_tax_slider = st.slider(
+            "Corporate Tax Rate (%)",
+            min_value=0.00,
+            max_value=50.00,
+            value=25.00,
+            step=0.5,
+            key="corp_tax_slider"
+        )
+    with col24:
+        corp_tax_input = st.number_input(
+            "Corporate Tax",
+            min_value=0.00,
+            max_value=50.00,
+            value=corp_tax_slider,
+            step=0.5,
+            format="%.2f",
+            key="corp_tax_input"
+        )
+    
+
 
 discount_rate = discount_rate_input or discount_rate_slider
 fed_balance = fed_balance_input or fed_balance_slider
@@ -293,6 +419,13 @@ treasury_holdings = treasury_input or treasury_slider
 military_spending = military_input or military_slider
 education_spending = education_input or education_slider
 health_spending = health_input or health_slider
+
+fed_funds_rate = fed_funds_input or fed_funds_slider
+money_supply = money_supply_input or money_supply_slider
+reserve_ratio = reserve_ratio_input or reserve_ratio_slider
+infrastructure_spending = infrastructure_input or infrastructure_slider
+debt_gdp_ratio = debt_gdp_input or debt_gdp_slider
+corporate_tax_rate = corp_tax_input or corp_tax_slider
 
 ls = ["United States", "Japan", "Germany",
       "United Kingdom", "France", "Russia", "Canada"]
@@ -314,7 +447,7 @@ if selected_country == "Use My Nationality":
         country = "United States"
 else:
     country = selected_country
-
+    
 st.markdown("""
     <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
         <h3 style='color: #e2e8f0; margin: 0;'>Current Policy Settings</h3>
@@ -383,7 +516,13 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
         "Monetary Policy Country": user_country,
         "Central Bank": policy_config['central_bank'],
         "Rate Name": policy_config['rate_name'],
-        "Currency": policy_config['currency']
+        "Currency": policy_config['currency'],
+        "Federal Funds Rate": fed_funds_rate,
+        "Money Supply": money_supply,
+        "Reserve Requirement Ratio": reserve_ratio,
+        "Infrastructure Spending": infrastructure_spending,
+        "Debt to GDP Ratio": debt_gdp_ratio,
+        "Corporate Tax Rate": corporate_tax_rate
     }
 
     api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{treasury_holdings},{fed_balance}"
@@ -432,7 +571,6 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
             else:
                 market_index = "SP500"
                 adjusted_currencies = base_currencies
-
             st.success("Prediction successful!")
             st.session_state['Predictions'] = {
                 "Market": str(market_prediction),

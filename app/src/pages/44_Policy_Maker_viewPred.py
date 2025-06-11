@@ -69,8 +69,14 @@ if st.button("Save Policy Settings", type="secondary"):
         "educationSpending": st.session_state['policy_params']["Education Spending"],
         "healthSpending": st.session_state['policy_params']["Health Spending"],
         "country": st.session_state['policy_params']["Selected Country"],
-        market_index: market_pred,
-        "GDP": gdp_pred
+        "market_index": market_pred,
+        "GDP": gdp_pred,
+        "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
+        "moneySupply": st.session_state['policy_params']["Money Supply"],
+        "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
+        "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
+        "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
+        "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"]
     }
     try:
         save_url = "http://host.docker.internal:4000/politician/savePolicy"
