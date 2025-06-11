@@ -89,13 +89,13 @@ with st.container(height = 200):
         if country:
             params['country_choice'] = country_choice
     
-# Add min/max parameters for each range
-params['budget_min'] = budget_range[0]
-params['budget_max'] = budget_range[1]
-params['duration_min'] = duration_range[0]
-params['duration_max'] = duration_range[1]
-params['population_min'] = population_range[0]
-params['population_max'] = population_range[1]
+        # Add min/max parameters for each range
+        params['budget_min'] = budget_range[0]
+        params['budget_max'] = budget_range[1]
+        params['duration_min'] = duration_range[0]
+        params['duration_max'] = duration_range[1]
+        params['population_min'] = population_range[0]
+        params['population_max'] = population_range[1]
 
 response = requests.get("http://web-api:4000/pol/policy_handler", params=params)
 data = response.json()
