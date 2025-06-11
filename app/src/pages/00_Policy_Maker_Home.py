@@ -8,16 +8,15 @@ st.set_page_config(layout='wide')
 SideBarLinks()
 
 
-st.title(
-    f"Welcome {st.session_state['first_name']}")
-
-st.write('')
-st.write('')
-st.write('# Test your Policy')
+st.markdown("""
+    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
+        <h1 style='color: white; margin: 0;'>Welcome, {}</h1>
+        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Test and analyze your policy decisions</p>
+    </div>
+""".format(st.session_state['first_name']), unsafe_allow_html=True)
 
 
 tab1, tab2 = st.tabs(["Monetary Policy", "Fiscal Policy"])
-
 
 selected_country = "Use My Nationality"
 
@@ -136,8 +135,12 @@ if user_country not in ["United States", "United Kingdom", "Germany"]:
 policy_config = get_monetary_policy_config(user_country)
 
 with tab1:
-    st.write(f"#### {policy_config['central_bank']} Controls")
-    st.write("")
+    st.markdown(f"""
+        <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
+            <h3 style='color: #e2e8f0; margin: 0;'>{policy_config['central_bank']} Controls</h3>
+            <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Adjust monetary policy parameters to influence economic outcomes</p>
+        </div>
+    """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([3, 1])
     with col1:
@@ -147,7 +150,8 @@ with tab1:
             max_value=policy_config['rate_max'],
             value=policy_config['rate_default'],
             step=0.25,
-            key="discount_slider"
+            key="discount_slider",
+            help="Adjust the central bank's key interest rate to influence borrowing costs and economic activity"
         )
     with col2:
         discount_rate_input = st.number_input(
@@ -168,7 +172,8 @@ with tab1:
             max_value=policy_config['balance_max'],
             value=policy_config['balance_default'],
             step=100,
-            key="balance_slider"
+            key="balance_slider",
+            help="Control the size of the central bank's balance sheet to influence money supply"
         )
     with col4:
         fed_balance_input = st.number_input(
@@ -188,7 +193,8 @@ with tab1:
             max_value=policy_config['securities_max'],
             value=policy_config['securities_default'],
             step=100,
-            key="treasury_slider"
+            key="treasury_slider",
+            help="Manage government securities holdings to influence long-term interest rates"
         )
     with col6:
         treasury_input = st.number_input(
@@ -201,8 +207,12 @@ with tab1:
         )
 
 with tab2:
-    st.write("#### Government Spending Allocation")
-    st.write("")
+    st.markdown("""
+        <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
+            <h3 style='color: #e2e8f0; margin: 0;'>Government Spending Allocation</h3>
+            <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Configure fiscal policy parameters to shape economic growth and development</p>
+        </div>
+    """, unsafe_allow_html=True)
 
     country_options = ["Use My Nationality", "United States", "Japan", "Germany",
                        "United Kingdom", "Russia", "Canada"]
@@ -212,7 +222,6 @@ with tab2:
         index=0,
         help="Choose a country for GDP prediction, or use your nationality"
     )
-    st.write("")
 
     col7, col8 = st.columns([3, 1])
     with col7:
@@ -222,7 +231,8 @@ with tab2:
             max_value=20.0,
             value=3.0,
             step=0.1,
-            key="military_slider"
+            key="military_slider",
+            help="Allocate government spending to defense and security"
         )
     with col8:
         military_input = st.number_input(
@@ -242,7 +252,8 @@ with tab2:
             max_value=20.0,
             value=5.0,
             step=0.1,
-            key="education_slider"
+            key="education_slider",
+            help="Invest in education to develop human capital and future productivity"
         )
     with col10:
         education_input = st.number_input(
@@ -262,7 +273,8 @@ with tab2:
             max_value=15.0,
             value=8.0,
             step=0.1,
-            key="health_slider"
+            key="health_slider",
+            help="Allocate resources to healthcare to improve population health and productivity"
         )
     with col12:
         health_input = st.number_input(
@@ -303,23 +315,50 @@ if selected_country == "Use My Nationality":
 else:
     country = selected_country
 
-st.write("---")
-st.write("### Current Policy Settings")
+st.markdown("""
+    <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
+        <h3 style='color: #e2e8f0; margin: 0;'>Current Policy Settings</h3>
+        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Review your selected policy parameters</p>
+    </div>
+""", unsafe_allow_html=True)
+
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.write("**Monetary Policy:**")
-    st.write(f"• {policy_config['central_bank']} Rate: {discount_rate}%")
-    st.write(f"• Balance Sheet: {policy_config['currency']}{fed_balance:,}B")
-    st.write(
-        f"• Securities Holdings: {policy_config['currency']}{treasury_holdings:,}B")
+    st.markdown("""
+        <div style='background: #0f172a; padding: 1rem; border-radius: 6px;'>
+            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>💰 Monetary Policy</h4>
+            <p style='color: #94a3b8; margin: 0;'>• {} Rate: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Balance Sheet: {}{:,}B</p>
+            <p style='color: #94a3b8; margin: 0;'>• Securities Holdings: {}{:,}B</p>
+            <p style='margin: 0;'>&nbsp;</p> <!-- Adds an empty line -->
+        </div>
+
+    """.format(
+        policy_config['central_bank'],
+        discount_rate,
+        policy_config['currency'],
+        fed_balance,
+        policy_config['currency'],
+        treasury_holdings
+    ), unsafe_allow_html=True)
 
 with col_right:
-    st.write("**Fiscal Policy:**")
-    st.write(f"• Country: {country}")
-    st.write(f"• Military Spending: {military_spending}%")
-    st.write(f"• Education Spending: {education_spending}%")
-    st.write(f"• Health Spending: {health_spending}%")
+    st.markdown("""
+        <div style='background: #0f172a; padding: 1rem; border-radius: 6px;'>
+            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>📊 Fiscal Policy</h4>
+            <p style='color: #94a3b8; margin: 0;'>• Country: {}</p>
+            <p style='color: #94a3b8; margin: 0;'>• Military Spending: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Education Spending: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Health Spending: {}%</p>
+        </div>
+    """.format(
+        country,
+        military_spending,
+        education_spending,
+        health_spending
+    ), unsafe_allow_html=True)
+
 tables = [
     "YuantoUSD",
     "AUDtoUSD",
@@ -330,8 +369,9 @@ tables = [
     "treasurysecurities",
     "discountrate", "sp500"]
 
+st.markdown("<br>", unsafe_allow_html=True)
 
-if st.button("Test Policy Set", type="primary"):
+if st.button("Test Policy Set", type="primary", use_container_width=True):
     st.session_state['policy_params'] = {
         "Discount Rate": discount_rate,
         "Federal Balance": fed_balance,
