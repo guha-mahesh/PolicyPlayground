@@ -32,9 +32,9 @@ with col1:
     budget_range = st.slider(
         "Budget Range (in millions)",
         min_value=0,
-        max_value=1000000,
-        value=(0, 1000000),
-        step=1000
+        max_value=1000,
+        value=(0, 1000),
+        step=50
     )
     
     duration_range = st.slider(
@@ -46,11 +46,11 @@ with col1:
     )
     
     population_range = st.slider(
-        "Population Size Range",
+        "Population Size Range (in millions)",
         min_value=0,
-        max_value=1000000000,
-        value=(0, 1000000000),
-        step=1000000
+        max_value=1000,
+        value=(0, 1000),
+        step=50
     )
 
 with col2:
