@@ -54,7 +54,7 @@ def train_func():
         log_features = set()
 
         for col in df.columns:
-            if col == "mos" or col.startswith('Country_'):
+            if col == "mos" or col.startswith('Country_') or col == "is_pandemic":
                 continue
 
             values = df[col].astype(np.float64)
@@ -154,6 +154,9 @@ def train_func():
         df = create_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1)
         df['date'] = pd.to_numeric(df['date'])
         df['previous_year'] = df['date'] - 1
+        
+        # Add pandemic feature: 1 if year is 2020 or 2021, 0 otherwise
+        df['is_pandemic'] = ((df['date'] == 2020) | (df['date'] == 2021)).astype(int)
 
         return df
 
@@ -161,8 +164,10 @@ def train_func():
 
     lagged_features = ['Health_spending_lag1',
                        'Education_spending_lag1', 'Military Spending_lag1']
+    # Add pandemic feature to the model features
+    model_features = lagged_features + ['previous_year', 'is_pandemic']
     model_data = df.dropna(
-        subset=['GDP_per_capita'] + lagged_features + ['previous_year'])
+        subset=['GDP_per_capita'] + model_features)
 
     country_dummies = pd.get_dummies(model_data['Country'], prefix='Country')
     country_features = list(country_dummies.columns)
@@ -172,7 +177,7 @@ def train_func():
     model_data, feature_means, feature_stds, log_transformed_features = normalize_features(
         model_data, fit=True)
 
-    columns_to_use = lagged_features + ['previous_year'] + country_features
+    columns_to_use = model_features + country_features
     X = model_data[columns_to_use].astype(np.float64).values
     X = np.column_stack([np.ones(len(X)), X])
     y = model_data['GDP_per_capita'].astype(np.float64).values
@@ -190,7 +195,7 @@ def train_func():
     response = requests.post(
         f"{api_base_url}/storeWeights", json=gdp_payload)
     if response.status_code != 200:
-        print(f"Failed to store S&P 500 weights: {response.text}")
+        print(f"Failed to store GDP weights: {response.text}")
 
 
 def predict(user_features, country, current_year=2024, coefficients=None):
@@ -213,7 +218,7 @@ def predict(user_features, country, current_year=2024, coefficients=None):
         df = df.copy()
 
         for col in df.columns:
-            if col == "date" or col.startswith('Country_'):
+            if col == "date" or col.startswith('Country_') or col == "is_pandemic":
                 continue
 
             values = df[col].astype(np.float64)
@@ -237,11 +242,15 @@ def predict(user_features, country, current_year=2024, coefficients=None):
 
     health_spending_pct, education_spending_pct, military_spending_pct = user_features
 
+    # Create pandemic feature: 1 if current_year is 2020 or 2021, 0 otherwise
+    is_pandemic = 1 if current_year in [2020, 2021] else 0
+
     feature_data = {
         'Health_spending_lag1': health_spending_pct,
         'Education_spending_lag1': education_spending_pct,
         'Military Spending_lag1': military_spending_pct,
-        'previous_year': current_year
+        'previous_year': current_year,
+        'is_pandemic': is_pandemic
     }
 
     for country_feature in country_features:
@@ -259,7 +268,7 @@ def predict(user_features, country, current_year=2024, coefficients=None):
 
     lagged_features = ['Health_spending_lag1',
                        'Education_spending_lag1', 'Military Spending_lag1']
-    columns_to_use = lagged_features + ['previous_year'] + country_features
+    columns_to_use = lagged_features + ['previous_year', 'is_pandemic'] + country_features
     X = feature_df[columns_to_use].astype(np.float64).values
 
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
