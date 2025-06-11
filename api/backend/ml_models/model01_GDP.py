@@ -171,6 +171,7 @@ def train_func():
 
     country_dummies = pd.get_dummies(model_data['Country'], prefix='Country')
     country_features = list(country_dummies.columns)
+
     model_data = pd.concat([model_data, country_dummies], axis=1)
     model_data = model_data.drop(columns=['Country'])
 
@@ -199,16 +200,17 @@ def train_func():
 
 
 def predict(user_features, country, current_year=2024, coefficients=None):
-
+    print(country)
     country_code_to_name = {
-        "USA": "USA",
-        "JPN": "JPN",
-        "DEU": "DEU",
-        "GBR": "GBR",
-        "FRA": "FRA",
-        "RUS": "RUS",
-        "CAN": "CAN"
+        "USA": "UnitedStates",
+        "JPN": "Japan",
+        "DEU": "Germany",
+        "GBR": "UnitedKingdom",
+
+        "RUS": "Russia",
+        "CAN": "Canada"
     }
+
     if coefficients is None:
         response = requests.get("http://web-api:4000/model/getWeights/GDP")
         if response.status_code == 200:
@@ -235,10 +237,11 @@ def predict(user_features, country, current_year=2024, coefficients=None):
                 df[col] = 0
 
         return df
-
-    if country not in country_code_to_name.values():
+    print(country)
+    print(country in list(country_code_to_name.keys()))
+    if country not in country_code_to_name.keys():
         raise ValueError(
-            f"Country must be one of: {list(country_code_to_name.values())}")
+            f"Country must be one of: {list(country_code_to_name.keys())}")
 
     health_spending_pct, education_spending_pct, military_spending_pct = user_features
 
@@ -255,7 +258,8 @@ def predict(user_features, country, current_year=2024, coefficients=None):
 
     for country_feature in country_features:
         country_name = country_feature.replace('Country_', '')
-        feature_data[country_feature] = 1 if country_name == country else 0
+        feature_data[country_feature] = 1 if country_name == country_code_to_name.get(
+            country, "") else 0
 
     feature_df = pd.DataFrame([feature_data])
 

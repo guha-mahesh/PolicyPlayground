@@ -45,30 +45,27 @@ st.write('#### Choose a User to Login as:')
 # functionality, we put a button on the screen that the user
 # can click to MIMIC logging in as that mock user.
 st.write('\n\n')
-makers_dict = {"Sun Yue" : 1, "Dillon Brooks" : 2, "Gerrard James" : 3}
-makers = ["Sun Yue", "Dillon Brooks", "Gerrard James"]
+makers_dict = {"Sun Yue 🇺🇸": [1, "United States"], "Dillon Brooks 🇬🇧": [
+    2, "United Kingdom"], "Gerrard James 🇩🇪": [3, "Germany"]}
+makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
 maker = st.selectbox("Choose a User:", makers)
 if st.button('Policy Maker Login',
              type='primary',
              use_container_width=True):
     # when user clicks the button, they are now considered authenticated
     st.session_state['authenticated'] = True
-    # we set the role of the current user
+
     st.session_state['role'] = 'Policy Maker'
-    st.session_state['nationality'] = 'United States'
+    st.session_state['nationality'] = makers_dict[maker][1]
     st.session_state['first_name'] = maker
-    st.session_state['user_id'] = makers_dict[maker]
-    # we add the first name of the user (so it can be displayed on
-    # subsequent pages).
-    # st.session_state['first_name'] = 'John'
-    # finally, we ask streamlit to switch to another page, in this case, the
-    # landing page for this particular user type
+    st.session_state['user_id'] = makers_dict[maker][0]
+
     logger.info("Logging in as Policy Maker Persona")
     st.switch_page('pages/00_Policy_Maker_Home.py')
 
 st.write('\n\n')
 
-econ_dict = {"Andrew Thrnton" : 4, "Ryan Gurtings" : 5, "Bob" : 6}
+econ_dict = {"Andrew Thrnton": 4, "Ryan Gurtings": 5, "Bob": 6}
 econs = ["Andrew Tornton", "Ryan Gurtings", "Bob"]
 econ = st.selectbox("Choose a User:", econs)
 if st.button('Economist Login',
@@ -83,7 +80,7 @@ if st.button('Economist Login',
 
 st.write('\n\n')
 
-lobby_dict = {"Eleanore Goosens" : 7, "User 2" : 8, "User 3" : 9}
+lobby_dict = {"Eleanore Goosens": 7, "User 2": 8, "User 3": 9}
 lobbys = ["Eleanore Goosens", "User 2", "User 3"]
 lobby = st.selectbox("Choose a User:", lobbys)
 if st.button('Lobbyist Login', type='primary',  use_container_width=True):
