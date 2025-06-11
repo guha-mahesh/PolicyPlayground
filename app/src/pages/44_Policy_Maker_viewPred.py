@@ -21,7 +21,7 @@ st.title("Your Predictions")
 sp500_pred = round(float(st.session_state['Predictions']["SP500"]), 2)
 gdp_pred = round(float(st.session_state['Predictions']["GDP/C"]), 2)
 
-# Display predictions in columns
+
 col1, col2 = st.columns(2)
 
 with col1:
