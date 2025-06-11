@@ -22,4 +22,4 @@ with st.container(height = 300):
     st.write(f"**Phone Number:** {df1.loc[0, 'phone_number']}")
 
 if st.button("Previous"):
-    st.switch_page("33_View_Favorites")
+    st.switch_page("pages/33_View_Favorites.py")

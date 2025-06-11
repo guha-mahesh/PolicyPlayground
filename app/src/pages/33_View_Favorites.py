@@ -109,6 +109,5 @@ except Exception as e:
 st.markdown("<br>", unsafe_allow_html=True)
 
 st.write("---")
-
-
-
+if st.button("Previous"):
+    st.switch_page("pages/32_Historical_Data.py")
