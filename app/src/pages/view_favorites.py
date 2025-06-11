@@ -15,16 +15,13 @@ st.title(f"View Favorite Policies 🔎")
 st.write("---")
 st.write("\n \n")
 
-response = requests.get(f"http://web-api:4000/pol/favorites/{1}")
+response = requests.get(f"http://web-api:4000/pol/favorites/{st.session_state['user_id']}")
 data = response.json()
 df = pd.DataFrame(data)
-st.write(df)
 
 col1, col2 = st.columns(2, vertical_alignment="bottom")
-
 with col1:
-    #policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
-    policies_list = []
+    policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
     fav_choice = st.selectbox("Choose A Policy to Look at:", policies_list)  
     with st.container(height=300):
         st.markdown("**Policy Information**")
@@ -44,6 +41,9 @@ with col2:
         st.markdown("**Policy Description:**")
         desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
         st.write(desc)
+
+        if st.button("Get Polician Contact Info"):
+            st.write("got it")
 
 # Add Similar Policies section
 st.header("Similar Policies")

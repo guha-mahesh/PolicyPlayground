@@ -75,31 +75,33 @@ with st.container(height = 200):
         order = st.radio("Order:", ["ASC", "DESC"])
     with col2:
         sort_by = st.radio("Sort by:", ['policy_id', 'year_enacted'])
-    if st.button("Apply", use_container_width=True):
-        params = {
-            "sort_by": sort_by,
-            "order": order,
-        }
-        if year_start:
-            params['Start Year'] = start_choice
-        if year_end:
-            params['End Year'] = end_choice
-        if topic:
-            params['Topic Choice'] = topic_choice
-        if country:
-            params['country_choice'] = country_choice
-    
-        # Add min/max parameters for each range
-        params['budget_min'] = budget_range[0]
-        params['budget_max'] = budget_range[1]
-        params['duration_min'] = duration_range[0]
-        params['duration_max'] = duration_range[1]
-        params['population_min'] = population_range[0]
-        params['population_max'] = population_range[1]
+if st.button("Apply", use_container_width=True):
+    params = {
+        "sort_by": sort_by,
+        "order": order,
+    }
+    if year_start:
+        params['Start Year'] = start_choice
+    if year_end:
+        params['End Year'] = end_choice
+    if topic:
+        params['Topic Choice'] = topic_choice
+    if country:
+        params['country_choice'] = country_choice
+
+    # Add min/max parameters for each range
+    params['budget_min'] = budget_range[0]
+    params['budget_max'] = budget_range[1]
+    params['duration_min'] = duration_range[0]
+    params['duration_max'] = duration_range[1]
+    params['population_min'] = population_range[0]
+    params['population_max'] = population_range[1]
 
 response = requests.get("http://web-api:4000/pol/policy_handler", params=params)
 data = response.json()
 df = pd.DataFrame(data)
+st.write("### Here is a list of all availiable policy:")
+st.write(df)
 
 # Format the numeric columns
 if 'budget' in df.columns:
@@ -109,36 +111,16 @@ if 'population_size' in df.columns:
 if 'duration_length' in df.columns:
     df['duration_length'] = df['duration_length'].apply(lambda x: f"{x} months" if pd.notnull(x) else "")
 
-st.dataframe(df)
-for i in range(len(df)):
-    st.write(f"Policy ID: {df.loc[i, 'policy_id']} - Topic: {df.loc[i, 'topic']} - Policitian: {df.loc[i, 'politician']}")
-
 choices = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
-st.write(choices)
-
-
 choice = st.selectbox("Choose a Policy to save", choices)
-st.write(choice)
-num = 0
-#num = int(choice.split('.')[0])
-st.write(num)
+num = int(choice.split('.')[0])
+
 if st.button("Save Policy"):
-    returnJson = {"policy_id": num, "user_id": 1}
-    requests.post("http://web-api:4000/pol/favorites", json=returnJson)
+    returnJson = {"policy_id": num, "user_id": st.session_state['user_id']}
+    requests.post(f"http://web-api:4000/pol/favorites", json=returnJson)
     st.write("Policy Saved!")    
 
 st.write("---")
 
-
-enter_id = st.text_input("Enter a Policy ID to save:")
-
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("Save"):
-        returnJson = {"policy_id": enter_id, "user_id": 1}
-        requests.post("http://web-api:4000/pol/favorites", json=returnJson)
-        st.write("Policy Saved!")
-
-    with col2:
-        if st.button("Next Page"):
-            st.switch_page("pages/view_favorites.py")
+if st.button("Next Page"):
+    st.switch_page("pages/view_favorites.py")
