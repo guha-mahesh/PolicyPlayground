@@ -168,7 +168,6 @@ def fetchalldata(var01):
     cursor = db.get_db().cursor()
     query = f"SELECT mos, vals FROM {var01}"
     cursor.execute(query)
-
     rows = cursor.fetchall()
     cursor.close()
 

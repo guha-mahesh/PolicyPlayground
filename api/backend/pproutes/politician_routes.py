@@ -11,7 +11,7 @@ def fetch_all(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id, Name FROM Politicians WHERE user_id = " + \
+    query = "SELECT politician_id, full_name FROM Politicians WHERE user_id = " + \
         str(user_id)
     cursor.execute(query)
     allnames = cursor.fetchall()
@@ -23,7 +23,7 @@ def get_id(polName):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id FROM Politicians WHERE name = %s"
+    query = "SELECT politician_id FROM Politicians WHERE full_name = %s"
     params = [polName]
     cursor.execute(query, params)
     id = cursor.fetchall()
@@ -39,14 +39,14 @@ def new_politician():
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO Politicians (name, contact_info, user_id)
+    INSERT INTO Politicians (full_name, contact_info, user_id)
     VALUES
     (%s, %s, %s)
     """
     params = []
 
     req = request.get_json()
-    required_fields = ["name", "contact", "user_id"]
+    required_fields = ["full_name", "contact", "user_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400
@@ -58,34 +58,62 @@ def new_politician():
     polId = cursor.lastrowid
     conn.commit()
     cursor.close()
-    return jsonify({"message": "Note created successfully", "polID": polId}, 201)
+    return jsonify({"message": "Politician created successfully", "polID": polId}, 201)
 
 
 @politician.route("/savePolicy", methods=["POST"])
 def savePolicy():
+    conn = db.get_db()
+    cursor = conn.cursor()
     data = request.get_json()
 
-    discountRate = data.get('discountRate')
-    FederalReserveBalanceSheet = data.get('federalReserveBalanceSheet')
-    TreasurySecurities = data.get('treasurySecurities')
-    MillitarySpending = data.get('millitarySpending')
-    EducationSpending = data.get('educationSpending')
-    HealthSpending = data.get('healthSpending')
-    Country = data.get('country')
-    SP500 = data.get('SP500')
-    GDP = data.get('GDP')
+    query = """
+            INSERT INTO SavedPolicy (discountRate, FederalReserveBalanceSheet, TreasurySecurities,
+            HealthSpending, MilitarySpending, EducationSpending, Country, SP500, GDP, user_id)
+            VALUES
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+    
+    params = []
 
-    cursor = db.get_db().cursor()
+    required_fields = ["discountRate", "federalReserveBalanceSheet",
+              "treasurySecurities", "healthSpending", "militarySpending",
+              "educationSpending", "country", "SP500", "GDP", "user_id"]
 
-    cursor.execute("""
-            INSERT INTO SavedPolicy 
-            (discountRate, FederalReserveBalanceSheet, 
-             TreasurySecurities, HealthSpending, MillitarySpending, 
-             EducationSpending, Country, SP500, GDP)
-            VALUES  (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """, (discountRate, FederalReserveBalanceSheet,
-              TreasurySecurities, HealthSpending, MillitarySpending,
-              EducationSpending, Country, SP500, GDP))
-    db.get_db().commit()
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
+    for field in required_fields:
+        params.append(data[field])
+    cursor.execute(query, params)
+
+    conn.commit()
+    saved_id = cursor.lastrowid
     cursor.close()
-    return jsonify({'message': 'Policy saved successfully'}), 200
+    return jsonify({'message': 'Policy saved successfully', 'saved_id': saved_id}), 200
+
+@politician.route("/allpolicy/<int:user_id>", methods=["GET"])
+def get_policy(user_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(f'SELECT saved_id FROM SavedPolicy WHERE user_id = {user_id}')
+    result = cursor.fetchall()
+
+    conn.commit()
+    cursor.close()
+
+    return jsonify(result), 200
+
+@politician.route("/policy/<int:saved_id>", methods=["GET"])
+def get_saved(saved_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    cursor.execute(f'SELECT * FROM SavedPolicy WHERE saved_id = {saved_id}')
+    result = cursor.fetchall()
+
+    conn.commit()
+    cursor.close()
+
+    return jsonify(result), 200

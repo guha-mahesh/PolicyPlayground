@@ -16,22 +16,20 @@ def AboutPageNav():
     st.sidebar.page_link("pages/30_About.py", label="About", icon="🧠")
 
 
-# ------------------------ Examples for Role of pol_strat_advisor ------------------------
+# ------------------------ Economist ------------------------
+def economy_home():
+    st.sidebar.page_link(
+        "pages/economist_home.py", label="Home", icon="🏦"
+    )
+
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
         "pages/historicaldata.py", label="Historical Data Viewer", icon="💰"
     )
 
-
-def WorldBankVizNav():
-    st.sidebar.page_link(
-        "pages/41_Student.py", label="Push Policy", icon="🏦"
-    )
-
-
 def viewFavoritesNav():
     st.sidebar.page_link(
-        "pages/view_favorites.py", label="View Favorites", icon="🧾"
+        "pages/saved_drafts.py", label="Proposed Policy", icon="🧾"
     )
 
 # ------------------------ Examples for Role of usaid_worker ------------------------
@@ -108,6 +106,7 @@ def SideBarLinks(show_home=False):
 
         # If the user role is usaid worker, show the Api Testing page
         if st.session_state["role"] == "economist":
+            economy_home()
             PolStratAdvHomeNav()
             viewFavoritesNav()
 

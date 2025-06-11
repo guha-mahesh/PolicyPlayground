@@ -17,7 +17,7 @@ st.title("Enter new Politician")
 name = st.text_input(label="Enter Name")
 contact = st.text_input(label="Enter Contact Info")
 
-returnJson = {"name" : name, "contact" : contact, "user_id" : st.session_state["user_id"]}
+returnJson = {"full_name" : name, "contact" : contact, "user_id" : st.session_state["user_id"]}
 
 # add a button to use the values entered into the number field to send to the
 # prediction function via the REST API
