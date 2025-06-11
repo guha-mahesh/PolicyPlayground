@@ -20,13 +20,12 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.markdown(f"#### Logged in as: **{st.session_state['first_name']}**")
-st.write("---")
 st.write("\n \n")
 choices = []
 params = []
 df = []
 
-st.markdown("### Enter the cirteria to find your policies:\n")
+st.markdown("### Enter the criteria to find your policies:\n")
 
 col1, col2 = st.columns(2)
 with col1:
@@ -131,4 +130,4 @@ if st.button("Save Policy"):
 st.write("---")
 
 if st.button("Next Page"):
-    st.switch_page("pages/view_favorites.py")
+    st.switch_page("pages/33_View_Favorites.py")
