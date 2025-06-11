@@ -45,8 +45,8 @@ st.write('#### Choose a User to Login as:')
 # functionality, we put a button on the screen that the user
 # can click to MIMIC logging in as that mock user.
 st.write('\n\n')
-makers_dict = {"Sun Yue 🇺🇸": [1, "United States"], "Dillon Brooks 🇬🇧": [
-    2, "United Kingdom"], "Gerrard James 🇩🇪": [3, "Germany"]}
+makers_dict = {"Sun Yue 🇺🇸": [2, "United States"], "Dillon Brooks 🇬🇧": [
+    3, "United Kingdom"], "Gerrard James 🇩🇪": [4, "Germany"]}
 makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
 maker = st.selectbox("Choose a User:", makers)
 if st.button('Policy Maker Login',
@@ -65,22 +65,22 @@ if st.button('Policy Maker Login',
 
 st.write('\n\n')
 
-econ_dict = {"Andrew Thrnton": 4, "Ryan Gurtings": 5, "Bob": 6}
-econs = ["Andrew Tornton", "Ryan Gurtings", "Bob"]
+econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob": 7}
+econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
 econ = st.selectbox("Choose a User:", econs)
 if st.button('Economist Login',
              type='primary',
              use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'economist'
-    st.session_state["user_id"] = makers_dict[maker]
+    st.session_state["user_id"] = econ_dict[econ]
     st.session_state['first_name'] = econ
     logger.info("Logging in as Political Strategy Advisor Persona")
     st.switch_page('pages/historicaldata.py')
 
 st.write('\n\n')
 
-lobby_dict = {"Eleanore Goosens": 7, "User 2": 8, "User 3": 9}
+lobby_dict = {"Eleanore Goosens": 8, "User 2": 9, "User 3": 10}
 lobbys = ["Eleanore Goosens", "User 2", "User 3"]
 lobby = st.selectbox("Choose a User:", lobbys)
 if st.button('Lobbyist Login', type='primary',  use_container_width=True):
