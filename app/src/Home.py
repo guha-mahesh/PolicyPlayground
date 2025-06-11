@@ -65,8 +65,8 @@ if st.button('Policy Maker Login',
 
 st.write('\n\n')
 
-econ_dict = {"Andrew Thrnton": 4, "Ryan Gurtings": 5, "Bob": 6}
-econs = ["Andrew Tornton", "Ryan Gurtings", "Bob"]
+econ_dict = {"Andrew Thornton": 4, "Ryan Gurtings": 5, "Bob": 6}
+econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
 econ = st.selectbox("Choose a User:", econs)
 if st.button('Economist Login',
              type='primary',
