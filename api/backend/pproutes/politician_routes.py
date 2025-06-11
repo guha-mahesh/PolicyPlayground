@@ -124,3 +124,94 @@ def get_saved(saved_id):
     cursor.close()
 
     return jsonify(result), 200
+
+
+@politician.route("/publish", methods=["POST"])
+def publish_policy():
+    conn = db.get_db()
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+            
+        current_app.logger.info(f"Received publish request with data: {data}")
+        
+        if 'saved_id' not in data or 'user_id' not in data:
+            return jsonify({"error": "Missing required fields: saved_id and user_id are required"}), 400
+            
+        check_query = """
+        SELECT publish_id FROM PublishPolicy 
+        WHERE saved_id = %s AND status = 'active'
+        """
+        cursor.execute(check_query, (data['saved_id'],))
+        existing = cursor.fetchone()
+        
+        if existing:
+            return jsonify({"error": "Policy is already published"}), 400
+
+        query = """
+        INSERT INTO PublishPolicy (saved_id, user_id)
+        VALUES (%s, %s)
+        """
+        params = [data['saved_id'], data['user_id']]
+        
+        cursor.execute(query, params)
+        publish_id = cursor.lastrowid
+        conn.commit()
+        
+        current_app.logger.info(f"Successfully published policy with ID: {publish_id}")
+        return jsonify({"message": "Policy published successfully", "publish_id": publish_id}), 201
+        
+    except Exception as e:
+        current_app.logger.error(f"Error publishing policy: {str(e)}")
+        conn.rollback()
+        return jsonify({"error": f"Failed to publish policy: {str(e)}"}), 500
+    finally:
+        cursor.close()
+
+
+@politician.route("/published", methods=["GET"])
+def get_published_policies():
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT p.*, s.* 
+    FROM PublishPolicy p
+    JOIN SavedPolicy s ON p.saved_id = s.saved_id
+    WHERE p.status = 'active'
+    ORDER BY p.publish_date DESC
+    """
+    
+    try:
+        cursor.execute(query)
+        policies = cursor.fetchall()
+        return jsonify(policies), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+@politician.route("/unpublish/<int:publish_id>", methods=["POST"])
+def unpublish_policy(publish_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    query = """
+    UPDATE PublishPolicy 
+    SET status = 'archived'
+    WHERE publish_id = %s
+    """
+    
+    try:
+        cursor.execute(query, (publish_id,))
+        conn.commit()
+        return jsonify({"message": "Policy unpublished successfully"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
