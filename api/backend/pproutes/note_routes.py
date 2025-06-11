@@ -6,7 +6,7 @@ from flask import current_app
 notes = Blueprint("notes", __name__)
 
 
-@notes.route("/addnote", methods=["POST"])
+@notes.route("/note", methods=["POST"])
 def add_note():
     conn = db.get_db()
     cursor = conn.cursor()
@@ -33,7 +33,7 @@ def add_note():
     cursor.close()
     return jsonify({"message": "Note created successfully", "note_id": noteid}, 201)
 
-@notes.route("/getNotes/<int:user_id>/<int:politician_id>", methods=["GET"])
+@notes.route("/notes/<int:user_id>/<int:politician_id>", methods=["GET"])
 def all_notes(user_id, politician_id):
     conn = db.get_db()
     cursor = conn.cursor()
