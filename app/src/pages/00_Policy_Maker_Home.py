@@ -348,7 +348,7 @@ if st.button("Test Policy Set", type="primary"):
 
     api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{treasury_holdings},{fed_balance}"
     api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{treasury_holdings},{fed_balance}"
-    api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{military_spending},{education_spending},{health_spending}/{country_codes[country]}"
+    api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{health_spending},{education_spending},{military_spending}/{country_codes[country]}"
 
     try:
         headers = {
