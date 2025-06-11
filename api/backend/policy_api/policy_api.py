@@ -25,27 +25,76 @@ def get_policies():
     country = request.args.get('country_choice', None)
     topic = request.args.get('Topic Choice', None)
     politician = request.args.get('politician_choice', None)
+    
+    # Get range parameters
+    budget_min = request.args.get('budget_min', None)
+    budget_max = request.args.get('budget_max', None)
+    duration_min = request.args.get('duration_min', None)
+    duration_max = request.args.get('duration_max', None)
+    population_min = request.args.get('population_min', None)
+    population_max = request.args.get('population_max', None)
+
+    # Debug logging
+    current_app.logger.info(f"Query parameters: budget_min={budget_min}, budget_max={budget_max}, duration_min={duration_min}, duration_max={duration_max}, population_min={population_min}, population_max={population_max}")
+
+    # Validate order param
     if order not in ('ASC', 'DESC'):
         order = 'ASC'
-    query = "SELECT policy_id, year_enacted, politician, topic, country FROM Policies"
+
+    # Build base query
+    query = "SELECT policy_id, year_enacted, politician, topic, country, budget, duration_length, population_size FROM Policies"
     params = []
+    conditions = []
+
+    # Add filtering if year specified
     if year_start:
-        query += " WHERE year_enacted >= %s"
+        conditions.append("year_enacted >= %s")
         params.append(year_start)
     if year_end:
-        query += " AND year_enacted <= %s"
+        conditions.append("year_enacted <= %s")
         params.append(year_end)
     if country:
-        query += " AND country = %s"
+        conditions.append("country = %s")
         params.append(country)
     if topic:
-        query += " AND topic = %s"
+        conditions.append("topic = %s")
         params.append(topic)
     if politician:
-        query += " AND politician = %s"
+        conditions.append("politician = %s")
         params.append(politician)
 
+    # Add numeric range conditions
+    if budget_min is not None:
+        conditions.append("(budget IS NULL OR budget >= %s)")
+        params.append(float(budget_min))  # Convert to float to handle larger numbers
+    if budget_max is not None:
+        conditions.append("(budget IS NULL OR budget <= %s)")
+        params.append(float(budget_max))  # Convert to float to handle larger numbers
+    
+    if duration_min is not None:
+        conditions.append("(duration_length IS NULL OR duration_length >= %s)")
+        params.append(int(duration_min))
+    if duration_max is not None:
+        conditions.append("(duration_length IS NULL OR duration_length <= %s)")
+        params.append(int(duration_max))
+    
+    if population_min is not None:
+        conditions.append("(population_size IS NULL OR population_size >= %s)")
+        params.append(int(population_min))
+    if population_max is not None:
+        conditions.append("(population_size IS NULL OR population_size <= %s)")
+        params.append(int(population_max))
+
+    # Add WHERE clause if there are any conditions
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
     query += f" ORDER BY {sort_by} {order}"
+
+    # Debug logging
+    current_app.logger.info(f"Final query: {query}")
+    current_app.logger.info(f"Query parameters: {params}")
+
     cursor.execute(query, params)
     data = cursor.fetchall()
     cursor.close()

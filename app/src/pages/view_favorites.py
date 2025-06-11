@@ -43,20 +43,34 @@ with col2:
         desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
         st.write(desc)
 
-col1, col2 = st.columns(2)
-with col1:
-    with st.container(height = 300):
-        st.write("Politician Contact Info:")
-        response = requests.get(f"http://web-api:4000/pol/politician/{str(num)}")
-        data = response.json()
-        df1 = pd.DataFrame(data)
-        st.write(f"Full name: {df1.loc[0, 'full_name']}")
-        st.write(f"Department: {df1.loc[0, 'department']}")
-        st.write(f"Email Adress: {df1.loc[0, 'email_address']}")
-        st.write(f"Phone Number: {df1.loc[0, 'phone_number']}")
+# Add Similar Policies section
+st.header("Similar Policies")
 
-
-
+try:
+    num = int(fav_choice.split('.')[0])
+    similar_response = requests.get(f"http://web-api:4000/model/similar_policies/{num}")
+    similar_data = similar_response.json()
     
+    if similar_data and len(similar_data) > 0:
+        similar_df = pd.DataFrame(similar_data)
+        
+        # Format the numeric columns
+        if 'budget' in similar_df.columns:
+            similar_df['budget'] = similar_df['budget'].apply(lambda x: f"${x:,.0f}M" if pd.notnull(x) else "")
+        if 'population_size' in similar_df.columns:
+            similar_df['population_size'] = similar_df['population_size'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
+        if 'duration_length' in similar_df.columns:
+            similar_df['duration_length'] = similar_df['duration_length'].apply(lambda x: f"{x} months" if pd.notnull(x) else "")
+        
+        st.dataframe(similar_df)
+    else:
+        st.info("No similar policies found.")
+except Exception as e:
+    st.error(f"Error fetching similar policies: {str(e)}")
+    st.info("Please try again later or contact support if the issue persists.")
+
+st.write("---")
+
+
 
 

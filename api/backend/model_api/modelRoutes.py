@@ -14,6 +14,7 @@ from ..db_connection import db
 from ..ml_models.model01_GDP import train_func, predict
 from ..ml_models.model02_American import predict_sp500, predict_currency, train
 import datetime
+from backend.ml_models.model03_SimilarPolicies import predict as predict_similar_policies
 
 
 model_routes = Blueprint("modelRoutes", __name__)
@@ -168,6 +169,7 @@ def fetchalldata(var01):
     cursor = db.get_db().cursor()
     query = f"SELECT mos, vals FROM {var01}"
     cursor.execute(query)
+
     rows = cursor.fetchall()
     cursor.close()
 
@@ -272,3 +274,14 @@ def get_weights(model_name):
 
     except Exception as e:
         pass
+
+
+@model_routes.route("/similar_policies/<int:index_policy>", methods=["GET"])
+def get_similar_policies(index_policy):
+    try:
+        policies_list = predict_similar_policies(index_policy)
+        # The predict_similar_policies function already returns a list of dictionaries
+        return jsonify(policies_list)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
