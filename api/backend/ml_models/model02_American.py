@@ -163,24 +163,33 @@ def train():
         global normalization_stats
         normalization_stats = compute_normalization_stats(merged_df)
 
-        data = normalize_full_df(merged_df)
+        X = np.ones((merged_df.shape[0], 1))
 
-        X = np.ones((data.shape[0], 1))
-        X = np.column_stack((X, data.drop(columns=['month', 'close']).values))
-        y = np.array(data['close'])
+        for col in ['average_DiscountRate_value', 'average_TreasurySecurities_value', 'average_FedReserveBalanceSheet_value']:
+            raw_values = merged_df[col].values
+            normalized_values = (
+                raw_values - normalization_stats.loc[col, 'mean']) / normalization_stats.loc[col, 'std']
+            X = np.column_stack((X, normalized_values))
+
+        y = np.array(merged_df['close'])
 
         selected_lags = [1, 2, 3, 6, 9]
         max_lag = max(selected_lags)
-
         X = X[max_lag:]
 
         for lag in selected_lags:
-            X = np.column_stack((X, y[max_lag-lag:-lag]))
+            lag_values = y[max_lag-lag:-lag]
+            lag_normalized = (
+                lag_values - normalization_stats.loc['close', 'mean']) / normalization_stats.loc['close', 'std']
+            X = np.column_stack((X, lag_normalized))
 
         y = y[max_lag:]
+        y_normalized = (
+            y - normalization_stats.loc['close', 'mean']) / normalization_stats.loc['close', 'std']
 
-        coefficients = regress(X, y)
-        return coefficients, data
+        coefficients = regress(X, y_normalized)
+
+        return coefficients, merged_df
 
     def train_currency_model(merged_df, currency_data, currency_name):
         currency_merged = pd.merge(
@@ -193,25 +202,32 @@ def train():
         )
         normalization_stats.loc[f'{currency_name}_exchange_value'] = currency_stats.loc['exchange_value']
 
-        currency_normalized = normalize_full_df(currency_merged)
+        X_currency = np.ones((currency_merged.shape[0], 1))
 
-        adjusted = currency_normalized.drop(
-            columns=['close', 'exchange_value', 'month'])
-        X_currency = np.ones((adjusted.shape[0], 1))
-        X_currency = np.column_stack((X_currency, adjusted.values))
-        y_currency = np.array(currency_normalized['exchange_value'])
+        for col in ['average_DiscountRate_value', 'average_TreasurySecurities_value', 'average_FedReserveBalanceSheet_value']:
+            raw_values = currency_merged[col].values
+            normalized_values = (
+                raw_values - normalization_stats.loc[col, 'mean']) / normalization_stats.loc[col, 'std']
+            X_currency = np.column_stack((X_currency, normalized_values))
+
+        y_currency = np.array(currency_merged['exchange_value'])
 
         selected_lags = [1, 2, 3, 6, 9]
         max_lag = max(selected_lags)
         X_currency = X_currency[max_lag:]
 
+        currency_mean = normalization_stats.loc[f'{currency_name}_exchange_value', 'mean']
+        currency_std = normalization_stats.loc[f'{currency_name}_exchange_value', 'std']
+
         for lag in selected_lags:
-            X_currency = np.column_stack(
-                (X_currency, y_currency[max_lag-lag:-lag]))
+            lag_values = y_currency[max_lag-lag:-lag]
+            lag_normalized = (lag_values - currency_mean) / currency_std
+            X_currency = np.column_stack((X_currency, lag_normalized))
 
         y_currency = y_currency[max_lag:]
+        y_currency_normalized = (y_currency - currency_mean) / currency_std
 
-        coefficients = regress(X_currency, y_currency)
+        coefficients = regress(X_currency, y_currency_normalized)
         return coefficients
 
     merged_df = prepare_data()

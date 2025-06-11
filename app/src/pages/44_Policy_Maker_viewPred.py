@@ -18,24 +18,50 @@ SideBarLinks()
 
 st.title("Your Predictions")
 
-sp500_pred = round(float(st.session_state['Predictions']["SP500"]), 2)
+
+selected_country = st.session_state['policy_params']['Selected Country']
+
+
+market_indices = {
+    "USA": "SP500",
+    "United Kingdom": "FTSE",
+    "Great Britain": "FTSE",
+    "Germany": "DAX",
+    "Japan": "NIKKEI",
+    "China": "SSE"
+}
+
+
+market_index = market_indices.get(selected_country, "SP500")
+
+
+if "Market" in st.session_state['Predictions']:
+
+    market_pred = round(float(st.session_state['Predictions']["Market"]), 2)
+else:
+
+    market_pred = round(float(st.session_state['Predictions'].get(
+        market_index, st.session_state['Predictions'].get("SP500", 0))), 2)
+
 gdp_pred = round(float(st.session_state['Predictions']["GDP/C"]), 2)
 
 
 col1, col2 = st.columns(2)
 
 with col1:
-    st.markdown("### 📈 S&P 500 Forecast")
+    st.markdown(f"### 📈 {market_index} Forecast")
     st.markdown(
-        f"<h2 style='color: #64B5F6;'>{sp500_pred:,.0f}</h2>", unsafe_allow_html=True)
+        f"<h2 style='color: #64B5F6;'>{market_pred:,.0f}</h2>", unsafe_allow_html=True)
 
 with col2:
     st.markdown("### 💰 GDP per Capita")
     st.markdown(
         f"<h2 style='color: #81C784;'>${gdp_pred:,.0f}</h2>", unsafe_allow_html=True)
+
 if st.button("Save Policy Settings", type="secondary"):
 
     policy_data = {
+        "user_id": st.session_state['user_id'],
         "discountRate": st.session_state['policy_params']["Discount Rate"],
         "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
         "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
@@ -43,12 +69,10 @@ if st.button("Save Policy Settings", type="secondary"):
         "educationSpending": st.session_state['policy_params']["Education Spending"],
         "healthSpending": st.session_state['policy_params']["Health Spending"],
         "country": st.session_state['policy_params']["Selected Country"],
-        "SP500": st.session_state['Predictions']["SP500"],
-        "GDP": st.session_state['Predictions']["GDP/C"]
+        market_index: market_pred,
+        "GDP": gdp_pred
     }
-
     try:
-
         save_url = "http://host.docker.internal:4000/politician/savePolicy"
         response = requests.post(
             save_url,
@@ -56,6 +80,8 @@ if st.button("Save Policy Settings", type="secondary"):
             headers={'Content-Type': 'application/json'},
             timeout=10
         )
+        response = response.json()
+        saved_id = response["saved_id"]
 
         if response.status_code == 200:
             st.success("✅ Policy settings saved successfully!")
@@ -65,6 +91,8 @@ if st.button("Save Policy Settings", type="secondary"):
 
     except Exception as e:
         pass
+
+
 st.divider()
 
 if st.button("Try a New Set"):
@@ -76,13 +104,22 @@ if st.button("View Currency Forecasts"):
 
 col1, col2 = st.columns(2)
 
-
-sp500_last_value = None
+market_last_value = None
 gdp_last_value = None
-with col1:
-    st.markdown("##### Future Prediction for the SP500")
 
-    API_URL = "http://web-api:4000/model/fetchData/sp500"
+with col1:
+    st.markdown(f"##### Future Prediction for the {market_index}")
+
+    api_endpoints = {
+        "SP500": "sp500",
+        "FTSE": "ftse",
+        "DAX": "dax",
+        "NIKKEI": "nikkei",
+        "SSE": "sse"
+    }
+
+    endpoint = api_endpoints.get(market_index, "sp500")
+    API_URL = f"http://web-api:4000/model/fetchData/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -121,7 +158,7 @@ with col1:
             six_months_ago = current_date - timedelta(days=180)
             df_filtered = df[df['mos'] >= six_months_ago]
 
-        sp500_last_value = df_filtered['vals'].iloc[-1] if not df_filtered.empty else None
+        market_last_value = df_filtered['vals'].iloc[-1] if not df_filtered.empty else None
 
         fig = go.Figure()
 
@@ -142,7 +179,7 @@ with col1:
 
         fig.add_trace(go.Scatter(
             x=[prediction_date],
-            y=[sp500_pred],
+            y=[market_pred],
             mode='markers+text',
             marker=dict(
                 size=12,
@@ -150,14 +187,12 @@ with col1:
                 symbol='circle',
                 line=dict(color='white', width=2)
             ),
-
-
-            name='Prediction SP500',
+            name=f'Prediction {market_index}',
             showlegend=False
         ))
 
-        y_min = min(df_filtered['vals'].min(), sp500_pred) * 0.98
-        y_max = max(df_filtered['vals'].max(), sp500_pred) * 1.02
+        y_min = min(df_filtered['vals'].min(), market_pred) * 0.98
+        y_max = max(df_filtered['vals'].max(), market_pred) * 1.02
 
         fig.update_layout(
             height=350,
@@ -173,7 +208,6 @@ with col1:
                 zeroline=False,
                 showline=False,
                 range=[df_filtered['mos'].min() - pd.DateOffset(days=15),
-
                        prediction_date + pd.DateOffset(days=15)]
             ),
             yaxis=dict(
@@ -193,16 +227,16 @@ with col1:
                         config={'displayModeBar': False})
 
     except Exception as e:
-        pass
+        st.error(f"Error fetching {market_index} data: {str(e)}")
 
 with col2:
+    st.markdown(f"##### GDP Growth Forecast for {selected_country}")
 
-    st.markdown(
-        f"##### GDP Growth Forecast for {st.session_state['policy_params']['Selected Country']}")
+    country_for_api = selected_country.replace(' ', '')
+    if selected_country == "Great Britain":
+        country_for_api = "UnitedKingdom"
 
-    selected_country = st.session_state['policy_params']['Selected Country']
-
-    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{selected_country.replace(' ', '')}"
+    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)
@@ -289,80 +323,25 @@ with col2:
                         config={'displayModeBar': False})
 
     except Exception as e:
-        pass
+        st.error(f"Error fetching GDP data for {selected_country}: {str(e)}")
 
-        fig2 = go.Figure()
-
-        years = pd.date_range(start='2020-01-01', end='2024-01-01', freq='Y')
-        gdp_values = [45000, 46500, 48000, 49500, 51000]
-
-        fig2.add_trace(go.Scatter(
-            x=years,
-            y=gdp_values,
-            mode='lines+markers',
-            line=dict(color='#81C784', width=3),
-            marker=dict(size=6, color='#81C784'),
-            showlegend=False
-        ))
-
-        fig2.add_trace(go.Scatter(
-            x=[pd.Timestamp('2025-01-01')],
-            y=[gdp_pred],
-            mode='markers',
-            marker=dict(
-                size=12,
-                color='#ff4444',
-                symbol='circle',
-                line=dict(color='white', width=2)
-            ),
-            showlegend=False
-        ))
-
-        fig2.update_layout(
-            height=300,
-            margin=dict(l=20, r=20, t=10, b=20),
-            plot_bgcolor='#1e293b',
-            paper_bgcolor='#1e293b',
-            font=dict(color='#94a3b8'),
-            xaxis=dict(
-                showgrid=False,
-                showticklabels=True,
-                tickformat='%Y',
-                tickfont=dict(size=10),
-                zeroline=False,
-                showline=False
-            ),
-            yaxis=dict(
-                showgrid=True,
-                gridwidth=1,
-                gridcolor='#334155',
-                showticklabels=True,
-                tickformat='$,.0f',
-                tickfont=dict(size=10),
-                zeroline=False,
-                showline=False
-            )
-        )
-
-        st.plotly_chart(fig2, use_container_width=True,
-                        config={'displayModeBar': False})
-
-col1, col2, col3, col4 = st.columns(4)
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if sp500_last_value is not None:
-        sp500_change = sp500_pred - sp500_last_value
-        sp500_change_pct = (sp500_change / sp500_last_value) * 100
+    if market_last_value is not None:
+        market_change = market_pred - market_last_value
+        market_change_pct = (market_change / market_last_value) * 100
         st.metric(
-            "S&P 500",
-            f"{sp500_pred:,.0f}",
-            f"{sp500_change_pct:+.1f}%"
+            market_index,
+            f"{market_pred:,.0f}",
+            f"{market_change_pct:+.1f}%"
         )
     else:
-        st.metric("S&P 500", f"{sp500_pred:,.0f}", "N/A")
+        st.metric(market_index, f"{market_pred:,.0f}", "N/A")
+
 with col2:
     st.write("")
+
 with col3:
     if gdp_last_value is not None:
         gdp_change = gdp_pred - gdp_last_value
@@ -374,12 +353,11 @@ with col3:
         )
     else:
         st.metric("GDP per Capita", f"${gdp_pred:,.0f}", "N/A")
+
 st.divider()
 st.subheader("Global Market Indicators")
 
-
 col3, col4 = st.columns(2)
-
 
 urth_last_value = None
 world_gdp_last_value = None
@@ -448,7 +426,7 @@ with col3:
 
         fig3.add_trace(go.Scatter(
             x=[prediction_date],
-            y=[sp500_pred],
+            y=[market_pred],
             mode='markers+text',
             marker=dict(
                 size=12,
@@ -456,14 +434,14 @@ with col3:
                 symbol='circle',
                 line=dict(color='white', width=2)
             ),
-            text=[f'{sp500_pred:.2f}'],
+            text=[f'{market_pred:.2f}'],
             textposition='top center',
             textfont=dict(size=12, color='#ff4444'),
             showlegend=False
         ))
 
-        y_min = min(df_urth_filtered['vals'].min(), sp500_pred) * 0.98
-        y_max = max(df_urth_filtered['vals'].max(), sp500_pred) * 1.02
+        y_min = min(df_urth_filtered['vals'].min(), market_pred) * 0.98
+        y_max = max(df_urth_filtered['vals'].max(), market_pred) * 1.02
 
         fig3.update_layout(
             height=350,
@@ -554,9 +532,6 @@ with col4:
                 symbol='circle',
                 line=dict(color='white', width=2)
             ),
-
-
-
             showlegend=False
         ))
 
@@ -598,23 +573,19 @@ with col4:
     except Exception as e:
         pass
 
-
 col5, col6 = st.columns([1, 1], gap="large")
 
-
 with col5:
-
     if urth_last_value is not None:
-        sp500_vs_global = ((sp500_pred - urth_last_value) /
-                           urth_last_value) * 100
+        market_vs_global = (
+            (market_pred - urth_last_value) / urth_last_value) * 100
         st.metric(
-            "S&P 500 vs Global Market",
-            f"{sp500_vs_global:+.1f}%",
-            f"S&P: ${sp500_pred:,.0f}"
+            f"{market_index} vs Global Market",
+            f"{market_vs_global:+.1f}%",
+            f"{market_index}: {market_pred:,.0f}"
         )
 
 with col6:
-
     if world_gdp_last_value is not None:
         gdp_vs_world = ((gdp_pred - world_gdp_last_value) /
                         world_gdp_last_value) * 100

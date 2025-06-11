@@ -72,12 +72,12 @@ def savePolicy():
             HealthSpending, MilitarySpending, EducationSpending, Country, SP500, GDP, user_id)
             VALUES
             (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
-    
+
     params = []
 
     required_fields = ["discountRate", "federalReserveBalanceSheet",
-              "treasurySecurities", "healthSpending", "militarySpending",
-              "educationSpending", "country", "SP500", "GDP", "user_id"]
+                       "treasurySecurities", "healthSpending", "militarySpending",
+                       "educationSpending", "country", "SP500", "GDP", "user_id"]
 
     for field in required_fields:
         if field not in data:
@@ -92,18 +92,21 @@ def savePolicy():
     cursor.close()
     return jsonify({'message': 'Policy saved successfully', 'saved_id': saved_id}), 200
 
+
 @politician.route("/allpolicy/<int:user_id>", methods=["GET"])
 def get_policy(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    cursor.execute(f'SELECT saved_id FROM SavedPolicy WHERE user_id = {user_id}')
+    cursor.execute(
+        f'SELECT saved_id FROM SavedPolicy WHERE user_id = {user_id}')
     result = cursor.fetchall()
 
     conn.commit()
     cursor.close()
 
     return jsonify(result), 200
+
 
 @politician.route("/policy/<int:saved_id>", methods=["GET"])
 def get_saved(saved_id):

@@ -22,43 +22,18 @@ def economy_home():
         "pages/economist_home.py", label="Home", icon="🏦"
     )
 
+
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
         "pages/historicaldata.py", label="Historical Data Viewer", icon="💰"
     )
+
 
 def viewFavoritesNav():
     st.sidebar.page_link(
         "pages/saved_drafts.py", label="Proposed Policy", icon="🧾"
     )
 
-# ------------------------ Examples for Role of usaid_worker ------------------------
-
-
-def ApiTestNav():
-    st.sidebar.page_link("pages/12_API_Test.py",
-                         label="Test the API", icon="🛜")
-
-
-def PredictionNav():
-    st.sidebar.page_link(
-        "pages/11_Prediction.py", label="Regression Prediction", icon="📈"
-    )
-
-
-def ClassificationNav():
-    st.sidebar.page_link(
-        "pages/13_Classification.py", label="Classification Demo", icon="🌺"
-    )
-
-
-def NgoDirectoryNav():
-    st.sidebar.page_link("pages/14_NGO_Directory.py",
-                         label="NGO Directory", icon="📁")
-
-
-def AddNgoNav():
-    st.sidebar.page_link("pages/15_Add_NGO.py", label="Add New NGO", icon="➕")
 
 # ------------------------ Lobbyist ----------------------------
 
@@ -78,6 +53,15 @@ def AdminPageNav():
                          label="Note Taker", icon="🗒️")
     st.sidebar.page_link(
         "pages/21_ML_Model_Mgmt.py", label="Access Previous Notes", icon="⌨️"
+    )
+
+
+# ------------------------ Policy Maker Role ------------------------
+def PolicyMakerNav():
+    st.sidebar.page_link("pages/00_Policy_Maker_Home.py",
+                         label="Test New Set", icon="🗒️")
+    st.sidebar.page_link(
+        "pages/46_PolicyMaker_ViewFavorites.py", label="View Saved Policies", icon="⌨️"
     )
 
 
@@ -118,7 +102,10 @@ def SideBarLinks(show_home=False):
             MakeNoteNav()
             ViewNotesNav()
 
-    # Always show the About page at the bottom of the list of links
+        if st.session_state['role'] == "Policy Maker":
+            PolicyMakerNav()
+
+            # Always show the About page at the bottom of the list of links
     AboutPageNav()
 
     if st.session_state["authenticated"]:

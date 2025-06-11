@@ -7,7 +7,10 @@ logger = logging.getLogger(__name__)
 st.set_page_config(layout='wide')
 SideBarLinks()
 
-st.title(f"Welcome {st.session_state['first_name']}")
+
+st.title(
+    f"Welcome {st.session_state['first_name']}")
+
 st.write('')
 st.write('')
 st.write('# Test your Policy')
@@ -18,25 +21,139 @@ tab1, tab2 = st.tabs(["Monetary Policy", "Fiscal Policy"])
 
 selected_country = "Use My Nationality"
 
+
+def get_monetary_policy_config(country):
+    """Returns the appropriate monetary policy configuration based on country"""
+
+    if country == "United States":
+        return {
+            "central_bank": "Federal Reserve",
+            "rate_name": "Federal Reserve Discount Rate",
+            "rate_min": 0.0,
+            "rate_max": 15.0,
+            "rate_default": 2.5,
+            "balance_name": "Fed Balance Sheet Size",
+            "balance_min": 1000,
+            "balance_max": 10000,
+            "balance_default": 7500,
+            "securities_name": "Treasury Securities Holdings",
+            "securities_min": 500,
+            "securities_max": 6000,
+            "securities_default": 4500,
+            "currency": "$"
+        }
+    elif country == "United Kingdom":
+        return {
+            "central_bank": "Bank of England",
+            "rate_name": "Bank Rate",
+            "rate_min": 0.0,
+            "rate_max": 15.0,
+            "rate_default": 5.25,
+            "balance_name": "BoE Balance Sheet Size",
+            "balance_min": 500,
+            "balance_max": 1500,
+            "balance_default": 950,
+            "securities_name": "Gilt Holdings",
+            "securities_min": 300,
+            "securities_max": 1000,
+            "securities_default": 750,
+            "currency": "£"
+        }
+    elif country == "Germany":
+        return {
+            "central_bank": "European Central Bank",
+            "rate_name": "ECB Main Refinancing Rate",
+            "rate_min": -1.0,
+            "rate_max": 10.0,
+            "rate_default": 4.5,
+            "balance_name": "ECB Balance Sheet Size",
+            "balance_min": 3000,
+            "balance_max": 9000,
+            "balance_default": 7000,
+            "securities_name": "Government Bond Holdings",
+            "securities_min": 2000,
+            "securities_max": 6000,
+            "securities_default": 4500,
+            "currency": "€"
+        }
+    else:
+
+        return get_monetary_policy_config("United States")
+
+
+def adjust_currencies_for_country(base_currencies, user_country, discount_rate):
+    """Adjust currency predictions based on the country's monetary policy"""
+
+    adjusted_currencies = base_currencies.copy()
+
+    if user_country == "United Kingdom":
+
+        rate_effect = (discount_rate - 5.25) * 0.02
+
+        gbp_to_usd = base_currencies["British Pound"]
+        usd_to_gbp = 1 / gbp_to_usd
+
+        adjusted_currencies["US Dollar"] = usd_to_gbp * (1 + rate_effect)
+
+        del adjusted_currencies["British Pound"]
+
+        adjusted_currencies["Euro"] = base_currencies["Euro"] * \
+            (1 + rate_effect * 0.3)
+
+        adjusted_currencies["Japanese Yen"] = base_currencies["Japanese Yen"] * \
+            (1 + rate_effect * 0.1)
+        adjusted_currencies["Australian Dollar"] = base_currencies["Australian Dollar"] * (
+            1 - rate_effect * 0.1)
+
+    elif user_country == "Germany":
+
+        rate_effect = (discount_rate - 4.5) * 0.025
+
+        eur_to_usd = base_currencies["Euro"]
+        usd_to_eur = 1 / eur_to_usd
+
+        adjusted_currencies["US Dollar"] = usd_to_eur * (1 + rate_effect)
+
+        del adjusted_currencies["Euro"]
+
+        adjusted_currencies["British Pound"] = base_currencies["British Pound"] * \
+            (1 - rate_effect * 0.4)
+
+        adjusted_currencies["Chinese Yuan"] = base_currencies["Chinese Yuan"] * \
+            (1 + rate_effect * 0.2)
+        adjusted_currencies["Japanese Yen"] = base_currencies["Japanese Yen"] * \
+            (1 + rate_effect * 0.15)
+
+    return adjusted_currencies
+
+
+user_country = st.session_state.get('nationality', 'United States')
+if user_country not in ["United States", "United Kingdom", "Germany"]:
+
+    user_country = "United States"
+
+
+policy_config = get_monetary_policy_config(user_country)
+
 with tab1:
-    st.write("#### Federal Reserve Controls")
+    st.write(f"#### {policy_config['central_bank']} Controls")
     st.write("")
 
     col1, col2 = st.columns([3, 1])
     with col1:
         discount_rate_slider = st.slider(
-            "Federal Reserve Discount Rate (%)",
-            min_value=0.0,
-            max_value=15.0,
-            value=2.5,
+            f"{policy_config['rate_name']} (%)",
+            min_value=policy_config['rate_min'],
+            max_value=policy_config['rate_max'],
+            value=policy_config['rate_default'],
             step=0.25,
             key="discount_slider"
         )
     with col2:
         discount_rate_input = st.number_input(
             "Rate",
-            min_value=0.0,
-            max_value=15.0,
+            min_value=policy_config['rate_min'],
+            max_value=policy_config['rate_max'],
             value=discount_rate_slider,
             step=0.25,
             format="%.2f",
@@ -46,18 +163,18 @@ with tab1:
     col3, col4 = st.columns([3, 1])
     with col3:
         fed_balance_slider = st.slider(
-            "Fed Balance Sheet Size (Billions $)",
-            min_value=1000,
-            max_value=10000,
-            value=7500,
+            f"{policy_config['balance_name']} (Billions {policy_config['currency']})",
+            min_value=policy_config['balance_min'],
+            max_value=policy_config['balance_max'],
+            value=policy_config['balance_default'],
             step=100,
             key="balance_slider"
         )
     with col4:
         fed_balance_input = st.number_input(
             "Balance",
-            min_value=1000,
-            max_value=10000,
+            min_value=policy_config['balance_min'],
+            max_value=policy_config['balance_max'],
             value=fed_balance_slider,
             step=100,
             key="balance_input"
@@ -66,18 +183,18 @@ with tab1:
     col5, col6 = st.columns([3, 1])
     with col5:
         treasury_slider = st.slider(
-            "Treasury Securities Holdings (Billions $)",
-            min_value=500,
-            max_value=6000,
-            value=4500,
+            f"{policy_config['securities_name']} (Billions {policy_config['currency']})",
+            min_value=policy_config['securities_min'],
+            max_value=policy_config['securities_max'],
+            value=policy_config['securities_default'],
             step=100,
             key="treasury_slider"
         )
     with col6:
         treasury_input = st.number_input(
-            "Treasury",
-            min_value=500,
-            max_value=6000,
+            "Securities",
+            min_value=policy_config['securities_min'],
+            max_value=policy_config['securities_max'],
             value=treasury_slider,
             step=100,
             key="treasury_input"
@@ -192,9 +309,10 @@ col_left, col_right = st.columns(2)
 
 with col_left:
     st.write("**Monetary Policy:**")
-    st.write(f"• Discount Rate: {discount_rate}%")
-    st.write(f"• Fed Balance: ${fed_balance:,}B")
-    st.write(f"• Treasury Holdings: ${treasury_holdings:,}B")
+    st.write(f"• {policy_config['central_bank']} Rate: {discount_rate}%")
+    st.write(f"• Balance Sheet: {policy_config['currency']}{fed_balance:,}B")
+    st.write(
+        f"• Securities Holdings: {policy_config['currency']}{treasury_holdings:,}B")
 
 with col_right:
     st.write("**Fiscal Policy:**")
@@ -221,10 +339,12 @@ if st.button("Test Policy Set", type="primary"):
         "Military Spending": military_spending,
         "Education Spending": education_spending,
         "Health Spending": health_spending,
-        "Selected Country": country
+        "Selected Country": country,
+        "Monetary Policy Country": user_country,
+        "Central Bank": policy_config['central_bank'],
+        "Rate Name": policy_config['rate_name'],
+        "Currency": policy_config['currency']
     }
-
-    # API calls
 
     api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{treasury_holdings},{fed_balance}"
     api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{treasury_holdings},{fed_balance}"
@@ -246,13 +366,41 @@ if st.button("Test Policy Set", type="primary"):
             data = response.json()
             data2 = response2.json()
             data3 = response3.json()
+
+            market_prediction = float(data['prediction'])
+            gdp_prediction = float(data3['prediction'])
+
+            base_currencies = data2['prediction']
+
+            if user_country == "United Kingdom":
+
+                market_prediction = market_prediction * 0.8
+                market_prediction = (market_prediction / 5500) * 7800
+                market_index = "FTSE"
+
+                adjusted_currencies = adjust_currencies_for_country(
+                    base_currencies, user_country, discount_rate)
+
+            elif user_country == "Germany":
+
+                market_prediction = market_prediction * 1.1
+                market_prediction = (market_prediction / 5500) * 17000
+                market_index = "DAX"
+
+                adjusted_currencies = adjust_currencies_for_country(
+                    base_currencies, user_country, discount_rate)
+            else:
+                market_index = "SP500"
+                adjusted_currencies = base_currencies
+
             st.success("Prediction successful!")
             st.session_state['Predictions'] = {
-                "SP500": data['prediction'],
-                "Currencies": data2['prediction'],
-                "GDP/C": data3["prediction"]
+                "Market": str(market_prediction),
+                "Market_Index": market_index,
+                "Currencies": adjusted_currencies,
+                "GDP/C": str(gdp_prediction)
             }
-            st.write(st.session_state['Predictions']['SP500'])
+            st.write(f"Prediction for {market_index}: {market_prediction:.2f}")
             st.switch_page("pages/44_Policy_Maker_viewPred.py")
         else:
             st.error(f"API Error: {response.status_code}")
