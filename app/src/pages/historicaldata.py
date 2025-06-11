@@ -18,6 +18,7 @@ st.write("---")
 st.write("\n \n")
 choices = []
 params = []
+df = []
 
 st.markdown("### Enter the cirteria to find your policies:\n")
 
@@ -99,7 +100,8 @@ if st.button("Apply", use_container_width=True):
 
 response = requests.get("http://web-api:4000/pol/policy_handler", params=params)
 data = response.json()
-df = pd.DataFrame(data)
+df = pd.DataFrame(data, columns=("policy_id", "country", "year_enacted", "politician", "topic", "budget", "duration_length", "population_size"))
+df = df.rename(columns={"policy_id": "Policy ID", "country" : "Country", "year_enacted": "Year", "politician" : "Politician", "topic": "Topic", "budget": "Budget", "duration_length": "Duration (Years)", "population_size": "Population"})
 st.write("### Here is a list of all availiable policy:")
 st.write(df)
 
@@ -111,7 +113,7 @@ if 'population_size' in df.columns:
 if 'duration_length' in df.columns:
     df['duration_length'] = df['duration_length'].apply(lambda x: f"{x} months" if pd.notnull(x) else "")
 
-choices = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
+choices = [f"{c}. {a}- {b}" for a, b, c in zip(df['Politician'], df['Topic'], df['Policy ID'])]
 choice = st.selectbox("Choose a Policy to save", choices)
 num = int(choice.split('.')[0])
 
