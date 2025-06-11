@@ -154,9 +154,10 @@ def train_func():
         df = create_gdp_lag(df, gdp_col='GDP_per_capita', lag_years=1)
         df['date'] = pd.to_numeric(df['date'])
         df['previous_year'] = df['date'] - 1
-        
+
         # Add pandemic feature: 1 if year is 2020 or 2021, 0 otherwise
-        df['is_pandemic'] = ((df['date'] == 2020) | (df['date'] == 2021)).astype(int)
+        df['is_pandemic'] = ((df['date'] == 2020) | (
+            df['date'] == 2021)).astype(int)
 
         return df
 
@@ -272,7 +273,8 @@ def predict(user_features, country, current_year=2024, coefficients=None):
 
     lagged_features = ['Health_spending_lag1',
                        'Education_spending_lag1', 'Military Spending_lag1']
-    columns_to_use = lagged_features + ['previous_year', 'is_pandemic'] + country_features
+    columns_to_use = lagged_features + \
+        ['previous_year', 'is_pandemic'] + country_features
     X = feature_df[columns_to_use].astype(np.float64).values
 
     X = np.nan_to_num(X, nan=0.0, posinf=1e6, neginf=-1e6)
