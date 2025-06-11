@@ -15,6 +15,7 @@ SideBarLinks()
 st.title(f"Historical Data Viewer 🔎")
 st.write("---")
 st.write("\n \n")
+choices = []
 
 col1, col2 = st.columns(2)
 
@@ -58,6 +59,22 @@ if st.button("Apply"):
     data = response.json()
     df = pd.DataFrame(data)
     st.dataframe(df)
+    for i in range(len(df)):
+        st.write(f"Policy ID: {df.loc[i, 'policy_id']} - Topic: {df.loc[i, 'topic']} - Policitian: {df.loc[i, 'politician']}")
+
+    choices = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
+    st.write(choices)
+
+
+    choice = st.selectbox("Choose a Policy to save", choices)
+    st.write(choice)
+    num = 0
+    #num = int(choice.split('.')[0])
+    st.write(num)
+    if st.button("Save Policy"):
+        returnJson = {"policy_id": num, "user_id": 1}
+        requests.post("http://web-api:4000/pol/favorites", json=returnJson)
+        st.write("Policy Saved!")    
 
 st.write("---")
 
