@@ -464,7 +464,9 @@ with col_left:
             <p style='color: #94a3b8; margin: 0;'>• {} Rate: {}%</p>
             <p style='color: #94a3b8; margin: 0;'>• Balance Sheet: {}{:,}B</p>
             <p style='color: #94a3b8; margin: 0;'>• Securities Holdings: {}{:,}B</p>
-            <p style='margin: 0;'>&nbsp;</p> <!-- Adds an empty line -->
+            <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Money Supply: {}{:,}B</p>
+            <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {}%</p>
         </div>
 
     """.format(
@@ -473,7 +475,11 @@ with col_left:
         policy_config['currency'],
         fed_balance,
         policy_config['currency'],
-        treasury_holdings
+        treasury_holdings,
+        fed_funds_rate,
+        policy_config['currency'],
+        money_supply,
+        reserve_ratio
     ), unsafe_allow_html=True)
 
 with col_right:
@@ -484,12 +490,18 @@ with col_right:
             <p style='color: #94a3b8; margin: 0;'>• Military Spending: {}%</p>
             <p style='color: #94a3b8; margin: 0;'>• Education Spending: {}%</p>
             <p style='color: #94a3b8; margin: 0;'>• Health Spending: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Infrastructure Spending: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Debt-to-GDP Ratio: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Corporate Tax Rate: {}%</p>
         </div>
     """.format(
         country,
         military_spending,
         education_spending,
-        health_spending
+        health_spending,
+        infrastructure_spending,
+        debt_gdp_ratio,
+        corporate_tax_rate
     ), unsafe_allow_html=True)
 
 tables = [
