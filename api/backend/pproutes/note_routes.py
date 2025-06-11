@@ -71,3 +71,17 @@ def modify_note():
     cursor.close()
 
     return jsonify(returnjson), 200
+
+@notes.route("/policy/<int:conversation_id>", methods=["GET"])
+def saved_policy(conversation_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    query = f'SELECT saved_id FROM Conversations WHERE conversation_id = {conversation_id}'
+    cursor.execute(query)
+    returnjson = cursor.fetchall()
+
+    conn.commit()
+    cursor.close()
+
+    return jsonify(returnjson), 200
