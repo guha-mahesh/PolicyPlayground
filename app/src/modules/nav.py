@@ -26,13 +26,13 @@ def AboutPageNav():
 # ------------------------ Economist ------------------------
 def economy_home():
     st.sidebar.page_link(
-        "pages/economist_home.py", label="Home", icon="🏦"
+        "pages/31_Economist_Home.py", label="Home", icon="🏦"
     )
 
 
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
-        "pages/historicaldata.py", label="Historical Data Viewer", icon="💰"
+        "pages/32_Historical_Data.py", label="Historical Data Viewer", icon="💰"
     )
 
 
