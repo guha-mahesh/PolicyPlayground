@@ -5,9 +5,11 @@ import streamlit as st
 from modules.nav import SideBarLinks
 import requests
 import pandas as pd
+from modules.theme import custom_style
+
 
 st.set_page_config(layout = 'wide')
-
+custom_style()
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
 
@@ -50,7 +52,7 @@ try:
             desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
             st.write(desc)
             st.write("\n")
-            if st.button("Get Polician Contact Info"):
+            if st.button("Polician Contact Info"):
                 st.switch_page("pages/34_Politician_Information_Page.py")
 except Exception as e:
     st.write("No Favorites Selected, please go back.")

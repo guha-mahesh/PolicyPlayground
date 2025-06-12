@@ -8,8 +8,11 @@ import requests
 import requestfunctions.getmethods as getmethods
 import pandas as pd
 import numpy as np
+from modules.theme import custom_style
+
 
 st.set_page_config(layout="wide")
+custom_style()
 
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()

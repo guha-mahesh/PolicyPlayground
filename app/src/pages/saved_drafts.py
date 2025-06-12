@@ -1,12 +1,12 @@
+import pandas as pd
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
 logger = logging.getLogger(__name__)
 
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import pandas as pd
 
-st.set_page_config(layout = 'wide')
+st.set_page_config(layout='wide')
 
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
@@ -23,7 +23,7 @@ try:
     response = requests.get("http://web-api:4000/politician/publisher")
     if response.status_code == 200:
         published_policies = response.json()
-        
+
         if published_policies:
             st.markdown("""
                 <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
@@ -34,22 +34,31 @@ try:
 
             for policy in published_policies:
                 with st.expander(f"Expand {policy['title']}", expanded=False):
-                    col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
+                    col1, col2 = st.columns(
+                        [4, 1], vertical_alignment="bottom")
                     with col1:
-                        st.write(f'**Published Date:** {policy["publish_date"]}')
+                        st.write(
+                            f'**Published Date:** {policy["publish_date"]}')
                         st.write(f'**Country:** {policy["Country"]}')
-                        st.write(f'**Discount Rate:** {policy["discountRate"]}%')
-                        st.write(f'**Federal Reserve Balance Sheet:** ${policy["FederalReserveBalanceSheet"]} Billion')
-                        st.write(f'**Treasury Holdings:** ${policy["TreasurySecurities"]} Billion')
-                        st.write(f'**Military Spending:** {policy["MilitarySpending"]}%')
-                        st.write(f'**Education Spending:** {policy["EducationSpending"]}%')
-                        st.write(f'**Health Spending:** {policy["HealthSpending"]}%')
-                        st.write(f'**SP500 Prediction:** {policy["SP500"]:,.2f}')
+                        st.write(
+                            f'**Discount Rate:** {policy["discountRate"]}%')
+                        st.write(
+                            f'**Federal Reserve Balance Sheet:** ${policy["FederalReserveBalanceSheet"]} Billion')
+                        st.write(
+                            f'**Treasury Holdings:** ${policy["TreasurySecurities"]} Billion')
+                        st.write(
+                            f'**Military Spending:** {policy["MilitarySpending"]}%')
+                        st.write(
+                            f'**Education Spending:** {policy["EducationSpending"]}%')
+                        st.write(
+                            f'**Health Spending:** {policy["HealthSpending"]}%')
+                        st.write(
+                            f'**SP500 Prediction:** {policy["SP500"]:,.2f}')
                         st.write(f'**GDP Prediction:** {policy["GDP"]:,.2f}')
-                    
+
                     with col2:
                         if st.button("View Analysis", key=f"analyze_{policy['publish_id']}", use_container_width=True):
-                            # Store the policy data in session state
+
                             st.session_state['published_policy'] = {
                                 'Selected Country': policy['Country'],
                                 'Discount Rate': policy['discountRate'],
@@ -63,7 +72,7 @@ try:
                                 'Predictions': policy['Predictions']
                             }
                             st.switch_page("pages/35_Economist_ViewPred.py")
-                    
+
                     st.markdown("<br>", unsafe_allow_html=True)
         else:
             st.info("No published policies found.")
@@ -73,4 +82,3 @@ except Exception as e:
     st.error(f"Error: {str(e)}")
 
 st.write("---")
-
