@@ -8,16 +8,18 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
+from modules.theme import custom_style
+
 
 
 logger = logging.getLogger(__name__)
 
 st.set_page_config(layout='wide')
-
+custom_style()
 SideBarLinks()
 
 st.title("Your Predictions")
-
+st.session_state['saved_pol'] = False
 
 selected_country = st.session_state['policy_params']['Selected Country']
 
@@ -61,23 +63,23 @@ with col2:
 title = st.text_input(label="Enter Title Here: ")
 if st.button("Save Policy Settings"):
     policy_data = {
-    "user_id": st.session_state['user_id'],
-    "discountRate": st.session_state['policy_params']["Discount Rate"],
-    "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
-    "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
-    "militarySpending": st.session_state['policy_params']["Military Spending"],
-    "educationSpending": st.session_state['policy_params']["Education Spending"],
-    "healthSpending": st.session_state['policy_params']["Health Spending"],
-    "country": st.session_state['policy_params']["Selected Country"],
-    "market_index": market_pred,
-    "GDP": gdp_pred,
-    "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
-    "moneySupply": st.session_state['policy_params']["Money Supply"],
-    "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
-    "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
-    "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
-    "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"],
-    "title": title or "Unnamed Policy"
+        "user_id": st.session_state['user_id'],
+        "discountRate": st.session_state['policy_params']["Discount Rate"],
+        "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
+        "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
+        "militarySpending": st.session_state['policy_params']["Military Spending"],
+        "educationSpending": st.session_state['policy_params']["Education Spending"],
+        "healthSpending": st.session_state['policy_params']["Health Spending"],
+        "country": st.session_state['policy_params']["Selected Country"],
+        "market_index": market_pred,
+        "GDP": gdp_pred,
+        "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
+        "moneySupply": st.session_state['policy_params']["Money Supply"],
+        "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
+        "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
+        "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
+        "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"],
+        "title": title or "Unnamed Policy"
     }
     st.write("Policy Saved!")
 
@@ -96,16 +98,9 @@ if st.button("Save Policy Settings"):
     # else:
     #     st.error(f"Failed to save policy: {response.status_code}")
     #     st.write(response.text)
-    
 
 
 st.divider()
-
-if st.button("Try a New Set"):
-    st.switch_page('pages/00_Policy_Maker_Home.py')
-
-if st.button("View Currency Forecasts"):
-    st.switch_page('pages/45_Policy_Maker_Currency.py')
 
 
 col1, col2 = st.columns(2)
@@ -125,7 +120,7 @@ with col1:
     }
 
     endpoint = api_endpoints.get(market_index, "sp500")
-    API_URL = f"http://web-api:4000/model/fetchData/{endpoint}"
+    API_URL = f"http://web-api:4000/model/data/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -242,7 +237,7 @@ with col2:
     if selected_country == "Great Britain":
         country_for_api = "UnitedKingdom"
 
-    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{country_for_api}"
+    GDP_API_URL = f"http://web-api:4000/model/countryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)
@@ -371,7 +366,7 @@ world_gdp_last_value = None
 with col3:
     st.markdown("##### URTH ETF (Global Equity)")
 
-    URTH_API_URL = "http://web-api:4000/model/fetchData/urth"
+    URTH_API_URL = "http://web-api:4000/model/data/urth"
 
     try:
         response = requests.get(URTH_API_URL)
@@ -487,7 +482,7 @@ with col3:
 with col4:
     st.markdown("##### World GDP per Capita Average")
 
-    WORLD_GDP_API_URL = "http://web-api:4000/model/fetchData/world_gdp_per_capita"
+    WORLD_GDP_API_URL = "http://web-api:4000/model/data/world_gdp_per_capita"
 
     try:
         response = requests.get(WORLD_GDP_API_URL)

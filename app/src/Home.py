@@ -37,13 +37,14 @@ SideBarLinks(show_home=True)
 #    The major content of this page
 # ***************************************************
 
-# set the title of the page and provide a simple prompt.
+
 logger.info("Loading the Home page of the app")
+
 st.title('Policy Playground')
-st.write('\n')
 st.write("### By: Pushin' Policy")
-st.write('\n')
 st.write('#### Choose a User to Login as:')
+st.write('\n')
+
 
 # For each of the user personas for which we are implementing
 # functionality, we put a button on the screen that the user
@@ -79,8 +80,8 @@ if st.button('Economist Login',
     st.session_state['role'] = 'economist'
     st.session_state["user_id"] = econ_dict[econ]
     st.session_state['first_name'] = econ
-    logger.info("Logging in as Political Strategy Advisor Persona")
-    st.switch_page('pages/32_Historical_Data.py')
+    logger.info("Logging in as Economist")
+    st.switch_page('pages/31_Economist_Home.py')
 
 st.write('\n\n')
 
