@@ -57,8 +57,6 @@ try:
                 st.write("\n")
                 if st.button("Polician Contact Info"):
                     st.switch_page("pages/34_Politician_Information_Page.py")
-    except Exception as e:
-        st.write("No Favorites Selected, please go back.")
 
     st.markdown("""
         <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
@@ -122,6 +120,6 @@ try:
     st.write("---")
     if st.button("Previous"):
         st.switch_page("pages/32_Historical_Data.py")
-else:
+except Exception as e:
     if st.button("Please Favorite Some Policies!"):
         st.switch_page("pages/32_Historical_Data.py")
