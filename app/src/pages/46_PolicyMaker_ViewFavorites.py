@@ -120,7 +120,7 @@ try:
         
         if published_policies:
             for policy in published_policies:
-                with st.expander(f"Published Policy #{policy['publish_id']} - {policy['Country']}", expanded=False):
+                with st.expander(f"Expand {policy['title']}", expanded=False):
                     col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
                     with col1:
                         st.write(f'**Published Date:** {policy["publish_date"]}')
