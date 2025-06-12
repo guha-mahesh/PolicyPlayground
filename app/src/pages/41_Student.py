@@ -1,15 +1,13 @@
+from modules.theme import custom_style
+import requestfunctions.getmethods as getmethods
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
 
 logger = logging.getLogger(__name__)
 
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import requestfunctions.getmethods as getmethods
-from modules.theme import custom_style
 
-
-st.set_page_config(layout="wide")
 custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
@@ -20,12 +18,14 @@ st.title('Enter Policy Features')
 col1, col2 = st.columns(2)
 
 
-economic_topics = ["Taxation", "Govt spending", "Public deficit", "Interest rates", "Inflation", "Money supply", "Government bonds", "Unemployment", "Tariffs", "Trade agreements", "Minimum wage", "Retirement", "Debt management"]
+economic_topics = ["Taxation", "Govt spending", "Public deficit", "Interest rates", "Inflation", "Money supply",
+                   "Government bonds", "Unemployment", "Tariffs", "Trade agreements", "Minimum wage", "Retirement", "Debt management"]
 scopes = ['Neighborhood', 'City', 'County', 'State', 'Province',
-    'Region', 'National', 'Cross-Border', 'Continental', 'International', 'Global']
+          'Region', 'National', 'Cross-Border', 'Continental', 'International', 'Global']
 durations = ['Temporary', 'Short-Term',
              'Medium-Term', 'Long-Term', 'Permanent', 'Trial']
-politicians = ["Alice Danton", "Bryce Linwood", "Cara Solis", "Damon Krill", "Evelyn Marsh", "Felix Grant", "Gina Torres", "Hector Wells", "Isla Reed", "Jasper Cole"]
+politicians = ["Alice Danton", "Bryce Linwood", "Cara Solis", "Damon Krill",
+               "Evelyn Marsh", "Felix Grant", "Gina Torres", "Hector Wells", "Isla Reed", "Jasper Cole"]
 intensities = [
     'Not Enforced', 'Symbolic Only', 'Minimal', 'Light Enforcement', 'Moderate Enforcement',
     'Strict Enforcement', 'Punitive', 'Community-Enforced', 'Surveillance-Based']
@@ -34,15 +34,14 @@ durations = ['Temporary', 'Short-Term',
 
 
 with col1:
-   scopes_choice = st.selectbox("Enter Scope:", scopes)
-   intensity_choice = st.selectbox("Enter Policy Type:", intensities)
-   duration_choice = st.selectbox("Select Politician:", durations)
-   
+    scopes_choice = st.selectbox("Enter Scope:", scopes)
+    intensity_choice = st.selectbox("Enter Policy Type:", intensities)
+    duration_choice = st.selectbox("Select Politician:", durations)
+
 with col2:
     st.text('Recommendations')
     with st.container(height=250):
         st.text("")
-
 
     st.text('Similar Policies')
     with st.container(height=250):

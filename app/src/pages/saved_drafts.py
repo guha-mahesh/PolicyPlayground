@@ -1,15 +1,15 @@
 import pandas as pd
 import requests
 from modules.nav import SideBarLinks
+from modules.theme import custom_style
 import streamlit as st
 import logging
 logger = logging.getLogger(__name__)
 
 
-st.set_page_config(layout='wide')
-
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
+custom_style()
 
 st.markdown("""
     <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>

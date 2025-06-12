@@ -1,15 +1,13 @@
+from modules.theme import custom_style
+import requestfunctions.getmethods as getmethods
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
 
 logger = logging.getLogger(__name__)
 
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import requestfunctions.getmethods as getmethods
-from modules.theme import custom_style
 
-
-st.set_page_config(layout="wide")
 custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
@@ -19,7 +17,8 @@ st.title("Enter new Politician")
 name = st.text_input(label="Enter Name")
 contact = st.text_input(label="Enter Contact Info")
 
-returnJson = {"full_name" : name, "contact" : contact, "user_id" : st.session_state["user_id"]}
+returnJson = {"full_name": name, "contact": contact,
+              "user_id": st.session_state["user_id"]}
 
 # add a button to use the values entered into the number field to send to the
 # prediction function via the REST API

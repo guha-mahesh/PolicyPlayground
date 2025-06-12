@@ -9,7 +9,7 @@ from modules.theme import custom_style
 
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout="wide")
+
 custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
@@ -29,7 +29,8 @@ with col1:
 
 # add another number input for variable 2 into column 2
 with col2:
-    title = st.text_input("Enter Title", value=st.session_state['new_note_title'])
+    title = st.text_input(
+        "Enter Title", value=st.session_state['new_note_title'])
 
 content = st.text_area(label="Enter Description", value=st.session_state['new_note_content'], height=None, max_chars=None,
                        key=None, help=None, on_change=None, args=None, kwargs=None,
@@ -51,7 +52,8 @@ else:
     politicians = []
 
 with col1:
-    selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
+    selected_politician = st.selectbox(
+        label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
 
 with col2:
     if st.button("New Politician"):
@@ -60,7 +62,7 @@ with col2:
 
 st.subheader('Policy Changes')
 country_options = ["Use My Nationality", "United States", "Japan", "Germany",
-                       "United Kingdom", "France", "Russia", "Canada"]
+                   "United Kingdom", "France", "Russia", "Canada"]
 selected_country = st.selectbox(
     "Select Country for GDP Analysis (Optional)",
     options=country_options,
@@ -81,34 +83,34 @@ else:
 st.text('Monetary Policy:')
 col1, col2, col3 = st.columns(3)
 with col1:
-    frdr =  st.slider(
-            "Federal Reserve Discount Rate (%)",
-            min_value=0.0,
-            max_value=15.0,
-            value=2.5,
-            step=0.25,
-            key="discount_slider"
-        )
+    frdr = st.slider(
+        "Federal Reserve Discount Rate (%)",
+        min_value=0.0,
+        max_value=15.0,
+        value=2.5,
+        step=0.25,
+        key="discount_slider"
+    )
 
 with col2:
-    fbss =  st.slider(
-            "Fed Balance Sheet Size (Billions $)",
-            min_value=1000,
-            max_value=10000,
-            value=7500,
-            step=100,
-            key="balance_slider"
-        )
+    fbss = st.slider(
+        "Fed Balance Sheet Size (Billions $)",
+        min_value=1000,
+        max_value=10000,
+        value=7500,
+        step=100,
+        key="balance_slider"
+    )
 
 with col3:
-    tsh =   st.slider(
-            "Treasury Securities Holdings (Billions $)",
-            min_value=500,
-            max_value=6000,
-            value=4500,
-            step=100,
-            key="treasury_slider"
-        )
+    tsh = st.slider(
+        "Treasury Securities Holdings (Billions $)",
+        min_value=500,
+        max_value=6000,
+        value=4500,
+        step=100,
+        key="treasury_slider"
+    )
 
 col4, col5, col6 = st.columns(3)
 with col4:
@@ -144,35 +146,35 @@ with col6:
 st.text('Fiscal Policy:')
 col1, col2, col3 = st.columns(3)
 with col1:
-    military =  st.slider(
-            "Military Spending (% of Government Expenditure)",
-            min_value=0.0,
-            max_value=20.0,
-            value=3.0,
-            step=0.1,
-            key="military_slider"
-            )
+    military = st.slider(
+        "Military Spending (% of Government Expenditure)",
+        min_value=0.0,
+        max_value=20.0,
+        value=3.0,
+        step=0.1,
+        key="military_slider"
+    )
 
 with col2:
-    education =  st.slider(
-            "Education Spending (% of GDP)",
-            min_value=0.0,
-            max_value=20.0,
-            value=5.0,
-            step=0.1,
-            key="education_slider"
-        )
+    education = st.slider(
+        "Education Spending (% of GDP)",
+        min_value=0.0,
+        max_value=20.0,
+        value=5.0,
+        step=0.1,
+        key="education_slider"
+    )
 
 with col3:
-    health =   st.slider(
-            "Health Spending (% of GDP)",
-            min_value=0.0,
-            max_value=15.0,
-            value=8.0,
-            step=0.1,
-            key="health_slider"
-        )
-    
+    health = st.slider(
+        "Health Spending (% of GDP)",
+        min_value=0.0,
+        max_value=15.0,
+        value=8.0,
+        step=0.1,
+        key="health_slider"
+    )
+
 col7, col8, col9 = st.columns(3)
 with col7:
     infrastructure = st.slider(
@@ -208,19 +210,19 @@ with col9:
 if st.button("Save Note", type="primary", use_container_width=True):
     if selected_politician == None:
         st.write("Please select a Politician")
-    else: 
+    else:
         sp500 = getmethods.predictSP(frdr, fbss, tsh)
         GDP = getmethods.predictGDP(military, education, health, country)
         save_policy = {
-            "discountRate": frdr, 
-            "federalReserveBalanceSheet": fbss, 
-            "treasurySecurities": tsh, 
+            "discountRate": frdr,
+            "federalReserveBalanceSheet": fbss,
+            "treasurySecurities": tsh,
             "militarySpending": military,
-            "educationSpending": education, 
-            "healthSpending": health, 
-            "country": country, 
-            "user_id": st.session_state["user_id"], 
-            "market_index": sp500, 
+            "educationSpending": education,
+            "healthSpending": health,
+            "country": country,
+            "user_id": st.session_state["user_id"],
+            "market_index": sp500,
             "GDP": GDP,
             "federalFundsRate": fed_funds_rate,
             "moneySupply": money_supply,
@@ -234,7 +236,7 @@ if st.button("Save Note", type="primary", use_container_width=True):
         saved_id = json1["saved_id"]
         st.write(saved_id)
         noteJson = {"politician_id": selected_politician["politician_id"],
-              "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
+                    "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
         getmethods.postNote(noteJson)
         st.session_state['new_note_title'] = ""
         st.session_state['new_note_content'] = ""
