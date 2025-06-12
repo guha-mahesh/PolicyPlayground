@@ -9,7 +9,7 @@ from modules.theme import custom_style
 import streamlit as st
 import logging
 from modules.theme import custom_style
-
+custom_style()
 logging.basicConfig(
     format='%(filename)s:%(lineno)s:%(levelname)s -- %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 # streamlit supports reguarl and wide layout (how the controls
 # are organized/displayed on the screen).
-st.set_page_config(layout='wide')
-custom_style()
 
 # If a user is at this page, we assume they are not
 # authenticated.  So we change the 'authenticated' value
