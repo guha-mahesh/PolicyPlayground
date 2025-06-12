@@ -116,6 +116,15 @@ st.markdown("""
         font-weight: 600 !important;
         margin-bottom: 0.5rem !important;
     }
+    
+    .admin-section {
+        background: linear-gradient(135deg, rgba(100, 100, 100, 0.1) 0%, rgba(80, 80, 80, 0.15) 100%);
+        border: 2px dashed rgba(100, 100, 100, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        text-align: center;
+        transition
     </style>
     
     <div class='welcome-banner'>
@@ -189,10 +198,11 @@ with col3:
 
 
 st.divider()
-col1, col2, col3, col4 = st.columns(4)
-with col4:
-    if st.button('System Admin Login', type='primary',  use_container_width=True):
 
+# Create centered system admin button with proper spacing
+col1, col2, col3 = st.columns([1, 1, 1])
+with col2:
+    if st.button('System Admin Login', type='secondary', use_container_width=True):
         st.session_state['authenticated'] = True
         st.session_state['role'] = 'administrator'
         st.session_state['first_name'] = 'Admin'
