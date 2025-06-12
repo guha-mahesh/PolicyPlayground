@@ -47,7 +47,7 @@ def all_notes(user_id, politician_id):
 
     return jsonify(returnjson), 200
 
-@notes.route("/modifyNotes", methods=["PUT"])
+@notes.route("/note", methods=["PUT"])
 def modify_note():
     conn = db.get_db()
     cursor = conn.cursor()
