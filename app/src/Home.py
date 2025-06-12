@@ -114,10 +114,6 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.title('Policy Playground')
-st.write('\n')
-st.write("### By: Pushin' Policy")
-st.write('\n')
 st.write('#### Choose a User to Login as:')
 
 # For each of the user personas for which we are implementing
