@@ -9,6 +9,7 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
 from modules.theme import custom_style
+import time
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 custom_style()
 SideBarLinks()
+placeholder = st.empty()
 
 st.title("Your Predictions")
 st.session_state['saved_pol'] = False
@@ -80,7 +82,9 @@ if st.button("Save Policy Settings"):
         "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"],
         "title": title or "Unnamed Policy"
     }
-    st.write("Policy Saved!")
+
+    if st.button("🔔 Click Here to view Saved Policies", icon="ℹ️"):
+        st.switch_page("pages/46_PolicyMaker_ViewFavorites.py")
 
     save_url = "http://web-api:4000/politician/policy"
     response = requests.post(

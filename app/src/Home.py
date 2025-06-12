@@ -9,7 +9,7 @@ from modules.theme import custom_style
 import streamlit as st
 import logging
 from modules.theme import custom_style
-custom_style()
+
 logging.basicConfig(
     format='%(filename)s:%(lineno)s:%(levelname)s -- %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
