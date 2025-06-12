@@ -17,10 +17,16 @@ st.set_page_config(layout='wide')
 SideBarLinks()
 
 st.title("Your Predictions")
-st.session_state['saved_pol'] = False
 
-selected_country = st.session_state['policy_params']['Selected Country']
 
+
+if 'published_policy' not in st.session_state:
+    st.error("No policy data found. Please select a policy to analyze.")
+    st.stop()
+
+policy = st.session_state['published_policy']
+
+selected_country = policy['Selected Country']
 
 market_indices = {
     "USA": "SP500",
@@ -35,15 +41,15 @@ market_indices = {
 market_index = market_indices.get(selected_country, "SP500")
 
 
-if "Market" in st.session_state['Predictions']:
+if "Market" in policy['Predictions']:
 
-    market_pred = round(float(st.session_state['Predictions']["Market"]), 2)
+    market_pred = round(float(policy['Predictions']["Market"]), 2)
 else:
 
-    market_pred = round(float(st.session_state['Predictions'].get(
-        market_index, st.session_state['Predictions'].get("SP500", 0))), 2)
+    market_pred = round(float(policy['Predictions'].get(
+        market_index, policy['Predictions'].get("SP500", 0))), 2)
 
-gdp_pred = round(float(st.session_state['Predictions']["GDP/C"]), 2)
+gdp_pred = round(float(policy['Predictions']["GDP/C"]), 2)
 
 
 col1, col2 = st.columns(2)
@@ -58,47 +64,10 @@ with col2:
     st.markdown(
         f"<h2 style='color: #81C784;'>${gdp_pred:,.0f}</h2>", unsafe_allow_html=True)
 
-title = st.text_input(label="Enter Title Here: ")
-if st.button("Save Policy Settings"):
-    policy_data = {
-        "user_id": st.session_state['user_id'],
-        "discountRate": st.session_state['policy_params']["Discount Rate"],
-        "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
-        "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
-        "militarySpending": st.session_state['policy_params']["Military Spending"],
-        "educationSpending": st.session_state['policy_params']["Education Spending"],
-        "healthSpending": st.session_state['policy_params']["Health Spending"],
-        "country": st.session_state['policy_params']["Selected Country"],
-        "market_index": market_pred,
-        "GDP": gdp_pred,
-        "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
-        "moneySupply": st.session_state['policy_params']["Money Supply"],
-        "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
-        "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
-        "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
-        "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"],
-        "title": title or "Unnamed Policy"
-    }
-    st.write("Policy Saved!")
-
-    save_url = "http://web-api:4000/politician/policy"
-    response = requests.post(
-        url=save_url,
-        json=policy_data,
-        headers={'Content-Type': 'application/json'},
-        timeout=10
-    )
-    response = response.json()
-    saved_id = response["saved_id"]
-
-    # if response.status_code == 200:
-    #     st.success("✅ Policy settings saved successfully!")
-    # else:
-    #     st.error(f"Failed to save policy: {response.status_code}")
-    #     st.write(response.text)
 
 
 st.divider()
+
 
 
 col1, col2 = st.columns(2)
@@ -118,7 +87,7 @@ with col1:
     }
 
     endpoint = api_endpoints.get(market_index, "sp500")
-    API_URL = f"http://web-api:4000/model/data/{endpoint}"
+    API_URL = f"http://web-api:4000/model/fetchData/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -235,7 +204,7 @@ with col2:
     if selected_country == "Great Britain":
         country_for_api = "UnitedKingdom"
 
-    GDP_API_URL = f"http://web-api:4000/model/countryGDP/{country_for_api}"
+    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)
@@ -364,7 +333,7 @@ world_gdp_last_value = None
 with col3:
     st.markdown("##### URTH ETF (Global Equity)")
 
-    URTH_API_URL = "http://web-api:4000/model/data/urth"
+    URTH_API_URL = "http://web-api:4000/model/fetchData/urth"
 
     try:
         response = requests.get(URTH_API_URL)
@@ -480,7 +449,7 @@ with col3:
 with col4:
     st.markdown("##### World GDP per Capita Average")
 
-    WORLD_GDP_API_URL = "http://web-api:4000/model/data/world_gdp_per_capita"
+    WORLD_GDP_API_URL = "http://web-api:4000/model/fetchData/world_gdp_per_capita"
 
     try:
         response = requests.get(WORLD_GDP_API_URL)

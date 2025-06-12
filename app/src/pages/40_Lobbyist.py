@@ -225,7 +225,8 @@ if st.button("Save Note", type="primary", use_container_width=True):
             "reserveRequirementRatio": reserve_ratio,
             "infrastructureSpending": infrastructure,
             "debtToGDPRatio": debt_gdp_ratio,
-            "corporateTaxRate": corporate_tax_rate
+            "corporateTaxRate": corporate_tax_rate,
+            "title": title
         }
         json1 = getmethods.savePolicy(save_policy).json()
         saved_id = json1["saved_id"]
