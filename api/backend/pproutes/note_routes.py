@@ -52,7 +52,7 @@ def modify_note():
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "UPDATE Conversations SET title = %s, content = %s, politician_id = %s WHERE conversation_id = %s AND user_id = %s"
+    query = "UPDATE Conversations SET title = %s, content = %s WHERE conversation_id = %s AND user_id = %s"
     params = []
 
     req = request.get_json()

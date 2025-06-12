@@ -226,7 +226,10 @@ if st.button("Save Note", type="primary", use_container_width=True):
         "reserveRequirementRatio": reserve_ratio,
         "infrastructureSpending": infrastructure,
         "debtToGDPRatio": debt_gdp_ratio,
-        "corporateTaxRate": corporate_tax_rate
+        "corporateTaxRate": corporate_tax_rate,
+        "title": title,
+        "user_id": st.session_state["user_id"],
+        "saved_id": currentPolicy["saved_id"]
     }
     json1 = getmethods.modifyPolicy(save_policy).json()
     saved_id = json1["saved_id"]
