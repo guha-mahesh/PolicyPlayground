@@ -1,6 +1,8 @@
 import streamlit as st
 
+
 def custom_style():
+    st.set_page_config(layout='wide')
     st.markdown(
         """
         <style>
@@ -10,6 +12,7 @@ def custom_style():
         [data-testid="stSidebar"] {
             background-color: #18435a;
         }
+        
 
         [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
@@ -22,7 +25,25 @@ def custom_style():
         .stApp * {
             font-family: 'Poppins', sans-serif !important;
         }
+        section[data-testid="stSidebar"] .stButton > button {
+        color: black;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: 2px solid black;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+
+    section[data-testid="stSidebar"] .stButton > button:hover {
+        transform: translateY(-2px);
+        border: 2px solid #F0A76C
+    }
+
         </style>
+        
         """,
         unsafe_allow_html=True
     )
@@ -186,3 +207,7 @@ def banner(title, desc):
         </p>
     </div>
 """.format(title, desc), unsafe_allow_html=True)
+
+
+def logOut():
+    pass

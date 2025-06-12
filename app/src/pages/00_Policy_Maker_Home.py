@@ -1,14 +1,18 @@
 from modules.theme import *
 from modules.nav import SideBarLinks
+from modules.theme import welcome_banner, logOut
 import streamlit as st
 import logging
 import requests
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout='wide')
+
 custom_style()
 SideBarLinks()
 welcome_banner("Test and analyze your policy decisions")
+
+logOut()
+
 
 # Custom CSS for enhanced styling
 st.markdown("""
@@ -112,65 +116,8 @@ st.markdown("""
         box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
     
-    /* Slider styling */
-    .stSlider > div > div {
-        background-color: #e2e8f0;
-    }
     
-    .stSlider > div > div > div {
-        background-color: #000000;
-    }
-    
-    /* Button styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #000000 0%, #2563eb 100%);
-        color: white;
-        border: none;
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-        font-weight: 600;
-        border-radius: 10px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
-    }
-            /* Make slider value backgrounds transparent */
-.stSlider [data-testid="stTickBarMin"],
-.stSlider [data-testid="stTickBarMax"] {
-    background-color: transparent !important;
-}
-
-/* Alternative: Match the exact background color */
-.stSlider [data-testid="stTickBar"] {
-    background-color: transparent !important;
-}
-
-/* Target the value labels specifically */
-.stSlider [data-baseweb="slider"] [data-testid="stTickBarMin"],
-.stSlider [data-baseweb="slider"] [data-testid="stTickBarMax"] {
-    background: transparent !important;
-}
-
-/* Remove any box styling around the min/max values */
-.stSlider > div > div > div > div {
-    background-color: transparent !important;
-    box-shadow: none !important;
-}
-
-/* Keep the slider track visible */
-.stSlider [data-baseweb="slider"] > div > div {
-    background-color: #e2e8f0 !important;
-}
-
-/* Keep the slider fill/progress visible */
-.stSlider [data-baseweb="slider"] > div > div > div {
-    background-color: #000000 !important;
-}
+            
 </style>
 """, unsafe_allow_html=True)
 
@@ -183,7 +130,7 @@ if user_country not in ["United States", "United Kingdom", "Germany"]:
 st.markdown("""
     <div class='nationality-container'>
         <div class='nationality-header'>
-            <span style='font-size: 1.5rem;'>🌍</span>
+            <span style='font-size: 1.5rem;'></span>
             <h4>Policy Analysis Country</h4>
         </div>
         <p style='color: #64748b; margin: 0 0 1rem 0;'>Select a country for comparative analysis, or use your default nationality</p>

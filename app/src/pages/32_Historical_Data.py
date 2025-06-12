@@ -1,3 +1,4 @@
+from modules.theme import custom_style
 import pandas as pd
 import requests
 from modules.nav import SideBarLinks
@@ -8,7 +9,6 @@ from modules.theme import *
 
 
 
-st.set_page_config(layout='wide')
 custom_style()
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
@@ -27,22 +27,22 @@ with col1:
     with st.container(height=430):
         st.write("*General Information*")
         year_start = ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
-                    "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
+                      "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
         start_choice = st.selectbox("Choose Start Year", year_start)
 
         year_end = ["2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009",
-        "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
+                    "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
         end_choice = st.selectbox("Choose End Year", year_end)
 
         topic = ["Taxation", "Government Spending", "Public Deficit", "Interest Rates", "Inflation", "Money Supply",
-                "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
+                 "Government Bonds", "Unemployment", "Tariffs", "Trade Agreements", "Minimum Wage", "Retirement", "Debt Management"]
         topic_choice = st.selectbox("Choose a Topic", topic)
 
         country = ["USA", "EU", "China"]
         country_choice = st.radio("Choose a Country", country)
 
 with col2:
-    with st.container(height = 430):
+    with st.container(height=430):
         st.write("*Economic Information*\n\n")
         # Replace single number inputs with range sliders
         budget_range = st.slider(
@@ -69,7 +69,7 @@ with col2:
             step=50
         )
 
-with st.container(height = 200):
+with st.container(height=200):
     st.write("*Filter Criteria*")
     col1, col2 = st.columns(2)
     with col1:
@@ -98,29 +98,36 @@ if st.button("Apply", use_container_width=True):
     params['population_min'] = population_range[0]
     params['population_max'] = population_range[1]
 
-response = requests.get("http://web-api:4000/pol/policy_handler", params=params)
+response = requests.get(
+    "http://web-api:4000/pol/policy_handler", params=params)
 data = response.json()
-df = pd.DataFrame(data, columns=("policy_id", "country", "year_enacted", "politician", "topic", "budget", "duration_length", "population_size"))
-df = df.rename(columns={"policy_id": "Policy ID", "country" : "Country", "year_enacted": "Year", "politician" : "Politician", "topic": "Topic", "budget": "Budget", "duration_length": "Duration (Years)", "population_size": "Population"})
+df = pd.DataFrame(data, columns=("policy_id", "country", "year_enacted",
+                  "politician", "topic", "budget", "duration_length", "population_size"))
+df = df.rename(columns={"policy_id": "Policy ID", "country": "Country", "year_enacted": "Year", "politician": "Politician",
+               "topic": "Topic", "budget": "Budget", "duration_length": "Duration (Years)", "population_size": "Population"})
 st.write("### Here is a list of all availiable policy:")
 st.write(df)
 
 # Format the numeric columns
 if 'budget' in df.columns:
-    df['budget'] = df['budget'].apply(lambda x: f"${x:,.0f}M" if pd.notnull(x) else "")
+    df['budget'] = df['budget'].apply(
+        lambda x: f"${x:,.0f}M" if pd.notnull(x) else "")
 if 'population_size' in df.columns:
-    df['population_size'] = df['population_size'].apply(lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
+    df['population_size'] = df['population_size'].apply(
+        lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
 if 'duration_length' in df.columns:
-    df['duration_length'] = df['duration_length'].apply(lambda x: f"{x} months" if pd.notnull(x) else "")
+    df['duration_length'] = df['duration_length'].apply(
+        lambda x: f"{x} months" if pd.notnull(x) else "")
 
-choices = [f"{c}. {a}- {b}" for a, b, c in zip(df['Politician'], df['Topic'], df['Policy ID'])]
+choices = [f"{c}. {a}- {b}" for a, b,
+           c in zip(df['Politician'], df['Topic'], df['Policy ID'])]
 choice = st.selectbox("Choose a Policy to save", choices)
 num = int(choice.split('.')[0])
 
 if st.button("Save Policy"):
     returnJson = {"policy_id": num, "user_id": st.session_state['user_id']}
     requests.post(f"http://web-api:4000/pol/favorites", json=returnJson)
-    st.write("Policy Saved!")    
+    st.write("Policy Saved!")
 
 st.write("---")
 
