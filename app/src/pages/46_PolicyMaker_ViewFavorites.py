@@ -114,43 +114,52 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 try:
-    response = requests.get("http://web-api:4000/politician/publisher")
+    response = requests.get(f"http://web-api:4000/politician/userPublisher/{user_id}")
     if response.status_code == 200:
         published_policies = response.json()
         
         if published_policies:
             for policy in published_policies:
-                with st.expander(f"Expand {policy['title']}", expanded=False):
-                    col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
-                    with col1:
-                        st.write(f'**Published Date:** {policy["publish_date"]}')
-                        st.write(f'**Country:** {policy["Country"]}')
-                        st.write(f'**Discount Rate:** {policy["discountRate"]}%')
-                        st.write(f'**Federal Reserve Balance Sheet:** ${policy["FederalReserveBalanceSheet"]} Billion')
-                        st.write(f'**Treasury Holdings:** ${policy["TreasurySecurities"]} Billion')
-                        st.write(f'**Military Spending:** {policy["MilitarySpending"]}%')
-                        st.write(f'**Education Spending:** {policy["EducationSpending"]}%')
-                        st.write(f'**Health Spending:** {policy["HealthSpending"]}%')
-                        st.write(f'**SP500 Prediction:** {policy["SP500"]:,.2f}')
-                        st.write(f'**GDP Prediction:** {policy["GDP"]:,.2f}')
-                    
-                    with col2:
-                        if st.button("Modify", key=f"modify_pub_{policy['publish_id']}", use_container_width=True):
-                            st.switch_page("pages/00_Policy_Maker_Home.py")
-                        if st.button("View Analysis", key=f"analyze_pub_{policy['publish_id']}", use_container_width=True):
-                            st.switch_page("pages/44_Policy_Maker_viewPred.py")
-                        if st.button("Unpublish", key=f"unpublish_{policy['publish_id']}", use_container_width=True):
-                            try:
-                                unpublish_response = requests.delete(f"http://web-api:4000/politician/publisher/{policy['publish_id']}")
-                                if unpublish_response.status_code == 200:
-                                    st.success("Policy unpublished successfully!")
-                                    st.rerun()
-                                else:
-                                    st.error("Failed to unpublish policy")
-                            except Exception as e:
-                                st.error(f"Error unpublishing policy: {str(e)}")
-                    
-                    st.markdown("<br>", unsafe_allow_html=True)
+                try:
+                    # Get the full policy details using the saved_id
+                    policy_details_response = requests.get(f"http://web-api:4000/politician/policy/{policy['saved_id']}")
+                    if policy_details_response.status_code == 200:
+                        policy_details = policy_details_response.json()[0]
+                        
+                        with st.expander(f"Expand Policy {policy['publish_id']}", expanded=False):
+                            col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
+                            with col1:
+                                st.write(f'**Country:** {policy_details["Country"]}')
+                                st.write(f'**Discount Rate:** {policy_details["discountRate"]}%')
+                                st.write(f'**Federal Reserve Balance Sheet:** ${policy_details["FederalReserveBalanceSheet"]} Billion')
+                                st.write(f'**Treasury Holdings:** ${policy_details["TreasurySecurities"]} Billion')
+                                st.write(f'**Military Spending:** {policy_details["MilitarySpending"]}%')
+                                st.write(f'**Education Spending:** {policy_details["EducationSpending"]}%')
+                                st.write(f'**Health Spending:** {policy_details["HealthSpending"]}%')
+                                st.write(f'**SP500 Prediction:** {policy_details["SP500"]:,.2f}')
+                                st.write(f'**GDP Prediction:** {policy_details["GDP"]:,.2f}')
+                            
+                            with col2:
+                                if st.button("Modify", key=f"modify_pub_{policy['publish_id']}", use_container_width=True):
+                                    st.switch_page("pages/00_Policy_Maker_Home.py")
+                                if st.button("View Analysis", key=f"analyze_pub_{policy['publish_id']}", use_container_width=True):
+                                    st.switch_page("pages/44_Policy_Maker_viewPred.py")
+                                if st.button("Unpublish", key=f"unpublish_{policy['publish_id']}", use_container_width=True):
+                                    try:
+                                        unpublish_response = requests.delete(f"http://web-api:4000/politician/publisher/{policy['publish_id']}")
+                                        if unpublish_response.status_code == 200:
+                                            st.success("Policy unpublished successfully!")
+                                            st.rerun()
+                                        else:
+                                            st.error("Failed to unpublish policy")
+                                    except Exception as e:
+                                        st.error(f"Error unpublishing policy: {str(e)}")
+                            
+                            st.markdown("<br>", unsafe_allow_html=True)
+                    else:
+                        st.error(f"Failed to fetch policy details for publish_id {policy['publish_id']}")
+                except Exception as e:
+                    st.error(f"Error processing policy {policy['publish_id']}: {str(e)}")
         else:
             st.info("No published policies found.")
     else:
