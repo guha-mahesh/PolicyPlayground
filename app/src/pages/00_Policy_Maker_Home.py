@@ -607,7 +607,7 @@ with col_right:
 st.markdown("<br>", unsafe_allow_html=True)
 
 # Test Policy Button
-if st.button("🚀 Test Policy Set", type="primary", use_container_width=True):
+if st.button("Test Policy Set", type="primary", use_container_width=True):
     st.session_state['policy_params'] = {
         "Discount Rate": discount_rate,
         "Federal Balance": fed_balance,
