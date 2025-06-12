@@ -10,12 +10,11 @@ from datetime import datetime, timedelta
 import json
 from modules.theme import *
 
-
+custom_style()
 logger = logging.getLogger(__name__)
 
 
 SideBarLinks()
-custom_style()
 
 st.title("Your Predictions")
 
