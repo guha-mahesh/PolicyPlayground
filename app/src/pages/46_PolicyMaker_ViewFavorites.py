@@ -2,6 +2,7 @@ import json
 import requests
 import streamlit as st
 from modules.nav import SideBarLinks
+from modules.theme import custom_style
 import logging
 
 logger = logging.getLogger(__name__)

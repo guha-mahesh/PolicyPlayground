@@ -2,19 +2,14 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 import requests
+from modules.theme import *
 logger = logging.getLogger(__name__)
 
 st.set_page_config(layout='wide')
 SideBarLinks()
 
-
-st.markdown("""
-    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <h1 style='color: white; margin: 0;'>Welcome, {}</h1>
-        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Test and analyze your policy decisions</p>
-    </div>
-""".format(st.session_state['first_name']), unsafe_allow_html=True)
-
+custom_style()
+welcome_banner()
 
 tab1, tab2 = st.tabs(["Monetary Policy", "Fiscal Policy"])
 
@@ -135,11 +130,20 @@ policy_config = get_monetary_policy_config(user_country)
 
 with tab1:
     st.markdown(f"""
-        <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
-            <h3 style='color: #e2e8f0; margin: 0;'>{policy_config['central_bank']} Controls</h3>
-            <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Adjust monetary policy parameters to influence economic outcomes</p>
-        </div>
-    """, unsafe_allow_html=True)
+            <div style='
+                background: rgba(240, 146, 64, 0.6); 
+                padding: 1rem; 
+                border-radius: 8px;
+                text-align: center;
+                margin-bottom: 1rem;
+                border: 1px solid rgba(24, 67, 90, 0.2);
+                backdrop-filter: blur(5px);
+            '>
+                <p style='color: #FFFFFF; margin: 0; font-size: 1.1rem;'>
+                    <strong>{policy_config['central_bank']} Controls:</strong> Adjust monetary policy parameters to influence economic outcomes
+                </p>
+            </div>
+        """, unsafe_allow_html=True)
 
     col1, col2 = st.columns([3, 1])
     with col1:
