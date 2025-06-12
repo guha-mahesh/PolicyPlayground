@@ -1,5 +1,6 @@
 import streamlit as st
 
+
 def custom_style():
     st.markdown(
         """
@@ -17,10 +18,29 @@ def custom_style():
         .stApp * {
             font-family: inherit !important;
         }
+        section[data-testid="stSidebar"] .stButton > button {
+        color: black;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        border: 2px solid black;
+        transition: all 0.3s ease;
+        background: transparent;
+    }
+
+    section[data-testid="stSidebar"] .stButton > button:hover {
+        transform: translateY(-2px);
+        border: 2px solid #F0A76C
+    }
+
         </style>
+        
         """,
         unsafe_allow_html=True
     )
+
 
 def welcome_banner():
     st.markdown("""
@@ -101,3 +121,7 @@ def welcome_banner():
         </p>
     </div>
 """.format(st.session_state['first_name']), unsafe_allow_html=True)
+
+
+def logOut():
+    pass
