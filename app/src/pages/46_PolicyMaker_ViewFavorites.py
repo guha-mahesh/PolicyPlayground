@@ -63,7 +63,7 @@ for item in saved_policies:
                 st.write(f'**Corporate Tax Rate:** {policyJson["CorporateTaxRate"]}%')
             with col2:
                 if st.button("Modify", key=f"modify_{id}", use_container_width=True):
-                    st.switch_page("pages/00_Policy_Maker_Home.py")
+                    st.switch_page("pages/47_PolicyMaker_UpdatePolicy.py")
                 if st.button("View Analysis", key=f"analyze_{id}", use_container_width=True):
                     st.switch_page("pages/44_Policy_Maker_viewPred.py")
                 if st.button("Publish", key=f"publish_{id}", use_container_width=True):
@@ -141,7 +141,7 @@ try:
                             
                             with col2:
                                 if st.button("Modify", key=f"modify_pub_{policy['publish_id']}", use_container_width=True):
-                                    st.switch_page("pages/00_Policy_Maker_Home.py")
+                                    st.switch_page("pages/47_PolicyMaker_UpdatePolicy.py")
                                 if st.button("View Analysis", key=f"analyze_pub_{policy['publish_id']}", use_container_width=True):
                                     st.switch_page("pages/44_Policy_Maker_viewPred.py")
                                 if st.button("Unpublish", key=f"unpublish_{policy['publish_id']}", use_container_width=True):

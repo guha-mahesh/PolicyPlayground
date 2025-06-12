@@ -1,4 +1,4 @@
-from modules.theme import custom_style
+from modules.theme import custom_style, banner
 from modules.nav import SideBarLinks
 from modules.theme import welcome_banner, logOut
 import streamlit as st
@@ -6,8 +6,8 @@ import logging
 import requests
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout='wide')
 custom_style()
+
 SideBarLinks()
 
 logOut()
@@ -120,7 +120,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-welcome_banner()
+banner("Update a Policy", "Make changes to your policy!")
 
 # Get user's nationality
 user_country = st.session_state.get('nationality', 'United States')
@@ -586,6 +586,7 @@ with col_left:
             <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {fed_funds_rate}%</p>
             <p style='color: #94a3b8; margin: 0;'>• Money Supply: {policy_config['currency']}{money_supply:,}B</p>
             <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {reserve_ratio}%</p>
+            <p style='color: transparent; margin: 0;'>• &nbsp;</p>
         </div>
     """, unsafe_allow_html=True)
 
