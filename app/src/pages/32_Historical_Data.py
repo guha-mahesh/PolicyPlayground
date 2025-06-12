@@ -61,7 +61,7 @@ with col2:
         )
         st.write("\n")
         population_range = st.slider(
-            "Population Size Range (in millions)",
+            "Population Size Range (in thousands)",
             min_value=0,
             max_value=1000,
             value=(0, 1000),
