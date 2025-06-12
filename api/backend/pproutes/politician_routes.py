@@ -56,9 +56,9 @@ def savePolicy():
             INSERT INTO SavedPolicy (discountRate, FederalReserveBalanceSheet, TreasurySecurities,
             FederalFundsRate, MoneySupply, ReserveRequirementRatio,
             HealthSpending, MilitarySpending, EducationSpending, InfrastructureSpending,
-            DebtToGDPRatio, CorporateTaxRate, Country, SP500, GDP, user_id)
+            DebtToGDPRatio, CorporateTaxRate, Country, SP500, GDP, user_id, title)
             VALUES
-            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
+            (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
     params = []
 
@@ -66,7 +66,7 @@ def savePolicy():
                        "treasurySecurities", "federalFundsRate", "moneySupply", 
                        "reserveRequirementRatio", "healthSpending", "militarySpending",
                        "educationSpending", "infrastructureSpending", "debtToGDPRatio",
-                       "corporateTaxRate", "country", "market_index", "GDP", "user_id"]
+                       "corporateTaxRate", "country", "market_index", "GDP", "user_id", "title"]
     
     for field in required_fields:
         if field not in data:

@@ -58,45 +58,45 @@ with col2:
     st.markdown(
         f"<h2 style='color: #81C784;'>${gdp_pred:,.0f}</h2>", unsafe_allow_html=True)
 
-if st.button("Save Policy Settings", type="secondary"):
-
+title = st.text_input(label="Enter Title Here: ")
+if st.button("Save Policy Settings"):
     policy_data = {
-        "user_id": st.session_state['user_id'],
-        "discountRate": st.session_state['policy_params']["Discount Rate"],
-        "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
-        "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
-        "militarySpending": st.session_state['policy_params']["Military Spending"],
-        "educationSpending": st.session_state['policy_params']["Education Spending"],
-        "healthSpending": st.session_state['policy_params']["Health Spending"],
-        "country": st.session_state['policy_params']["Selected Country"],
-        "market_index": market_pred,
-        "GDP": gdp_pred,
-        "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
-        "moneySupply": st.session_state['policy_params']["Money Supply"],
-        "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
-        "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
-        "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
-        "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"]
+    "user_id": st.session_state['user_id'],
+    "discountRate": st.session_state['policy_params']["Discount Rate"],
+    "federalReserveBalanceSheet": st.session_state['policy_params']["Federal Balance"],
+    "treasurySecurities": st.session_state['policy_params']["Treasury Holdings"],
+    "militarySpending": st.session_state['policy_params']["Military Spending"],
+    "educationSpending": st.session_state['policy_params']["Education Spending"],
+    "healthSpending": st.session_state['policy_params']["Health Spending"],
+    "country": st.session_state['policy_params']["Selected Country"],
+    "market_index": market_pred,
+    "GDP": gdp_pred,
+    "federalFundsRate": st.session_state['policy_params']["Federal Funds Rate"],
+    "moneySupply": st.session_state['policy_params']["Money Supply"],
+    "reserveRequirementRatio": st.session_state['policy_params']["Reserve Requirement Ratio"],
+    "infrastructureSpending": st.session_state['policy_params']["Infrastructure Spending"],
+    "debtToGDPRatio": st.session_state['policy_params']["Debt to GDP Ratio"],
+    "corporateTaxRate": st.session_state['policy_params']["Corporate Tax Rate"],
+    "title": title or "Unnamed Policy"
     }
-    try:
-        save_url = "http://host.docker.internal:4000/politician/savePolicy"
-        response = requests.post(
-            save_url,
-            json=policy_data,
-            headers={'Content-Type': 'application/json'},
-            timeout=10
-        )
-        response = response.json()
-        saved_id = response["saved_id"]
+    st.write("Policy Saved!")
 
-        if response.status_code == 200:
-            st.success("✅ Policy settings saved successfully!")
-        else:
-            st.error(f"Failed to save policy: {response.status_code}")
-            st.write(response.text)
+    save_url = "http://web-api:4000/politician/policy"
+    response = requests.post(
+        url=save_url,
+        json=policy_data,
+        headers={'Content-Type': 'application/json'},
+        timeout=10
+    )
+    response = response.json()
+    saved_id = response["saved_id"]
 
-    except Exception as e:
-        pass
+    # if response.status_code == 200:
+    #     st.success("✅ Policy settings saved successfully!")
+    # else:
+    #     st.error(f"Failed to save policy: {response.status_code}")
+    #     st.write(response.text)
+    
 
 
 st.divider()
