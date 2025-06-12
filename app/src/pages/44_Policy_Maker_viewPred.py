@@ -594,3 +594,7 @@ with col6:
             f"{gdp_vs_world:+.1f}%",
             f"${gdp_pred:,.0f} per capita"
         )
+
+st.divider()
+if st.button("View Currency Predictions"):
+    st.switch_page("pages/45_Policy_Maker_Currency.py")

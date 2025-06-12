@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 # streamlit supports reguarl and wide layout (how the controls
 # are organized/displayed on the screen).
-st.set_page_config(layout='wide')
+
 custom_style()
 
 # If a user is at this page, we assume they are not
