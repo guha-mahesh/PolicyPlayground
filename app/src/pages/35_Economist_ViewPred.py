@@ -8,13 +8,14 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
+from modules.theme import *
 
 
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout='wide')
 
 SideBarLinks()
+custom_style()
 
 st.title("Your Predictions")
 

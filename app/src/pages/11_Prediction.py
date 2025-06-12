@@ -1,18 +1,15 @@
 import logging
-
-logger = logging.getLogger(__name__)
-
 import streamlit as st
 from modules.nav import SideBarLinks
 import requests
 from modules.theme import custom_style
 
-st.set_page_config(layout="wide")
 custom_style()
 
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
 
+logger = logging.getLogger(__name__)
 st.title("Policy Maker")
 st.markdown("---")
 
