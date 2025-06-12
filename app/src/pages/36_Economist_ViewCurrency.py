@@ -170,6 +170,6 @@ st.markdown("<br><br>", unsafe_allow_html=True)
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button("← Back to Policies", type="secondary", use_container_width=True):
-        st.switch_page("pages/33_Economist_viewPolicy.py")
+        st.switch_page("pages/saved_drafts.py")
     if st.button("View GDP and Market Predictions", type="secondary", use_container_width=True):
         st.switch_page("pages/35_Economist_ViewPred.py")
