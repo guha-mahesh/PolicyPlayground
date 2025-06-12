@@ -76,9 +76,28 @@ for item in saved_policies:
                 st.write(
                     f'**Corporate Tax Rate:** {policyJson["CorporateTaxRate"]}%')
             with col2:
-                if st.button("Modify", key=f"modify_{id}", use_container_width=True):
-                    st.switch_page("pages/00_Policy_Maker_Home.py")
                 if st.button("View Analysis", key=f"analyze_{id}", use_container_width=True):
+                    # Set policy parameters in session state
+                    st.session_state['policy_params'] = {
+                        'Selected Country': policyJson['Country'],
+                        'Discount Rate': policyJson['discountRate'],
+                        'Federal Balance': policyJson['FederalReserveBalanceSheet'],
+                        'Treasury Holdings': policyJson['TreasurySecurities'],
+                        'Federal Funds Rate': policyJson['FederalFundsRate'],
+                        'Money Supply': policyJson['MoneySupply'],
+                        'Reserve Requirement Ratio': policyJson['ReserveRequirementRatio'],
+                        'Military Spending': policyJson['MilitarySpending'],
+                        'Education Spending': policyJson['EducationSpending'],
+                        'Health Spending': policyJson['HealthSpending'],
+                        'Infrastructure Spending': policyJson['InfrastructureSpending'],
+                        'Debt to GDP Ratio': policyJson['DebtToGDPRatio'],
+                        'Corporate Tax Rate': policyJson['CorporateTaxRate']
+                    }
+                    # Set predictions in session state
+                    st.session_state['Predictions'] = {
+                        'Market': str(policyJson['SP500']),
+                        'GDP/C': str(policyJson['GDP'])
+                    }
                     st.switch_page("pages/44_Policy_Maker_viewPred.py")
                 if st.button("Publish", key=f"publish_{id}", use_container_width=True):
                     try:
@@ -168,9 +187,6 @@ try:
                                     f'**GDP Prediction:** {policy_details["GDP"]:,.2f}')
 
                             with col2:
-                                if st.button("Modify", key=f"modify_pub_{policy['publish_id']}", use_container_width=True):
-                                    st.switch_page(
-                                        "pages/00_Policy_Maker_Home.py")
                                 if st.button("View Analysis", key=f"analyze_pub_{policy['publish_id']}", use_container_width=True):
                                     st.switch_page(
                                         "pages/44_Policy_Maker_viewPred.py")

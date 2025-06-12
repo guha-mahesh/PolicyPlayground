@@ -142,13 +142,12 @@ def banner(title, desc):
         }}
     }}
     
-    .welcome-banner {{
+    .animated-banner {{
         background: linear-gradient(90deg, rgba(240, 167, 108, 0.7) 0%, rgba(240, 146, 64, 0.7) 100%);
         padding: 2rem;
         border-radius: 10px;
         margin-bottom: 2rem;
         text-align: center;
-        font-family: "Andale Mono", "Gill Sans", "Verdana", "Tahoma", sans-serif !important;
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         box-shadow: 0 8px 32px rgba(240, 167, 108, 0.2);
@@ -157,7 +156,7 @@ def banner(title, desc):
         overflow: hidden;
     }}
     
-    .welcome-banner::before {{
+    .animated-banner::before {{
         content: '';
         position: absolute;
         top: 0;
@@ -177,20 +176,19 @@ def banner(title, desc):
         }}
     }}
     
-    .welcome-title {{
+    .animated-title {{
         color: #FFFFFF !important;
         margin: 0;
-        font-family: "Trebuchet MS", "Gill Sans", "Tahoma", sans-serif !important;
         font-weight: 600;
         font-size: 3rem;
         animation: fadeInUp 0.8s ease-out 0.2s both;
     }}
     
-    .welcome-picture {{
+    .animated-picture {{
         color: rgba(255, 255, 255, 30) !important;
     }}
     
-    .welcome-subtitle {{
+    .animated-subtitle {{
         color: rgba(255, 255, 255, 0.9) !important;
         margin: 0.5rem 0 0 0;
         font-size: 1.1rem;
@@ -198,11 +196,87 @@ def banner(title, desc):
     }}
     </style>
     
-    <div class='welcome-banner'>
-        <h1 class='welcome-title'>
+    <div class='animated-banner'>
+        <h1 class='animated-title'>
             {}
         </h1>
-        <p class='welcome-subtitle'>
+        <p class='animated-subtitle'>
+            {}
+        </p>
+    </div>
+""".format(title, desc), unsafe_allow_html=True)
+
+def banner2(title, desc):
+             st.markdown("""
+    <style>
+    
+    .banner2-background {{
+        background: #F0A76C;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }}
+    
+    .banner2-title {{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color:  #FFFFFF !important;
+    }}
+    
+    .banner2-subtitle {{
+        color: #e2e8f0;
+        margin: 0;
+        font-size: 1.1rem;
+    }}
+    </style>
+    
+    <div class='banner2-background'>
+        <h2 class='banner2-title'>
+            {}
+        </h2>
+        <p class='banner2-subtitle'>
+            {}
+        </p>
+    </div>
+""".format(title, desc), unsafe_allow_html=True)
+
+def blue_banner(title, desc):
+             st.markdown("""
+    <style>
+    
+    .blue_banner-background {{
+        background: #18435a;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }}
+    
+    .blue_banner-title {{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+        color:  #FFFFFF !important;
+    }}
+    
+    .blue_banner-subtitle {{
+        color: #e2e8f0;
+        margin: 0;
+        font-size: 1.1rem;
+    }}
+    </style>
+    
+    <div class='blue_banner-background'>
+        <h2 class='blue_banner-title'>
+            {}
+        </h2>
+        <p class='blue_banner-subtitle'>
             {}
         </p>
     </div>

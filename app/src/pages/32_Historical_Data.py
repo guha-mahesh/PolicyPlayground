@@ -18,7 +18,6 @@ st.markdown(f"#### Logged in as: **{st.session_state['first_name']}**")
 st.write("\n \n")
 choices = []
 params = []
-df = []
 
 st.markdown("### Enter the criteria to find your policies:\n")
 
