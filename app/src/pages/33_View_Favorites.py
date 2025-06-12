@@ -5,9 +5,11 @@ import streamlit as st
 from modules.nav import SideBarLinks
 import requests
 import pandas as pd
+from modules.theme import custom_style
+
 
 st.set_page_config(layout = 'wide')
-
+custom_style()
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
 

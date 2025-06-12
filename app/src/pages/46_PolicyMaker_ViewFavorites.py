@@ -3,9 +3,11 @@ import requests
 import streamlit as st
 from modules.nav import SideBarLinks
 import logging
+from modules.theme import custom_style
+
 
 logger = logging.getLogger(__name__)
-
+custom_style()
 st.set_page_config(layout='wide')
 SideBarLinks()
 
@@ -120,7 +122,7 @@ try:
         
         if published_policies:
             for policy in published_policies:
-                with st.expander(f"Published Policy #{policy['publish_id']} - {policy['Country']}", expanded=False):
+                with st.expander(f"Expand {policy['title']}", expanded=False):
                     col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
                     with col1:
                         st.write(f'**Published Date:** {policy["publish_date"]}')

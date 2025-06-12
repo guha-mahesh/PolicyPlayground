@@ -128,7 +128,7 @@ def publish_policy():
             
         check_query = """
         SELECT publish_id FROM PublishPolicy 
-        WHERE saved_id = %s AND status = 'active'
+        WHERE saved_id = %s
         """
         cursor.execute(check_query, (data['saved_id'],))
         existing = cursor.fetchone()
@@ -166,7 +166,6 @@ def get_published_policies():
     SELECT p.*, s.* 
     FROM PublishPolicy p
     JOIN SavedPolicy s ON p.saved_id = s.saved_id
-    WHERE p.status = 'active'
     ORDER BY p.publish_date DESC
     """
     
@@ -209,7 +208,7 @@ def check_published(saved_id):
     try:
         query = """
         SELECT publish_id FROM PublishPolicy 
-        WHERE saved_id = %s AND status = 'active'
+        WHERE saved_id = %s
         """
         cursor.execute(query, (saved_id,))
         result = cursor.fetchone()

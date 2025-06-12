@@ -6,11 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import json
+from modules.theme import custom_style
+
 
 logger = logging.getLogger(__name__)
 
 st.set_page_config(layout='wide')
-
+custom_style()
 SideBarLinks()
 
 
