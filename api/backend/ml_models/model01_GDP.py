@@ -77,13 +77,13 @@ def train_func():
 
     def prepare_training_data():
         govt_health = requests.get(
-            "http://web-api:4000/model/fetchData2/HealthExpenditure").json()['data']
+            "http://web-api:4000/model/data2/HealthExpenditure").json()['data']
         govt_education = requests.get(
-            "http://web-api:4000/model/fetchData2/EducationExpenditure").json()['data']
+            "http://web-api:4000/model/data2/EducationExpenditure").json()['data']
         military_spending = requests.get(
-            "http://web-api:4000/model/fetchData2/MilitaryExpenditure").json()['data']
+            "http://web-api:4000/model/data2/MilitaryExpenditure").json()['data']
         gdp_per_capita = requests.get(
-            "http://web-api:4000/model/fetchData2/GDP").json()['data']
+            "http://web-api:4000/model/data2/GDP").json()['data']
 
         df = pd.DataFrame(gdp_per_capita)
         health_df = pd.DataFrame(govt_health)
@@ -195,7 +195,7 @@ def train_func():
         "coefficients": coefficients.tolist()
     }
     response = requests.post(
-        f"{api_base_url}/storeWeights", json=gdp_payload)
+        f"{api_base_url}/weights", json=gdp_payload)
     if response.status_code != 200:
         print(f"Failed to store GDP weights: {response.text}")
 
@@ -213,7 +213,7 @@ def predict(user_features, country, current_year=2024, coefficients=None):
     }
 
     if coefficients is None:
-        response = requests.get("http://web-api:4000/model/getWeights/GDP")
+        response = requests.get("http://web-api:4000/model/weights/GDP")
         if response.status_code == 200:
             coefficients = np.array(response.json()['coefficients'])
 

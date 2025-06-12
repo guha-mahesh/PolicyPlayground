@@ -9,22 +9,223 @@ st.set_page_config(layout='wide')
 custom_style()
 SideBarLinks()
 
-
+# Custom CSS for enhanced styling
 st.markdown("""
-    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <h1 style='color: white; margin: 0;'>Welcome, {}</h1>
-        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Test and analyze your policy decisions</p>
+<style>
+    /* Enhanced header styling */
+    .policy-header {
+        background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+        padding: 2.5rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .policy-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+        transform: translate(50px, -50px);
+    }
+    
+    /* Nationality selector styling */
+    .nationality-container {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    
+    .nationality-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .nationality-header h4 {
+        color: #1e293b;
+        margin: 0;
+        font-weight: 600;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        background-color: #f1f5f9;
+        border-radius: 10px;
+        padding: 0.25rem;
+        gap: 0.5rem;
+        
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        background-color: transparent;
+        border-radius: 8px;
+        color: #64748b;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        padding: 2rem;
+    }
+    
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background-color: white !important;
+        color: #1e3a8a !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Enhanced section headers */
+    .section-header {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    /* Policy display cards */
+    .policy-card {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        border: 1px solid #334155;
+        transition: transform 0.3s ease;
+    }
+    
+    .policy-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+    
+    /* Slider styling */
+    .stSlider > div > div {
+        background-color: #e2e8f0;
+    }
+    
+    .stSlider > div > div > div {
+        background-color: #000000;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background: linear-gradient(135deg, #000000 0%, #2563eb 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+    }
+    
+    .stButton > button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+    }
+            /* Make slider value backgrounds transparent */
+.stSlider [data-testid="stTickBarMin"],
+.stSlider [data-testid="stTickBarMax"] {
+    background-color: transparent !important;
+}
+
+/* Alternative: Match the exact background color */
+.stSlider [data-testid="stTickBar"] {
+    background-color: transparent !important;
+}
+
+/* Target the value labels specifically */
+.stSlider [data-baseweb="slider"] [data-testid="stTickBarMin"],
+.stSlider [data-baseweb="slider"] [data-testid="stTickBarMax"] {
+    background: transparent !important;
+}
+
+/* Remove any box styling around the min/max values */
+.stSlider > div > div > div > div {
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Keep the slider track visible */
+.stSlider [data-baseweb="slider"] > div > div {
+    background-color: #e2e8f0 !important;
+}
+
+/* Keep the slider fill/progress visible */
+.stSlider [data-baseweb="slider"] > div > div > div {
+    background-color: #000000 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+# Enhanced header with user's name
+st.markdown("""
+    <div class='policy-header'>
+        <h1 style='color: white; margin: 0; font-size: 2.5rem;'>Welcome, {}</h1>
+        <p style='color: #cbd5e1; margin: 0.5rem 0 0 0; font-size: 1.2rem;'>Test and analyze your policy decisions</p>
     </div>
 """.format(st.session_state['first_name']), unsafe_allow_html=True)
 
+# Get user's nationality
+user_country = st.session_state.get('nationality', 'United States')
+if user_country not in ["United States", "United Kingdom", "Germany"]:
+    user_country = "United States"
 
+# Country selector above tabs
+st.markdown("""
+    <div class='nationality-container'>
+        <div class='nationality-header'>
+            <span style='font-size: 1.5rem;'>🌍</span>
+            <h4>Policy Analysis Country</h4>
+        </div>
+        <p style='color: #64748b; margin: 0 0 1rem 0;'>Select a country for comparative analysis, or use your default nationality</p>
+    </div>
+""", unsafe_allow_html=True)
+
+# Country selection dropdown
+col1, col2, col3 = st.columns([2, 1, 1])
+with col1:
+    country_options = ["Use My Nationality",
+                       "United States", "Germany", "United Kingdom"]
+    selected_country = st.selectbox(
+        "Country for Analysis",
+        options=country_options,
+        index=0,
+        help=f"Your nationality: {user_country}. Choose a different country for comparative analysis.",
+        key="country_selector"
+    )
+
+# Determine the actual country to use
+if selected_country == "Use My Nationality":
+    analysis_country = user_country
+else:
+    analysis_country = selected_country
+
+
+with col3:
+    st.metric("Analysis Country", analysis_country, delta=None)
+
+# Create tabs
 tab1, tab2 = st.tabs(["Monetary Policy", "Fiscal Policy"])
 
-selected_country = "Use My Nationality"
+# Helper functions
 
 
 def get_monetary_policy_config(country):
-
     if country == "United States":
         return {
             "central_bank": "Federal Reserve",
@@ -77,48 +278,34 @@ def get_monetary_policy_config(country):
             "currency": "€"
         }
     else:
-
         return get_monetary_policy_config("United States")
 
 
 def adjust_currencies_for_country(base_currencies, user_country, discount_rate):
     """Adjust currency predictions based on the country's monetary policy"""
-
     adjusted_currencies = base_currencies.copy()
 
     if user_country == "United Kingdom":
-
         rate_effect = (discount_rate - 5.25) * 0.02
-
         gbp_to_usd = base_currencies["British Pound"]
         usd_to_gbp = 1 / gbp_to_usd
-
         adjusted_currencies["US Dollar"] = usd_to_gbp * (1 + rate_effect)
-
         del adjusted_currencies["British Pound"]
-
         adjusted_currencies["Euro"] = base_currencies["Euro"] * \
             (1 + rate_effect * 0.3)
-
         adjusted_currencies["Japanese Yen"] = base_currencies["Japanese Yen"] * \
             (1 + rate_effect * 0.1)
         adjusted_currencies["Australian Dollar"] = base_currencies["Australian Dollar"] * (
             1 - rate_effect * 0.1)
 
     elif user_country == "Germany":
-
         rate_effect = (discount_rate - 4.5) * 0.025
-
         eur_to_usd = base_currencies["Euro"]
         usd_to_eur = 1 / eur_to_usd
-
         adjusted_currencies["US Dollar"] = usd_to_eur * (1 + rate_effect)
-
         del adjusted_currencies["Euro"]
-
         adjusted_currencies["British Pound"] = base_currencies["British Pound"] * \
             (1 - rate_effect * 0.4)
-
         adjusted_currencies["Chinese Yuan"] = base_currencies["Chinese Yuan"] * \
             (1 + rate_effect * 0.2)
         adjusted_currencies["Japanese Yen"] = base_currencies["Japanese Yen"] * \
@@ -127,22 +314,19 @@ def adjust_currencies_for_country(base_currencies, user_country, discount_rate):
     return adjusted_currencies
 
 
-user_country = st.session_state.get('nationality', 'United States')
-if user_country not in ["United States", "United Kingdom", "Germany"]:
-
-    user_country = "United States"
-
-
+# Get policy configuration based on user's nationality
 policy_config = get_monetary_policy_config(user_country)
 
+# Monetary Policy Tab
 with tab1:
     st.markdown(f"""
-        <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
+        <div class='section-header'>
             <h3 style='color: #e2e8f0; margin: 0;'>{policy_config['central_bank']} Controls</h3>
             <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Adjust monetary policy parameters to influence economic outcomes</p>
         </div>
     """, unsafe_allow_html=True)
 
+    # Discount Rate
     col1, col2 = st.columns([3, 1])
     with col1:
         discount_rate_slider = st.slider(
@@ -165,6 +349,7 @@ with tab1:
             key="discount_input"
         )
 
+    # Balance Sheet
     col3, col4 = st.columns([3, 1])
     with col3:
         fed_balance_slider = st.slider(
@@ -186,6 +371,7 @@ with tab1:
             key="balance_input"
         )
 
+    # Securities Holdings
     col5, col6 = st.columns([3, 1])
     with col5:
         treasury_slider = st.slider(
@@ -207,6 +393,7 @@ with tab1:
             key="treasury_input"
         )
 
+    # Federal Funds Rate
     col13, col14 = st.columns([3, 1])
     with col13:
         fed_funds_slider = st.slider(
@@ -228,6 +415,7 @@ with tab1:
             key="fed_funds_input"
         )
 
+    # Money Supply
     col15, col16 = st.columns([3, 1])
     with col15:
         money_supply_slider = st.slider(
@@ -248,6 +436,7 @@ with tab1:
             key="money_supply_input"
         )
 
+    # Reserve Requirement Ratio
     col17, col18 = st.columns([3, 1])
     with col17:
         reserve_ratio_slider = st.slider(
@@ -269,23 +458,16 @@ with tab1:
             key="reserve_ratio_input"
         )
 
+# Fiscal Policy Tab
 with tab2:
     st.markdown("""
-        <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;'>
+        <div class='section-header'>
             <h3 style='color: #e2e8f0; margin: 0;'>Government Spending Allocation</h3>
             <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Configure fiscal policy parameters to shape economic growth and development</p>
         </div>
     """, unsafe_allow_html=True)
 
-    country_options = ["Use My Nationality", "United States", "Germany",
-                       "United Kingdom"]
-    selected_country = st.selectbox(
-        "Select Country for GDP Analysis (Optional)",
-        options=country_options,
-        index=0,
-        help="Choose a country for GDP prediction, or use your nationality"
-    )
-
+    # Military Spending
     col7, col8 = st.columns([3, 1])
     with col7:
         military_slider = st.slider(
@@ -307,6 +489,7 @@ with tab2:
             key="military_input"
         )
 
+    # Education Spending
     col9, col10 = st.columns([3, 1])
     with col9:
         education_slider = st.slider(
@@ -328,6 +511,7 @@ with tab2:
             key="education_input"
         )
 
+    # Health Spending
     col11, col12 = st.columns([3, 1])
     with col11:
         health_slider = st.slider(
@@ -349,6 +533,7 @@ with tab2:
             key="health_input"
         )
 
+    # Debt-to-GDP Ratio
     col19, col20 = st.columns([3, 1])
     with col19:
         debt_gdp_slider = st.slider(
@@ -370,6 +555,7 @@ with tab2:
             key="debt_gdp_input"
         )
 
+    # Infrastructure Spending
     col21, col22 = st.columns([3, 1])
     with col21:
         infrastructure_slider = st.slider(
@@ -391,6 +577,7 @@ with tab2:
             key="infrastructure_input"
         )
 
+    # Corporate Tax Rate
     col23, col24 = st.columns([3, 1])
     with col23:
         corp_tax_slider = st.slider(
@@ -411,16 +598,14 @@ with tab2:
             format="%.2f",
             key="corp_tax_input"
         )
-    
 
-
+# Collect all values
 discount_rate = discount_rate_input or discount_rate_slider
 fed_balance = fed_balance_input or fed_balance_slider
 treasury_holdings = treasury_input or treasury_slider
 military_spending = military_input or military_slider
 education_spending = education_input or education_slider
 health_spending = health_input or health_slider
-
 fed_funds_rate = fed_funds_input or fed_funds_slider
 money_supply = money_supply_input or money_supply_slider
 reserve_ratio = reserve_ratio_input or reserve_ratio_slider
@@ -428,9 +613,7 @@ infrastructure_spending = infrastructure_input or infrastructure_slider
 debt_gdp_ratio = debt_gdp_input or debt_gdp_slider
 corporate_tax_rate = corp_tax_input or corp_tax_slider
 
-ls = ["United States", "Japan", "Germany",
-      "United Kingdom", "France", "Russia", "Canada"]
-
+# Country codes for API
 country_codes = {
     "United States": "USA",
     "Japan": "JPN",
@@ -441,14 +624,7 @@ country_codes = {
     "Canada": "CAN"
 }
 
-if selected_country == "Use My Nationality":
-    if st.session_state['nationality'] in ls:
-        country = st.session_state['nationality']
-    else:
-        country = "United States"
-else:
-    country = selected_country
-    
+# Policy Summary Section
 st.markdown("""
     <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
         <h3 style='color: #e2e8f0; margin: 0;'>Current Policy Settings</h3>
@@ -459,65 +635,36 @@ st.markdown("""
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.markdown("""
-        <div style='background: #0f172a; padding: 1rem; border-radius: 6px;'>
+    st.markdown(f"""
+        <div class='policy-card'>
             <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>💰 Monetary Policy</h4>
-            <p style='color: #94a3b8; margin: 0;'>• {} Rate: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Balance Sheet: {}{:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Securities Holdings: {}{:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Money Supply: {}{:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• {policy_config['rate_name']}: {discount_rate}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Balance Sheet: {policy_config['currency']}{fed_balance:,}B</p>
+            <p style='color: #94a3b8; margin: 0;'>• Securities Holdings: {policy_config['currency']}{treasury_holdings:,}B</p>
+            <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {fed_funds_rate}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Money Supply: {policy_config['currency']}{money_supply:,}B</p>
+            <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {reserve_ratio}%</p>
         </div>
-
-    """.format(
-        policy_config['central_bank'],
-        discount_rate,
-        policy_config['currency'],
-        fed_balance,
-        policy_config['currency'],
-        treasury_holdings,
-        fed_funds_rate,
-        policy_config['currency'],
-        money_supply,
-        reserve_ratio
-    ), unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
 with col_right:
-    st.markdown("""
-        <div style='background: #0f172a; padding: 1rem; border-radius: 6px;'>
+    st.markdown(f"""
+        <div class='policy-card'>
             <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>📊 Fiscal Policy</h4>
-            <p style='color: #94a3b8; margin: 0;'>• Country: {}</p>
-            <p style='color: #94a3b8; margin: 0;'>• Military Spending: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Education Spending: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Health Spending: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Infrastructure Spending: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Debt-to-GDP Ratio: {}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Corporate Tax Rate: {}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Analysis Country: {analysis_country}</p>
+            <p style='color: #94a3b8; margin: 0;'>• Military Spending: {military_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Education Spending: {education_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Health Spending: {health_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Infrastructure Spending: {infrastructure_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Debt-to-GDP Ratio: {debt_gdp_ratio}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Corporate Tax Rate: {corporate_tax_rate}%</p>
         </div>
-    """.format(
-        country,
-        military_spending,
-        education_spending,
-        health_spending,
-        infrastructure_spending,
-        debt_gdp_ratio,
-        corporate_tax_rate
-    ), unsafe_allow_html=True)
-
-tables = [
-    "YuantoUSD",
-    "AUDtoUSD",
-    "JPYtoUSD",
-    "GBPtoUSD",
-    "EUROTOUSD",
-    "FRBS",
-    "treasurysecurities",
-    "discountrate", "sp500"]
+    """, unsafe_allow_html=True)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-if st.button("Test Policy Set", type="primary", use_container_width=True):
+# Test Policy Button
+if st.button("🚀 Test Policy Set", type="primary", use_container_width=True):
     st.session_state['policy_params'] = {
         "Discount Rate": discount_rate,
         "Federal Balance": fed_balance,
@@ -525,7 +672,7 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
         "Military Spending": military_spending,
         "Education Spending": education_spending,
         "Health Spending": health_spending,
-        "Selected Country": country,
+        "Selected Country": analysis_country,
         "Monetary Policy Country": user_country,
         "Central Bank": policy_config['central_bank'],
         "Rate Name": policy_config['rate_name'],
@@ -538,9 +685,10 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
         "Corporate Tax Rate": corporate_tax_rate
     }
 
-    api_url = f"http://host.docker.internal:4000/model/predictSp/{discount_rate},{treasury_holdings},{fed_balance}"
-    api_url2 = f"http://host.docker.internal:4000/model/predictCurr/{discount_rate},{treasury_holdings},{fed_balance}"
-    api_url3 = f"http://host.docker.internal:4000/model/predictGDP/{health_spending},{education_spending},{military_spending}/{country_codes[country]}"
+    # API calls
+    api_url = f"http://host.docker.internal:4000/model/SP500/{discount_rate},{treasury_holdings},{fed_balance}"
+    api_url2 = f"http://host.docker.internal:4000/model/currency/{discount_rate},{treasury_holdings},{fed_balance}"
+    api_url3 = f"http://host.docker.internal:4000/model/GDP/{health_spending},{education_spending},{military_spending}/{country_codes[analysis_country]}"
 
     try:
         headers = {
@@ -549,7 +697,7 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
             'Connection': 'keep-alive'
         }
 
-        with st.spinner('Running policy analysis...'):
+        with st.spinner('🔄 Running policy analysis...'):
             response = requests.get(api_url, headers=headers, timeout=10)
             response2 = requests.get(api_url2, headers=headers, timeout=10)
             response3 = requests.get(api_url3, headers=headers, timeout=10)
@@ -561,30 +709,26 @@ if st.button("Test Policy Set", type="primary", use_container_width=True):
 
             market_prediction = float(data['prediction'])
             gdp_prediction = float(data3['prediction'])
-
             base_currencies = data2['prediction']
 
+            # Adjust market prediction based on user's nationality
             if user_country == "United Kingdom":
-
                 market_prediction = market_prediction * 0.8
                 market_prediction = (market_prediction / 5500) * 7800
                 market_index = "FTSE"
-
                 adjusted_currencies = adjust_currencies_for_country(
                     base_currencies, user_country, discount_rate)
-
             elif user_country == "Germany":
-
                 market_prediction = market_prediction * 1.1
                 market_prediction = (market_prediction / 5500) * 17000
                 market_index = "DAX"
-
                 adjusted_currencies = adjust_currencies_for_country(
                     base_currencies, user_country, discount_rate)
             else:
                 market_index = "SP500"
                 adjusted_currencies = base_currencies
-            st.success("Prediction successful!")
+
+            st.success("✅ Prediction successful!")
             st.session_state['Predictions'] = {
                 "Market": str(market_prediction),
                 "Market_Index": market_index,

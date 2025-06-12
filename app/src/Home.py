@@ -37,13 +37,14 @@ SideBarLinks(show_home=True)
 #    The major content of this page
 # ***************************************************
 
-# set the title of the page and provide a simple prompt.
+
 logger.info("Loading the Home page of the app")
+
 st.title('Policy Playground')
-st.write('\n')
 st.write("### By: Pushin' Policy")
-st.write('\n')
 st.write('#### Choose a User to Login as:')
+st.write('\n')
+
 
 # For each of the user personas for which we are implementing
 # functionality, we put a button on the screen that the user
