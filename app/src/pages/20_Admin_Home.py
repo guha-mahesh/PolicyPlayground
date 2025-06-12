@@ -10,7 +10,7 @@ st.set_page_config(layout='wide')
 SideBarLinks()
 
 if st.button("Train Model"):
-    url = "http://web-api:4000/model/trainModels"
+    url = "http://web-api:4000/model/models"
     train_response = requests.post(url)
     if train_response.status_code == 200:
         st.success("✅ Models trained successfully!")

@@ -28,44 +28,10 @@ def welcome():
     response.status_code = 200
     return response
 
-
-@model_routes.route("/playlist")
-def get_playlist_data():
-    current_app.logger.info("GET /playlist handler")
-    response = make_response(jsonify(sample_playlist_data))
-    response.status_code = 200
-    return response
+# predictSp
 
 
-@model_routes.route("/niceMesage", methods=["GET"])
-def affirmation():
-    message = """
-    <H1>Think about it...</H1>
-    <br />
-    You only need to be 1% better today than you were yesterday!
-    """
-    response = make_response(message)
-    response.status_code = 200
-    return response
-
-
-@model_routes.route("/message")
-def mesage():
-    return redirect(url_for(affirmation))
-
-
-@model_routes.route("/data")
-def getData():
-    current_app.logger.info("GET /data handler")
-
-    data = {"a": {"b": "123", "c": "Help"}, "z": {"b": "456", "c": "me"}}
-
-    response = make_response(jsonify(data))
-    response.status_code = 200
-    return response
-
-
-@model_routes.route("/predictSp/<var_01>", methods=["GET"])
+@model_routes.route("/SP500/<var_01>", methods=["GET"])
 def get_predictionSp500(var_01):
     current_app.logger.info("GET /prediction handler")
 
@@ -97,8 +63,10 @@ def get_predictionSp500(var_01):
         response.status_code = 500
         return response
 
+# predictCurr
 
-@model_routes.route("/predictCurr/<var_01>", methods=["GET"])
+
+@model_routes.route("/currency/<var_01>", methods=["GET"])
 def get_predictionCurr(var_01):
     current_app.logger.info("GET /prediction handler")
 
@@ -130,8 +98,10 @@ def get_predictionCurr(var_01):
         response.status_code = 500
         return response
 
+# predictGDP
 
-@model_routes.route("/predictGDP/<var_01>/<var_02>", methods=["GET"])
+
+@model_routes.route("/GDP/<var_01>/<var_02>", methods=["GET"])
 def get_predictionGDP(var_01, var_02):
     current_app.logger.info("GET /prediction handler")
 
@@ -163,8 +133,10 @@ def get_predictionGDP(var_01, var_02):
         response.status_code = 500
         return response
 
+# fetchData
 
-@model_routes.route("/fetchData/<var01>", methods=["GET"])
+
+@model_routes.route("/data/<var01>", methods=["GET"])
 def fetchalldata(var01):
     cursor = db.get_db().cursor()
     query = f"SELECT mos, vals FROM {var01}"
@@ -184,8 +156,10 @@ def fetchalldata(var01):
         'data': data,
     })
 
+# fetchData2
 
-@model_routes.route("/fetchData2/<var01>", methods=["GET"])
+
+@model_routes.route("/data2/<var01>", methods=["GET"])
 def fetchalldata2(var01):
     cursor = db.get_db().cursor()
     query = f"SELECT country, mos, vals FROM {var01}"
@@ -207,7 +181,8 @@ def fetchalldata2(var01):
     })
 
 
-@model_routes.route("/trainModels", methods=["POST"])
+# trainModels
+@model_routes.route("/models", methods=["POST"])
 def trainModels():
     results = train()
     results2 = train_func()
@@ -217,8 +192,10 @@ def trainModels():
         'message': 'Models trained successfully',
     }), 200
 
+# storeWeights
 
-@model_routes.route("/storeWeights", methods=["POST"])
+
+@model_routes.route("/weights", methods=["POST"])
 def storeWeights():
     try:
         data = request.json
@@ -239,8 +216,10 @@ def storeWeights():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# getWeights
 
-@model_routes.route("/getWeights/<model_name>", methods=["GET"])
+
+@model_routes.route("/weights/<model_name>", methods=["GET"])
 def get_weights(model_name):
     try:
         cursor = db.get_db().cursor()
@@ -286,7 +265,8 @@ def get_similar_policies(index_policy):
         return jsonify({"error": str(e)}), 500
 
 
-@model_routes.route("/fetchCountryGDP/<country>", methods=["GET"])
+# fetchCountryGDP
+@model_routes.route("/countryGDP/<country>", methods=["GET"])
 def fetchData(country):
     cursor = db.get_db().cursor()
     cursor.execute(
