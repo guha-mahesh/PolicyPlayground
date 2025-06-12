@@ -1,43 +1,18 @@
-##################################################
-# This is the main/entry-point file for the
-# sample application for your project
-##################################################
-
-# Set up basic logging infrastructure
 from modules.nav import SideBarLinks
 from modules.theme import custom_style
 import streamlit as st
 import logging
-from modules.theme import custom_style
 
 logging.basicConfig(
     format='%(filename)s:%(lineno)s:%(levelname)s -- %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# import the main streamlit library as well
-# as SideBarLinks function from src/modules folder
-
-# streamlit supports reguarl and wide layout (how the controls
-# are organized/displayed on the screen).
-
 custom_style()
 
-# If a user is at this page, we assume they are not
-# authenticated.  So we change the 'authenticated' value
-# in the streamlit session_state to false.
 st.session_state['authenticated'] = False
 
-# Use the SideBarLinks function from src/modules/nav.py to control
-# the links displayed on the left-side panel.
-# IMPORTANT: ensure src/.streamlit/config.toml sets
-# showSidebarNavigation = false in the [client] section
 SideBarLinks(show_home=True)
 
-# ***************************************************
-#    The major content of this page
-# ***************************************************
-
-# set the title of the page and provide a simple prompt.
 logger.info("Loading the Home page of the app")
 st.markdown("""
     <style>
@@ -115,6 +90,7 @@ st.markdown("""
         font-size: 1.1rem !important;
         font-weight: 600 !important;
         margin-bottom: 0.5rem !important;
+        text-align: center !important;
     }
     
     .admin-section {
@@ -124,7 +100,23 @@ st.markdown("""
         padding: 1.5rem;
         margin-top: 2rem;
         text-align: center;
-        transition
+        transition: all 0.3s ease;
+    }
+    
+    .persona-container {
+        padding: 1rem 0;
+    }
+    
+    .persona-image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 1rem 0;
+    }
+    
+    .persona-dropdown {
+        margin: 1rem 0;
+    }
     </style>
     
     <div class='welcome-banner'>
@@ -135,36 +127,30 @@ st.markdown("""
 
 st.write('#### Choose a User to Login as:')
 
-# For each of the user personas for which we are implementing
-# functionality, we put a button on the screen that the user
-# can click to MIMIC logging in as that mock user.
-st.write('\n\n')
-
 col1, col2, col3 = st.columns(3)
 
 with col1:
     with st.container(border=True):
         st.markdown(
             '<p class="persona-title">Login as Policy Maker</p>', unsafe_allow_html=True)
-        left_co, cent_co,last_co = st.columns(3)
-        st.write("\n\n")
-        with cent_co:
+
+        col_left, col_center, col_right = st.columns([1, 2, 1])
+        with col_center:
             st.image("https://i.ibb.co/QjkRqcMd/guy1.png", width=175)
+
         makers_dict = {"Sun Yue 🇺🇸": [2, "United States"], "Dillon Brooks 🇬🇧": [
             3, "United Kingdom"], "Gerrard James 🇩🇪": [4, "Germany"]}
         makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
-        maker = st.selectbox("", makers)
-        if st.button('Login',
-                     type='primary',
-                     use_container_width=True, key="login1"):
-            # when user clicks the button, they are now considered authenticated
-            st.session_state['authenticated'] = True
 
+        maker = st.selectbox("Select Policy Maker", makers,
+                             label_visibility="collapsed", key="policy_maker_select")
+
+        if st.button('Login', type='primary', use_container_width=True, key="login1"):
+            st.session_state['authenticated'] = True
             st.session_state['role'] = 'Policy Maker'
             st.session_state['nationality'] = makers_dict[maker][1]
             st.session_state['first_name'] = maker
             st.session_state['user_id'] = makers_dict[maker][0]
-
             logger.info("Logging in as Policy Maker Persona")
             st.switch_page('pages/00_Policy_Maker_Home.py')
 
@@ -172,16 +158,18 @@ with col2:
     with st.container(border=True):
         st.markdown('<p class="persona-title">Login as Economist</p>',
                     unsafe_allow_html=True)
-        st.write("\n")
-        left_co, cent_co,last_co = st.columns(3)
-        with cent_co:
+
+        col_left, col_center, col_right = st.columns([1, 2, 1])
+        with col_center:
             st.image("https://i.ibb.co/QFSJzLRS/guy2.png", width=175)
+
         econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob Bobias": 7}
         econs = ["Andrew Thornton", "Ryan Gurtings", "Bob Bobias"]
-        econ = st.selectbox("", econs)
-        if st.button('Login',
-                     type='primary',
-                     use_container_width=True, key="login2"):
+
+        econ = st.selectbox("Select Economist", econs,
+                            label_visibility="collapsed", key="economist_select")
+
+        if st.button('Login', type='primary', use_container_width=True, key="login2"):
             st.session_state['authenticated'] = True
             st.session_state['role'] = 'economist'
             st.session_state["user_id"] = econ_dict[econ]
@@ -193,15 +181,19 @@ with col3:
     with st.container(border=True):
         st.markdown('<p class="persona-title">Login as Lobbyist</p>',
                     unsafe_allow_html=True)
-        st.write("\n")
-        left_co, cent_co,last_co = st.columns(3)
-        with cent_co:
-            st.image("https://i.ibb.co/QFvdtNM9/guy3.png")
+
+        col_left, col_center, col_right = st.columns([1, 2, 1])
+        with col_center:
+            st.image("https://i.ibb.co/QFvdtNM9/guy3.png", width=175)
+
         lobby_dict = {"Eleanore Goosens": 8,
                       "Hardy Nextur": 9, "Elmer Elms": 10}
         lobbys = ["Eleanore Goosens", "Hardy Nextur", "Elmer Elms"]
-        lobby = st.selectbox("", lobbys)
-        if st.button('Login', type='primary',  use_container_width=True, key="login3"):
+
+        lobby = st.selectbox("Select Lobbyist", lobbys,
+                             label_visibility="collapsed", key="lobbyist_select")
+
+        if st.button('Login', type='primary', use_container_width=True, key="login3"):
             st.session_state['authenticated'] = True
             st.session_state['role'] = 'Lobbyist'
             st.session_state['first_name'] = lobby
@@ -209,10 +201,8 @@ with col3:
             st.session_state['nationality'] = 'United States'
             st.switch_page('pages/40_Lobbyist.py')
 
-
 st.divider()
 
-# Create centered system admin button with proper spacing
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
     if st.button('System Admin Login', type='secondary', use_container_width=True):
