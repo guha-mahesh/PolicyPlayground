@@ -3,8 +3,10 @@ import streamlit as st
 import logging
 import requests
 logger = logging.getLogger(__name__)
+from modules.theme import custom_style
 
 st.set_page_config(layout='wide')
+custom_style()
 SideBarLinks()
 
 

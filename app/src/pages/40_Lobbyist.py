@@ -4,11 +4,13 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 import json
+from modules.theme import custom_style
+
 
 logger = logging.getLogger(__name__)
 
 st.set_page_config(layout="wide")
-
+custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
 

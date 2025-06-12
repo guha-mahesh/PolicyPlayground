@@ -3,9 +3,11 @@ import requests
 import streamlit as st
 from modules.nav import SideBarLinks
 import logging
+from modules.theme import custom_style
+
 
 logger = logging.getLogger(__name__)
-
+custom_style()
 SideBarLinks()
 user_id = st.session_state['user_id']
 url = f"http://web-api:4000/politician/allpolicy/{user_id}"

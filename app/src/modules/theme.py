@@ -10,6 +10,13 @@ def custom_style():
         [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
         }
+        /* Target Streamlit's main container */
+        .stApp {
+            font-family: 'Poppins', serif !important;
+        }
+        .stApp * {
+            font-family: inherit !important;
+        }
         </style>
         """,
         unsafe_allow_html=True
