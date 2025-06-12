@@ -111,7 +111,7 @@ def get_saved(saved_id):
     return jsonify(result), 200
 
 
-@politician.route("/publish", methods=["POST"])
+@politician.route("/publisher", methods=["POST"])
 def publish_policy():
     conn = db.get_db()
     cursor = conn.cursor()
@@ -128,7 +128,7 @@ def publish_policy():
             
         check_query = """
         SELECT publish_id FROM PublishPolicy 
-        WHERE saved_id = %s AND status = 'active'
+        WHERE saved_id = %s
         """
         cursor.execute(check_query, (data['saved_id'],))
         existing = cursor.fetchone()
@@ -157,7 +157,7 @@ def publish_policy():
         cursor.close()
 
 
-@politician.route("/published", methods=["GET"])
+@politician.route("/publisher", methods=["GET"])
 def get_published_policies():
     conn = db.get_db()
     cursor = conn.cursor()
@@ -166,7 +166,6 @@ def get_published_policies():
     SELECT p.*, s.* 
     FROM PublishPolicy p
     JOIN SavedPolicy s ON p.saved_id = s.saved_id
-    WHERE p.status = 'active'
     ORDER BY p.publish_date DESC
     """
     
@@ -180,14 +179,13 @@ def get_published_policies():
         cursor.close()
 
 
-@politician.route("/unpublish/<int:publish_id>", methods=["POST"])
+@politician.route("/publisher/<int:publish_id>", methods=["DELETE"])
 def unpublish_policy(publish_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
     query = """
-    UPDATE PublishPolicy 
-    SET status = 'archived'
+    DELETE FROM PublishPolicy
     WHERE publish_id = %s
     """
     
@@ -197,6 +195,27 @@ def unpublish_policy(publish_id):
         return jsonify({"message": "Policy unpublished successfully"}), 200
     except Exception as e:
         conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+@politician.route("/all_published/<int:saved_id>", methods=["GET"])
+def check_published(saved_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+    
+    try:
+        query = """
+        SELECT publish_id FROM PublishPolicy 
+        WHERE saved_id = %s
+        """
+        cursor.execute(query, (saved_id,))
+        result = cursor.fetchone()
+        
+        return jsonify({"is_published": result is not None}), 200
+    except Exception as e:
+        current_app.logger.error(f"Error checking publication status: {str(e)}")
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
