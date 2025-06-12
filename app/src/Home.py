@@ -42,6 +42,7 @@ logger.info("Loading the Home page of the app")
 
 st.title('Policy Playground')
 st.write("### By: Pushin' Policy")
+st.divider()
 st.write('#### Choose a User to Login as:')
 st.write('\n')
 
@@ -70,8 +71,8 @@ if st.button('Policy Maker Login',
 
 st.write('\n\n')
 
-econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob": 7}
-econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
+econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Robert Brown": 7}
+econs = ["Andrew Thornton", "Ryan Gurtings", "Robert Brown"]
 econ = st.selectbox("Choose a User:", econs)
 if st.button('Economist Login',
              type='primary',
@@ -85,8 +86,8 @@ if st.button('Economist Login',
 
 st.write('\n\n')
 
-lobby_dict = {"Eleanore Goosens": 8, "User 2": 9, "User 3": 10}
-lobbys = ["Eleanore Goosens", "User 2", "User 3"]
+lobby_dict = {"Eleanore Goosens": 8, "Gina Higgins": 9, "Mark Lee": 10}
+lobbys = ["Eleanore Goosens", "Gina Higgins", "Mark Lee"]
 lobby = st.selectbox("Choose a User:", lobbys)
 if st.button('Lobbyist Login', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
