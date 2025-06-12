@@ -28,7 +28,7 @@ with col1:
         if st.button("View Historial Data", use_container_width=True):
             st.switch_page("pages/32_Historical_Data.py")
         if st.button("View Proposed Drafts", use_container_width=True):
-            st.switch_page("pages/33_View_Favorites.py")
+            st.switch_page("pages/saved_drafts.py")
 
 with col2:
     with st.container(height=300):

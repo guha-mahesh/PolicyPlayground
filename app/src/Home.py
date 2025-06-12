@@ -7,8 +7,6 @@
 from modules.nav import SideBarLinks
 import streamlit as st
 import logging
-from modules.theme import custom_style
-
 logging.basicConfig(
     format='%(filename)s:%(lineno)s:%(levelname)s -- %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -19,8 +17,6 @@ logger = logging.getLogger(__name__)
 # streamlit supports reguarl and wide layout (how the controls
 # are organized/displayed on the screen).
 st.set_page_config(layout='wide')
-
-custom_style()
 
 # If a user is at this page, we assume they are not
 # authenticated.  So we change the 'authenticated' value
@@ -37,9 +33,8 @@ SideBarLinks(show_home=True)
 #    The major content of this page
 # ***************************************************
 
-
+# set the title of the page and provide a simple prompt.
 logger.info("Loading the Home page of the app")
-
 st.markdown("""
     <style>
     @keyframes fadeInUp {
@@ -119,13 +114,14 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+st.write('#### Choose a User to Login as:')
 
 # For each of the user personas for which we are implementing
 # functionality, we put a button on the screen that the user
 # can click to MIMIC logging in as that mock user.
 st.write('\n\n')
-makers_dict = {"Sun Yue 🇺🇸": [2, "United States"], "Dillon Brooks 🇬🇧": [
-    3, "United Kingdom"], "Gerrard James 🇩🇪": [4, "Germany"]}
+makers_dict = {"Sun Yue 🇺🇸": [1, "United States"], "Dillon Brooks 🇬🇧": [
+    2, "United Kingdom"], "Gerrard James 🇩🇪": [3, "Germany"]}
 makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
 maker = st.selectbox("Choose a User:", makers)
 if st.button('Policy Maker Login',
@@ -144,7 +140,7 @@ if st.button('Policy Maker Login',
 
 st.write('\n\n')
 
-econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob": 7}
+econ_dict = {"Andrew Thornton": 4, "Ryan Gurtings": 5, "Bob": 6}
 econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
 econ = st.selectbox("Choose a User:", econs)
 if st.button('Economist Login',
@@ -152,15 +148,15 @@ if st.button('Economist Login',
              use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'economist'
-    st.session_state["user_id"] = econ_dict[econ]
+    st.session_state["user_id"] = makers_dict[maker]
     st.session_state['first_name'] = econ
-    logger.info("Logging in as Economist")
-    st.switch_page('pages/31_Economist_Home.py')
+    logger.info("Logging in as Political Strategy Advisor Persona")
+    st.switch_page('pages/historicaldata.py')
 
 st.write('\n\n')
 
-lobby_dict = {"Eleanore Goosens": 8, "User 2": 9, "User 3": 10}
-lobbys = ["Eleanore Goosens", "User 2", "User 3"]
+lobby_dict = {"Eleanore Goosens": 8, "Gina Higgins": 9, "Mark Lee": 10}
+lobbys = ["Eleanore Goosens", "Gina Higgins", "Mark Lee"]
 lobby = st.selectbox("Choose a User:", lobbys)
 if st.button('Lobbyist Login', type='primary',  use_container_width=True):
     st.session_state['authenticated'] = True
@@ -190,3 +186,10 @@ with col4:
 st.write("\n\n\n\n\n")
 st.write('\n')
 st.write('\n')
+
+if st.button('System Admin Login', type='primary',  use_container_width=True):
+    st.session_state['authenticated'] = True
+    st.session_state['role'] = 'administrator'
+    st.session_state['first_name'] = 'Admin'
+    st.session_state['user_id'] = 4
+    st.switch_page('pages/20_Admin_Home.py')
