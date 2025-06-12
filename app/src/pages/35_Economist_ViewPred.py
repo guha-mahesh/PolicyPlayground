@@ -559,3 +559,5 @@ st.divider()
 
 if st.button("Previous"):
     st.switch_page("pages/saved_drafts.py")
+if st.button("View Currency Predictions"):
+    st.switch_page("pages/36_Economist_ViewCurrency.py")
