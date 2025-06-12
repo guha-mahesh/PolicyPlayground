@@ -9,7 +9,6 @@ from backend.model_api.modelRoutes import model_routes
 from backend.ngos.ngo_routes import ngos
 from backend.pproutes.politician_routes import politician
 from backend.policy_api.policy_api import policy_api
-from backend.pproutes.user_routes import users
 from backend.pproutes.note_routes import notes
 
 
@@ -57,7 +56,6 @@ def create_app():
     app.register_blueprint(ngos, url_prefix="/ngo")
     app.register_blueprint(politician, url_prefix="/politician")
     app.register_blueprint(policy_api, url_prefix="/pol")
-    app.register_blueprint(users, url_prefix="/users")
     app.register_blueprint(notes, url_prefix="/notes")
 
     # Don't forget to return the app object

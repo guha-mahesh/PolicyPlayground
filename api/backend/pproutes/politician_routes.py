@@ -18,21 +18,6 @@ def fetch_all(user_id):
     return jsonify(allnames), 200
 
 
-@politician.route("/politicianID/<polName>", methods=["GET"])
-def get_id(polName):
-    conn = db.get_db()
-    cursor = conn.cursor()
-
-    query = "SELECT politician_id FROM Politicians WHERE full_name = %s"
-    params = [polName]
-    cursor.execute(query, params)
-    id = cursor.fetchall()
-    conn.commit()
-    cursor.close()
-
-    return jsonify(id), 200
-
-
 @politician.route("/newPolitician", methods=["POST"])
 def new_politician():
     conn = db.get_db()
@@ -61,7 +46,7 @@ def new_politician():
     return jsonify({"message": "Politician created successfully", "polID": polId}, 201)
 
 
-@politician.route("/savePolicy", methods=["POST"])
+@politician.route("/policy", methods=["POST"])
 def savePolicy():
     conn = db.get_db()
     cursor = conn.cursor()
