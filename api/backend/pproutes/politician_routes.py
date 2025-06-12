@@ -185,8 +185,9 @@ def get_user_published_policies(user_id):
     cursor = conn.cursor()
 
     query = """
-    SELECT p.publish_id, p.saved_id 
+    SELECT p.publish_id, p.saved_id, s.title 
     FROM PublishPolicy p 
+    JOIN SavedPolicy s ON p.saved_id = s.saved_id
     WHERE p.user_id = %s
     ORDER BY p.publish_date DESC
     """
