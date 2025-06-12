@@ -16,10 +16,11 @@ for item in saved_policies:
     count += 1
     id = int(item["saved_id"])
     policy_url = f"http://web-api:4000/politician/policy/{id}"
+    policyJson = requests.get(policy_url).json()[0]
+    title = policyJson["title"]
 
-    st.markdown(f"<h4 style='margin-bottom:0;'>Policy #{count}</h4>", unsafe_allow_html=True)
-    with st.expander(label=f'Expand Policy #{count}', expanded=False):
-        policyJson = requests.get(policy_url).json()[0]
+    st.markdown(f"<h4 style='margin-bottom:0;'>{title}</h4>", unsafe_allow_html=True)
+    with st.expander(label=f'Expand {title}', expanded=False):
         col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
         with col1:
             st.write(f'**Country:** {policyJson["Country"]}')
