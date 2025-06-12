@@ -52,7 +52,7 @@ try:
             desc = df.loc[df['policy_id'] == num, 'pol_description'].iloc[0]
             st.write(desc)
             st.write("\n")
-            if st.button("Get Polician Contact Info"):
+            if st.button("Polician Contact Info"):
                 st.switch_page("pages/34_Politician_Information_Page.py")
 except Exception as e:
     st.write("No Favorites Selected, please go back.")
