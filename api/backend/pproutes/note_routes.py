@@ -56,7 +56,7 @@ def modify_note():
     params = []
 
     req = request.get_json()
-    required_fields = ["title", "content", "politician_id", "conversation_id", "user_id"]
+    required_fields = ["title", "content", "conversation_id", "user_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400

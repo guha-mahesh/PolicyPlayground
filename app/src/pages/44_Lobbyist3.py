@@ -239,8 +239,8 @@ if st.button("Save Note", type="primary", use_container_width=True):
         }
         json1 = getmethods.modifyPolicy(save_policy).json()
         saved_id = json1["saved_id"]
-        noteJson = {"politician_id": current_politician["politician_id"],
-                    "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
+        noteJson = {"content": content, "title": title, "user_id": st.session_state["user_id"],
+                    "conversation_id": currentConvo["conversation_id"]}
         getmethods.modifyNotes(noteJson)
         st.session_state['new_note_title'] = ""
         st.session_state['new_note_content'] = ""
