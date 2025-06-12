@@ -28,28 +28,20 @@ data = response.json()
 df = pd.DataFrame(data)
 if not df.empty:
 
-    col1, col2 = st.columns(2, vertical_alignment="bottom")
-    try:
-        with col1:
-            policies_list = [f"{c}. {a}- {b}" for a, b,
-                             c in zip(df['politician'], df['topic'], df['policy_id'])]
-            fav_choice = st.selectbox(
-                "Choose A Policy to Look at:", policies_list)
-            with st.container(height=300):
-                st.markdown("**Policy Information**")
-                num = int(fav_choice.split('.')[0])
-                st.write(
-                    f"Year Enacted:\t{df.loc[df['policy_id'] == num, 'year_enacted'].iloc[0]}")
-                st.write(
-                    f"Politician:\t{df.loc[df['policy_id'] == num, 'politician'].iloc[0]}")
-                st.write(
-                    f"Scope:\t{df.loc[df['policy_id'] == num, 'pol_scope'].iloc[0]}")
-                st.write(
-                    f"Duration:\t{df.loc[df['policy_id'] == num, 'duration'].iloc[0]}")
-                st.write(
-                    f"Intensity:\t{df.loc[df['policy_id'] == num, 'intensity'].iloc[0]}")
-                st.write(
-                    f"Course of Action:\t{df.loc[df['policy_id'] == num, 'advocacy_method'].iloc[0]}")
+col1, col2 = st.columns(2, vertical_alignment="bottom")
+try:
+    with col1:
+        policies_list = [f"{c}. {a}- {b}" for a, b, c in zip(df['politician'], df['topic'], df['policy_id'])]
+        fav_choice = st.selectbox("Choose A Policy to Look at:", policies_list)  
+        with st.container(height=300):
+            st.markdown("**Policy Information**")
+            num = int(fav_choice.split('.')[0])
+            st.write(f"Year Enacted:\t{df.loc[df['policy_id'] == num, 'year_enacted'].iloc[0]}")
+            st.write(f"Politician:\t{df.loc[df['policy_id'] == num, 'politician'].iloc[0]}")
+            st.write(f"Country:\t{df.loc[df['policy_id'] == num, 'country'].iloc[0]}")
+            st.write(f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} M")
+            st.write(f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} K")
+            st.write(f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} M")
 
         with col2:
             num = int(fav_choice.split('.')[0])
@@ -65,8 +57,6 @@ if not df.empty:
                 st.write("\n")
                 if st.button("Polician Contact Info"):
                     st.switch_page("pages/34_Politician_Information_Page.py")
-    except Exception as e:
-        st.write("No Favorites Selected, please go back.")
 
     st.markdown("""
         <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
@@ -130,6 +120,6 @@ if not df.empty:
     st.write("---")
     if st.button("Previous"):
         st.switch_page("pages/32_Historical_Data.py")
-else:
+except Exception as e:
     if st.button("Please Favorite Some Policies!"):
         st.switch_page("pages/32_Historical_Data.py")

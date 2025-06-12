@@ -11,7 +11,7 @@ def fetch_all(user_id):
     conn = db.get_db()
     cursor = conn.cursor()
 
-    query = "SELECT politician_id, full_name FROM Politicians WHERE user_id = " + \
+    query = "SELECT politician_id, full_name, email_address, phone_number, department FROM Politicians WHERE user_id = " + \
         str(user_id)
     cursor.execute(query)
     allnames = cursor.fetchall()
@@ -24,14 +24,14 @@ def new_politician():
     cursor = conn.cursor()
 
     query = """
-    INSERT INTO Politicians (full_name, contact_info, user_id)
+    INSERT INTO Politicians (full_name, email_address, phone_number, department, user_id)
     VALUES
-    (%s, %s, %s)
+    (%s, %s, %s, %s, %s)
     """
     params = []
 
     req = request.get_json()
-    required_fields = ["full_name", "contact", "user_id"]
+    required_fields = ["full_name", "email_address", "phone_number", "department", "user_id"]
     for field in required_fields:
         if field not in req:
             return jsonify({"error": f"Missing required field: {field}"}), 400
@@ -81,6 +81,52 @@ def savePolicy():
     cursor.close()
     return jsonify({'message': 'Policy saved successfully', 'saved_id': saved_id}), 200
 
+@politician.route("/policy", methods=["PUT"])
+def modifyPolicy():
+    conn = db.get_db()
+    cursor = conn.cursor()
+    data = request.get_json()
+
+    query = """
+            UPDATE SavedPolicy 
+            SET discountRate = %s, 
+                FederalReserveBalanceSheet = %s, 
+                TreasurySecurities = %s,
+                FederalFundsRate = %s, 
+                MoneySupply = %s, 
+                ReserveRequirementRatio = %s,
+                HealthSpending = %s, 
+                MilitarySpending = %s, 
+                EducationSpending = %s, 
+                InfrastructureSpending = %s,
+                DebtToGDPRatio = %s, 
+                CorporateTaxRate = %s, 
+                Country = %s, 
+                SP500 = %s, 
+                GDP = %s, 
+                title = %s
+                WHERE user_id = %s AND saved_id = %s"""
+
+    params = []
+
+    required_fields = ["discountRate", "federalReserveBalanceSheet",
+                       "treasurySecurities", "federalFundsRate", "moneySupply", 
+                       "reserveRequirementRatio", "healthSpending", "militarySpending",
+                       "educationSpending", "infrastructureSpending", "debtToGDPRatio",
+                       "corporateTaxRate", "country", "market_index", "GDP", "title", "user_id", "saved_id"]
+    
+    for field in required_fields:
+        if field not in data:
+            return jsonify({"error": f"Missing required field: {field}"}), 400
+
+    for field in required_fields:
+        params.append(data[field])
+    cursor.execute(query, params)
+
+    conn.commit()
+    saved_id = cursor.lastrowid
+    cursor.close()
+    return jsonify({'message': 'Policy saved successfully', 'saved_id': saved_id}), 200
 
 @politician.route("/allpolicy/<int:user_id>", methods=["GET"])
 def get_policy(user_id):

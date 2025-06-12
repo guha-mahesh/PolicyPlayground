@@ -15,9 +15,13 @@ SideBarLinks()
 st.title("Enter new Politician")
 
 name = st.text_input(label="Enter Name")
-contact = st.text_input(label="Enter Contact Info")
+email = st.text_input(label="Enter Email Address")
+phone = st.text_input(label="Enter Phone Number")
+department = st.text_input(label="Enter Department")
 
-returnJson = {"full_name": name, "contact": contact,
+returnJson = {"full_name": name, "email_address": email,
+              "phone_number": phone,
+              "department": department,
               "user_id": st.session_state["user_id"]}
 
 # add a button to use the values entered into the number field to send to the

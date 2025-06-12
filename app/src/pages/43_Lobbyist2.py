@@ -42,7 +42,7 @@ col1, col2 = st.columns([1, 2])
 
 # Left panel
 with col1:
-    with st.container(height=500):
+    with st.container(height=700):
         if st.session_state["notes_empty"]:
             st.write("No conversations found")
         else:
@@ -71,12 +71,12 @@ with col2:
         col2_1, col2_2 = st.columns([2, 1])
 
         with col2_1:
-            with st.container(height=150):
+            with st.container():
                 st.write("description")
                 st.write(currentConvo["content"])
 
         with col2_2:
-            with st.container(height=150):
+            with st.container():
                 st.write("Policy Summary")
                 st.write("**Monetary Policy:**")
                 st.write(f'• Discount Rate: {currentPolicy["discountRate"]}%')
@@ -107,8 +107,13 @@ with col2:
         col2_3, col2_4 = st.columns([3, 1])
 
         with col2_3:
-            with st.container(height=150):
-                st.write("Similar Politicians")
+            with st.container():
+                st.write("Politician Information")
+                st.write(f'**{selected_politician["full_name"]}**')
+                st.write("Email: " + (f'{selected_politician["email_address"]}' or "N/A"))
+                st.write("Phone Number: " + (f'{selected_politician["phone_number"]}' or "N/A"))
+                st.write("Department: " + (f'{selected_politician["department"]}' or "N/A"))
+                
 
         with col2_4:
             if st.button(label="Modify", use_container_width=True):

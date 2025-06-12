@@ -1,14 +1,16 @@
 from modules.theme import custom_style
 from modules.nav import SideBarLinks
-from modules.theme import welcome_banner
+from modules.theme import welcome_banner, logOut
 import streamlit as st
 import logging
 import requests
 logger = logging.getLogger(__name__)
 
-
+st.set_page_config(layout='wide')
 custom_style()
 SideBarLinks()
+
+logOut()
 
 
 # Custom CSS for enhanced styling
@@ -39,7 +41,7 @@ st.markdown("""
     
     /* Nationality selector styling */
     .nationality-container {
-        background: #18435a;
+        background: #f8fafc;
         border: 2px solid #e2e8f0;
         border-radius: 12px;
         padding: 1.5rem;
@@ -52,12 +54,10 @@ st.markdown("""
         align-items: center;
         gap: 0.5rem;
         margin-bottom: 0.5rem;
-        color:  #e2e8f0;
-        
     }
     
     .nationality-header h4 {
-        color: #e2e8f0;
+        color: #1e293b;
         margin: 0;
         font-weight: 600;
     }
@@ -93,7 +93,7 @@ st.markdown("""
     
     /* Enhanced section headers */
     .section-header {
-        background:  #18435a;
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
         padding: 1.5rem;
         border-radius: 10px;
         margin-bottom: 1.5rem;
@@ -102,7 +102,7 @@ st.markdown("""
     
     /* Policy display cards */
     .policy-card {
-        background:  #18435a;
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 1.5rem;
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -120,7 +120,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-welcome_banner("Test and Analyze Your Policy Decisions")
+welcome_banner()
 
 # Get user's nationality
 user_country = st.session_state.get('nationality', 'United States')
@@ -568,8 +568,8 @@ country_codes = {
 
 # Policy Summary Section
 st.markdown("""
-    <div style='background:  #18435a; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
-        <h3 style='color:  #e2e8f0; margin: 0;'>Current Policy Settings</h3>
+    <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
+        <h3 style='color: #e2e8f0; margin: 0;'>Current Policy Settings</h3>
         <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Review your selected policy parameters</p>
     </div>
 """, unsafe_allow_html=True)
@@ -586,7 +586,6 @@ with col_left:
             <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {fed_funds_rate}%</p>
             <p style='color: #94a3b8; margin: 0;'>• Money Supply: {policy_config['currency']}{money_supply:,}B</p>
             <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {reserve_ratio}%</p>
-            <p style='color: transparent; margin: 0;'>• &nbsp;</p>
         </div>
     """, unsafe_allow_html=True)
 
@@ -594,13 +593,13 @@ with col_right:
     st.markdown(f"""
         <div class='policy-card'>
             <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>📊 Fiscal Policy</h4>
-            <p style='color: #ffffff; margin: 0;'>• Analysis Country: {analysis_country}</p>
-            <p style='color: #ffffff; margin: 0;'>• Military Spending: {military_spending}%</p>
-            <p style='color: #ffffff; margin: 0;'>• Education Spending: {education_spending}%</p>
-            <p style='color: #ffffff; margin: 0;'>• Health Spending: {health_spending}%</p>
-            <p style='color: #ffffff; margin: 0;'>• Infrastructure Spending: {infrastructure_spending}%</p>
-            <p style='color: #ffffff; margin: 0;'>• Debt-to-GDP Ratio: {debt_gdp_ratio}%</p>
-            <p style='color: #ffffff; margin: 0;'>• Corporate Tax Rate: {corporate_tax_rate}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Analysis Country: {analysis_country}</p>
+            <p style='color: #94a3b8; margin: 0;'>• Military Spending: {military_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Education Spending: {education_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Health Spending: {health_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Infrastructure Spending: {infrastructure_spending}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Debt-to-GDP Ratio: {debt_gdp_ratio}%</p>
+            <p style='color: #94a3b8; margin: 0;'>• Corporate Tax Rate: {corporate_tax_rate}%</p>
         </div>
     """, unsafe_allow_html=True)
 
