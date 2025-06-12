@@ -28,8 +28,6 @@ def welcome():
     response.status_code = 200
     return response
 
-# predictSp
-
 
 @model_routes.route("/SP500/<var_01>", methods=["GET"])
 def get_predictionSp500(var_01):
@@ -62,8 +60,6 @@ def get_predictionSp500(var_01):
         )
         response.status_code = 500
         return response
-
-# predictCurr
 
 
 @model_routes.route("/currency/<var_01>", methods=["GET"])
@@ -98,8 +94,6 @@ def get_predictionCurr(var_01):
         response.status_code = 500
         return response
 
-# predictGDP
-
 
 @model_routes.route("/GDP/<var_01>/<var_02>", methods=["GET"])
 def get_predictionGDP(var_01, var_02):
@@ -133,8 +127,6 @@ def get_predictionGDP(var_01, var_02):
         response.status_code = 500
         return response
 
-# fetchData
-
 
 @model_routes.route("/data/<var01>", methods=["GET"])
 def fetchalldata(var01):
@@ -155,8 +147,6 @@ def fetchalldata(var01):
     return jsonify({
         'data': data,
     })
-
-# fetchData2
 
 
 @model_routes.route("/data2/<var01>", methods=["GET"])
@@ -181,7 +171,6 @@ def fetchalldata2(var01):
     })
 
 
-# trainModels
 @model_routes.route("/models", methods=["POST"])
 def trainModels():
     results = train()
@@ -191,8 +180,6 @@ def trainModels():
         'status': 'success',
         'message': 'Models trained successfully',
     }), 200
-
-# storeWeights
 
 
 @model_routes.route("/weights", methods=["POST"])
@@ -215,8 +202,6 @@ def storeWeights():
         }), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-# getWeights
 
 
 @model_routes.route("/weights/<model_name>", methods=["GET"])
@@ -259,13 +244,12 @@ def get_weights(model_name):
 def get_similar_policies(index_policy):
     try:
         policies_list = predict_similar_policies(index_policy)
-        # The predict_similar_policies function already returns a list of dictionaries
+
         return jsonify(policies_list)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-# fetchCountryGDP
 @model_routes.route("/countryGDP/<country>", methods=["GET"])
 def fetchData(country):
     cursor = db.get_db().cursor()

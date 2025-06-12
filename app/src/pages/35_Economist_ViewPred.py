@@ -19,12 +19,24 @@ SideBarLinks()
 st.title("Your Predictions")
 
 
-
 if 'published_policy' not in st.session_state:
     st.error("No policy data found. Please select a policy to analyze.")
     st.stop()
 
 policy = st.session_state['published_policy']
+'''
+ st.session_state['published_policy'] = {
+                                'Selected Country': policy['Country'],
+                                'Discount Rate': policy['discountRate'],
+                                'Federal Balance': policy['FederalReserveBalanceSheet'],
+                                'Treasury Holdings': policy['TreasurySecurities'],
+                                'Military Spending': policy['MilitarySpending'],
+                                'Education Spending': policy['EducationSpending'],
+                                'Health Spending': policy['HealthSpending'],
+                                'SP500': policy['SP500'],
+                                'GDP': policy['GDP'],
+                                'Predictions': policy['Predictions']
+                            }'''
 
 selected_country = policy['Selected Country']
 
@@ -65,9 +77,7 @@ with col2:
         f"<h2 style='color: #81C784;'>${gdp_pred:,.0f}</h2>", unsafe_allow_html=True)
 
 
-
 st.divider()
-
 
 
 col1, col2 = st.columns(2)
