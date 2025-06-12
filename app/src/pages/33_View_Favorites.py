@@ -39,11 +39,11 @@ try:
                 st.write(
                     f"Country:\t{df.loc[df['policy_id'] == num, 'country'].iloc[0]}")
                 st.write(
-                    f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} M")
+                    f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} million")
                 st.write(
-                    f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} K")
+                    f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} thousand")
                 st.write(
-                    f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} M")
+                    f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} million")
 
         with col2:
             if st.button("Delete Policy"):

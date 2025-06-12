@@ -83,7 +83,7 @@ if st.button("Save Policy Settings"):
         "title": title or "Unnamed Policy"
     }
 
-    if st.button("🔔 Click Here to view Saved Policies", icon="ℹ️"):
+    if st.button("🔔 Click Here to view Saved Policies"):
         st.switch_page("pages/46_PolicyMaker_ViewFavorites.py")
 
     save_url = "http://web-api:4000/politician/policy"
