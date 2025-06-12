@@ -131,7 +131,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 try:
-    response = requests.get("http://web-api:4000/politician/publisher")
+    response = requests.get(
+        f"http://web-api:4000/politician/userPublisher/{user_id}")
     if response.status_code == 200:
         published_policies = response.json()
 

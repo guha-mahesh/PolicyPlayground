@@ -179,6 +179,29 @@ def get_published_policies():
         cursor.close()
 
 
+@politician.route("/userPublisher/<int:user_id>", methods=["GET"])
+def get_user_published_policies(user_id):
+    conn = db.get_db()
+    cursor = conn.cursor()
+
+    query = """
+    SELECT p.publish_id, p.saved_id 
+    FROM PublishPolicy p 
+    WHERE p.user_id = %s
+    ORDER BY p.publish_date DESC
+    """
+    
+    try:
+        cursor.execute(query, (user_id,))
+        policies = cursor.fetchall()
+        return jsonify(policies), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+
+
+
 @politician.route("/publisher/<int:publish_id>", methods=["DELETE"])
 def unpublish_policy(publish_id):
     conn = db.get_db()
