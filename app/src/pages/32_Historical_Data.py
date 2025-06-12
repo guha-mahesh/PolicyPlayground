@@ -4,7 +4,7 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 logger = logging.getLogger(__name__)
-from modules.theme import custom_style
+from modules.theme import *
 
 
 
@@ -12,14 +12,7 @@ st.set_page_config(layout='wide')
 custom_style()
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
-
-
-st.markdown("""
-    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <h1 style='color: white; margin: 0;'>Historical Data Viewer 🔎</h1>
-        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Analyze past policies and their impacts</p>
-    </div>
-""", unsafe_allow_html=True)
+banner("Historical Data Viewer", "Analyze past policies and their impacts")
 
 st.markdown(f"#### Logged in as: **{st.session_state['first_name']}**")
 st.write("\n \n")

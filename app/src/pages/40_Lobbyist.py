@@ -4,7 +4,7 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 import json
-from modules.theme import custom_style
+from modules.theme import *
 
 
 logger = logging.getLogger(__name__)
@@ -13,6 +13,7 @@ st.set_page_config(layout="wide")
 custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
+welcome_banner("Create detailed notes on policies discussed with Politicians")
 
 if 'new_note_title' not in st.session_state:
     st.session_state['new_note_title'] = ""

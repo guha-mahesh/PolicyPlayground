@@ -8,11 +8,12 @@ import requests
 import requestfunctions.getmethods as getmethods
 import pandas as pd
 import numpy as np
-from modules.theme import custom_style
+from modules.theme import *
 
 
 st.set_page_config(layout="wide")
 custom_style()
+banner("View Saved Notes", "View, analyze, and modify saved notes")
 
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()

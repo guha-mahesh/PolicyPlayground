@@ -1,4 +1,4 @@
-from modules.theme import custom_style
+from modules.theme import *
 from modules.nav import SideBarLinks
 import streamlit as st
 import logging
@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 st.set_page_config(layout='wide')
 custom_style()
 SideBarLinks()
+welcome_banner("Test and analyze your policy decisions")
 
 # Custom CSS for enhanced styling
 st.markdown("""
@@ -172,14 +173,6 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-# Enhanced header with user's name
-st.markdown("""
-    <div class='policy-header'>
-        <h1 style='color: white; margin: 0; font-size: 2.5rem;'>Welcome, {}</h1>
-        <p style='color: #cbd5e1; margin: 0.5rem 0 0 0; font-size: 1.2rem;'>Test and analyze your policy decisions</p>
-    </div>
-""".format(st.session_state['first_name']), unsafe_allow_html=True)
 
 # Get user's nationality
 user_country = st.session_state.get('nationality', 'United States')
