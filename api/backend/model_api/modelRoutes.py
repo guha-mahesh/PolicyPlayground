@@ -9,7 +9,7 @@ from flask import (
 )
 import json
 
-from backend.simple.playlist import sample_playlist_data
+
 from ..db_connection import db
 from ..ml_models.model01_GDP import train_func, predict
 from ..ml_models.model02_American import predict_sp500, predict_currency, train
