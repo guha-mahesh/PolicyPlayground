@@ -1,9 +1,9 @@
+from modules.theme import custom_style
 from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 import requests
 logger = logging.getLogger(__name__)
-from modules.theme import custom_style
 
 st.set_page_config(layout='wide')
 custom_style()
@@ -131,6 +131,7 @@ st.markdown("""
         border-radius: 10px;
         transition: all 0.3s ease;
         box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+
     }
     
     .stButton > button:hover {

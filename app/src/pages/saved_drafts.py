@@ -69,7 +69,7 @@ try:
                                 'Health Spending': policy['HealthSpending'],
                                 'SP500': policy['SP500'],
                                 'GDP': policy['GDP'],
-                                'Predictions': policy['Predictions']
+
                             }
                             st.switch_page("pages/35_Economist_ViewPred.py")
 
