@@ -146,6 +146,10 @@ with col1:
     with st.container(border=True):
         st.markdown(
             '<p class="persona-title">Login as Policy Maker</p>', unsafe_allow_html=True)
+        left_co, cent_co,last_co = st.columns(3)
+        st.write("\n\n")
+        with cent_co:
+            st.image("https://i.ibb.co/QjkRqcMd/guy1.png", width=175)
         makers_dict = {"Sun Yue 🇺🇸": [2, "United States"], "Dillon Brooks 🇬🇧": [
             3, "United Kingdom"], "Gerrard James 🇩🇪": [4, "Germany"]}
         makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
@@ -168,8 +172,12 @@ with col2:
     with st.container(border=True):
         st.markdown('<p class="persona-title">Login as Economist</p>',
                     unsafe_allow_html=True)
-        econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob": 7}
-        econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
+        st.write("\n")
+        left_co, cent_co,last_co = st.columns(3)
+        with cent_co:
+            st.image("https://i.ibb.co/QFSJzLRS/guy2.png", width=175)
+        econ_dict = {"Andrew Thornton": 5, "Ryan Gurtings": 6, "Bob Bobias": 7}
+        econs = ["Andrew Thornton", "Ryan Gurtings", "Bob Bobias"]
         econ = st.selectbox("", econs)
         if st.button('Login',
                      type='primary',
@@ -185,8 +193,13 @@ with col3:
     with st.container(border=True):
         st.markdown('<p class="persona-title">Login as Lobbyist</p>',
                     unsafe_allow_html=True)
-        lobby_dict = {"Eleanore Goosens": 8, "User 2": 9, "User 3": 10}
-        lobbys = ["Eleanore Goosens", "User 2", "User 3"]
+        st.write("\n")
+        left_co, cent_co,last_co = st.columns(3)
+        with cent_co:
+            st.image("https://i.ibb.co/QFvdtNM9/guy3.png")
+        lobby_dict = {"Eleanore Goosens": 8,
+                      "Hardy Nextur": 9, "Elmer Elms": 10}
+        lobbys = ["Eleanore Goosens", "Hardy Nextur", "Elmer Elms"]
         lobby = st.selectbox("", lobbys)
         if st.button('Login', type='primary',  use_container_width=True, key="login3"):
             st.session_state['authenticated'] = True
