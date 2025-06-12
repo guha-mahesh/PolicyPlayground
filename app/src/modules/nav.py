@@ -10,6 +10,13 @@ import streamlit as st
 
 def HomeNav():
     st.sidebar.page_link("Home.py", label="Home", icon="🏠")
+    if st.session_state["authenticated"] == False:
+        if st.sidebar.button("Act as System Administrator"):
+            st.session_state['authenticated'] = True
+            st.session_state['role'] = 'administrator'
+            st.session_state['first_name'] = 'Admin'
+            st.session_state['user_id'] = 4
+            st.switch_page('pages/20_Admin_Home.py')
 
 
 def AboutPageNav():
@@ -19,13 +26,13 @@ def AboutPageNav():
 # ------------------------ Economist ------------------------
 def economy_home():
     st.sidebar.page_link(
-        "pages/economist_home.py", label="Home", icon="🏦"
+        "pages/31_Economist_Home.py", label="Home", icon="🏦"
     )
 
 
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
-        "pages/historicaldata.py", label="Historical Data Viewer", icon="💰"
+        "pages/32_Historical_Data.py", label="Historical Data Viewer", icon="💰"
     )
 
 

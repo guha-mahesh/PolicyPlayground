@@ -22,7 +22,6 @@ selected_country = "Use My Nationality"
 
 
 def get_monetary_policy_config(country):
-    """Returns the appropriate monetary policy configuration based on country"""
 
     if country == "United States":
         return {
@@ -276,8 +275,8 @@ with tab2:
         </div>
     """, unsafe_allow_html=True)
 
-    country_options = ["Use My Nationality", "United States", "Japan", "Germany",
-                       "United Kingdom", "Russia", "Canada"]
+    country_options = ["Use My Nationality", "United States", "Germany",
+                       "United Kingdom"]
     selected_country = st.selectbox(
         "Select Country for GDP Analysis (Optional)",
         options=country_options,
