@@ -7,8 +7,8 @@ from modules.theme import custom_style
 
 
 logger = logging.getLogger(__name__)
-custom_style()
 st.set_page_config(layout='wide')
+custom_style()
 SideBarLinks()
 
 st.markdown("""
