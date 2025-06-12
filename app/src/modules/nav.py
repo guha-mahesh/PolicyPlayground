@@ -50,14 +50,11 @@ def ViewNotesNav():
 
 # ------------------------ System Admin Role ------------------------
 def AdminPageNav():
-    st.sidebar.page_link("pages/20_Admin_Home.py",
-                         label="Note Taker", icon="🗒️")
-    st.sidebar.page_link(
-        "pages/21_ML_Model_Mgmt.py", label="Access Previous Notes", icon="⌨️"
-    )
-
+    st.sidebar.page_link("Home.py", label="Go Home", icon="🏠")
 
 # ------------------------ Policy Maker Role ------------------------
+
+
 def PolicyMakerNav():
     st.sidebar.page_link("pages/00_Policy_Maker_Home.py",
                          label="Test New Set", icon="🗒️")

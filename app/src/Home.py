@@ -134,8 +134,8 @@ with col1:
         makers = ["Sun Yue 🇺🇸", "Dillon Brooks 🇬🇧", "Gerrard James 🇩🇪"]
         maker = st.selectbox("", makers)
         if st.button('Login',
-                    type='primary',
-                    use_container_width=True, key="login1"):
+                     type='primary',
+                     use_container_width=True, key="login1"):
             # when user clicks the button, they are now considered authenticated
             st.session_state['authenticated'] = True
 
@@ -154,8 +154,8 @@ with col2:
         econs = ["Andrew Thornton", "Ryan Gurtings", "Bob"]
         econ = st.selectbox("", econs)
         if st.button('Login',
-                    type='primary',
-                    use_container_width=True, key="login2"):
+                     type='primary',
+                     use_container_width=True, key="login2"):
             st.session_state['authenticated'] = True
             st.session_state['role'] = 'economist'
             st.session_state["user_id"] = econ_dict[econ]
@@ -176,3 +176,15 @@ with col3:
             st.session_state['user_id'] = lobby_dict[lobby]
             st.session_state['nationality'] = 'United States'
             st.switch_page('pages/40_Lobbyist.py')
+
+
+st.divider()
+col1, col2, col3, col4 = st.columns(4)
+with col4:
+    if st.button('System Admin Login', type='primary',  use_container_width=True):
+
+        st.session_state['authenticated'] = True
+        st.session_state['role'] = 'administrator'
+        st.session_state['first_name'] = 'Admin'
+        st.session_state['user_id'] = 4
+        st.switch_page('pages/20_Admin_Home.py')
