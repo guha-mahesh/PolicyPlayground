@@ -148,10 +148,10 @@ if st.button('Economist Login',
              use_container_width=True):
     st.session_state['authenticated'] = True
     st.session_state['role'] = 'economist'
-    st.session_state["user_id"] = makers_dict[maker]
+    st.session_state["user_id"] = econ_dict[econ]
     st.session_state['first_name'] = econ
     logger.info("Logging in as Political Strategy Advisor Persona")
-    st.switch_page('pages/historicaldata.py')
+    st.switch_page('pages/31_Economist_Home.py')
 
 st.write('\n\n')
 
