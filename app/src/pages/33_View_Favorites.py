@@ -1,4 +1,4 @@
-from modules.theme import custom_style
+from modules.theme import *
 import pandas as pd
 import requests
 from modules.nav import SideBarLinks
@@ -9,13 +9,7 @@ logger = logging.getLogger(__name__)
 
 custom_style()
 SideBarLinks()
-
-st.markdown("""
-    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <h1 style='color: white; margin: 0;'>Historical Data Viewer 🔎</h1>
-        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Analyze past policies and their impacts</p>
-    </div>
-""", unsafe_allow_html=True)
+banner("Historical Data Viewer", "Analyze past policies and their impacts")
 
 st.write("## Choose a Favorited Policy to View:")
 
@@ -45,11 +39,11 @@ try:
                 st.write(
                     f"Country:\t{df.loc[df['policy_id'] == num, 'country'].iloc[0]}")
                 st.write(
-                    f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} M")
+                    f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} million")
                 st.write(
-                    f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} K")
+                    f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} thousand")
                 st.write(
-                    f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} M")
+                    f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} million")
 
         with col2:
             if st.button("Delete Policy"):

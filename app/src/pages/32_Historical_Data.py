@@ -18,7 +18,6 @@ st.markdown(f"#### Logged in as: **{st.session_state['first_name']}**")
 st.write("\n \n")
 choices = []
 params = []
-df = []
 
 st.markdown("### Enter the criteria to find your policies:\n")
 
@@ -62,7 +61,7 @@ with col2:
         )
         st.write("\n")
         population_range = st.slider(
-            "Population Size Range (in millions)",
+            "Population Size Range (in thousands)",
             min_value=0,
             max_value=1000,
             value=(0, 1000),
