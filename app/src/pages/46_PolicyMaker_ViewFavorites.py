@@ -8,7 +8,7 @@ from modules.theme import custom_style
 
 logger = logging.getLogger(__name__)
 custom_style()
-st.set_page_config(layout='wide')
+
 SideBarLinks()
 
 st.markdown("""
@@ -28,7 +28,8 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-saved_policies = requests.get(f"http://web-api:4000/politician/allpolicy/{user_id}").json()
+saved_policies = requests.get(
+    f"http://web-api:4000/politician/allpolicy/{user_id}").json()
 count = 0
 for item in saved_policies:
     count += 1
@@ -37,7 +38,8 @@ for item in saved_policies:
     policyJson = requests.get(policy_url).json()[0]
     title = policyJson["title"]
 
-    st.markdown(f"<h4 style='margin-bottom:0;'>{title}</h4>", unsafe_allow_html=True)
+    st.markdown(
+        f"<h4 style='margin-bottom:0;'>{title}</h4>", unsafe_allow_html=True)
     with st.expander(label=f'Expand {title}', expanded=False):
         col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
         with col1:
@@ -45,44 +47,56 @@ for item in saved_policies:
             st.write("")
             st.write("**Monetary Policy:**")
             st.write(f'**Discount Rate:** {policyJson["discountRate"]}%')
-            st.write(f'**Federal Reserve Balance Sheet:** ${policyJson["FederalReserveBalanceSheet"]} Billion')
-            st.write(f'**Treasury Holdings:** ${policyJson["TreasurySecurities"]} Billion')
-            st.write(f'**Federal Funds Rate:** {policyJson["FederalFundsRate"]}%')
+            st.write(
+                f'**Federal Reserve Balance Sheet:** ${policyJson["FederalReserveBalanceSheet"]} Billion')
+            st.write(
+                f'**Treasury Holdings:** ${policyJson["TreasurySecurities"]} Billion')
+            st.write(
+                f'**Federal Funds Rate:** {policyJson["FederalFundsRate"]}%')
             st.write(f'**Money Supply:** ${policyJson["MoneySupply"]} Billion')
-            st.write(f'**Reserve Requirement Ratio:** {policyJson["ReserveRequirementRatio"]}%')
+            st.write(
+                f'**Reserve Requirement Ratio:** {policyJson["ReserveRequirementRatio"]}%')
             st.write("**Fiscal Policy:**")
-            st.write(f'**Military Spending:** {policyJson["MilitarySpending"]}%')
-            st.write(f'**Education Spending:** {policyJson["EducationSpending"]}%')
+            st.write(
+                f'**Military Spending:** {policyJson["MilitarySpending"]}%')
+            st.write(
+                f'**Education Spending:** {policyJson["EducationSpending"]}%')
             st.write(f'**Health Spending:** {policyJson["HealthSpending"]}%')
-            st.write(f'**Infrastructure Spending:** {policyJson["InfrastructureSpending"]}%')
+            st.write(
+                f'**Infrastructure Spending:** {policyJson["InfrastructureSpending"]}%')
             st.write(f'**Debt-to-GDP Ratio:** {policyJson["DebtToGDPRatio"]}%')
-            st.write(f'**Corporate Tax Rate:** {policyJson["CorporateTaxRate"]}%')
+            st.write(
+                f'**Corporate Tax Rate:** {policyJson["CorporateTaxRate"]}%')
         with col2:
             if st.button("Modify", key=f"modify_{id}", use_container_width=True):
                 st.switch_page("pages/00_Policy_Maker_Home.py")
             if st.button("View Analysis", key=f"analyze_{id}", use_container_width=True):
                 st.switch_page("pages/44_Policy_Maker_viewPred.py")
-            
+
             # Check if policy is already published
             try:
-                check_response = requests.get(f"http://web-api:4000/politician/all_published/{id}")
-                is_published = check_response.status_code == 200 and check_response.json().get("is_published", False)
-                
+                check_response = requests.get(
+                    f"http://web-api:4000/politician/all_published/{id}")
+                is_published = check_response.status_code == 200 and check_response.json().get(
+                    "is_published", False)
+
                 if not is_published:
                     if st.button("Publish", key=f"publish_{id}", use_container_width=True):
                         try:
                             request_data = {"saved_id": id, "user_id": user_id}
-                            logger.info(f"Sending publish request with data: {request_data}")
-                            
+                            logger.info(
+                                f"Sending publish request with data: {request_data}")
+
                             response = requests.post(
                                 "http://web-api:4000/politician/publisher",
                                 json=request_data,
                                 headers={'Content-Type': 'application/json'}
                             )
-                            
-                            logger.info(f"Response status code: {response.status_code}")
+
+                            logger.info(
+                                f"Response status code: {response.status_code}")
                             logger.info(f"Response content: {response.text}")
-                            
+
                             if response.status_code == 201:
                                 st.success("Policy published successfully!")
                                 st.rerun()
@@ -90,7 +104,8 @@ for item in saved_policies:
                                 error_msg = response.json().get("error", "Failed to publish policy")
                                 st.error(f"Error: {error_msg}")
                             else:
-                                st.error(f"Failed to publish policy. Status code: {response.status_code}")
+                                st.error(
+                                    f"Failed to publish policy. Status code: {response.status_code}")
                                 st.error(f"Response: {response.text}")
                         except requests.exceptions.RequestException as e:
                             logger.error(f"Request error: {str(e)}")
@@ -119,23 +134,32 @@ try:
     response = requests.get("http://web-api:4000/politician/publisher")
     if response.status_code == 200:
         published_policies = response.json()
-        
+
         if published_policies:
             for policy in published_policies:
                 with st.expander(f"Expand {policy['title']}", expanded=False):
-                    col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
+                    col1, col2 = st.columns(
+                        [4, 1], vertical_alignment="bottom")
                     with col1:
-                        st.write(f'**Published Date:** {policy["publish_date"]}')
+                        st.write(
+                            f'**Published Date:** {policy["publish_date"]}')
                         st.write(f'**Country:** {policy["Country"]}')
-                        st.write(f'**Discount Rate:** {policy["discountRate"]}%')
-                        st.write(f'**Federal Reserve Balance Sheet:** ${policy["FederalReserveBalanceSheet"]} Billion')
-                        st.write(f'**Treasury Holdings:** ${policy["TreasurySecurities"]} Billion')
-                        st.write(f'**Military Spending:** {policy["MilitarySpending"]}%')
-                        st.write(f'**Education Spending:** {policy["EducationSpending"]}%')
-                        st.write(f'**Health Spending:** {policy["HealthSpending"]}%')
-                        st.write(f'**SP500 Prediction:** {policy["SP500"]:,.2f}')
+                        st.write(
+                            f'**Discount Rate:** {policy["discountRate"]}%')
+                        st.write(
+                            f'**Federal Reserve Balance Sheet:** ${policy["FederalReserveBalanceSheet"]} Billion')
+                        st.write(
+                            f'**Treasury Holdings:** ${policy["TreasurySecurities"]} Billion')
+                        st.write(
+                            f'**Military Spending:** {policy["MilitarySpending"]}%')
+                        st.write(
+                            f'**Education Spending:** {policy["EducationSpending"]}%')
+                        st.write(
+                            f'**Health Spending:** {policy["HealthSpending"]}%')
+                        st.write(
+                            f'**SP500 Prediction:** {policy["SP500"]:,.2f}')
                         st.write(f'**GDP Prediction:** {policy["GDP"]:,.2f}')
-                    
+
                     with col2:
                         if st.button("Modify", key=f"modify_pub_{policy['publish_id']}", use_container_width=True):
                             st.switch_page("pages/00_Policy_Maker_Home.py")
@@ -143,15 +167,18 @@ try:
                             st.switch_page("pages/44_Policy_Maker_viewPred.py")
                         if st.button("Unpublish", key=f"unpublish_{policy['publish_id']}", use_container_width=True):
                             try:
-                                unpublish_response = requests.delete(f"http://web-api:4000/politician/publisher/{policy['publish_id']}")
+                                unpublish_response = requests.delete(
+                                    f"http://web-api:4000/politician/publisher/{policy['publish_id']}")
                                 if unpublish_response.status_code == 200:
-                                    st.success("Policy unpublished successfully!")
+                                    st.success(
+                                        "Policy unpublished successfully!")
                                     st.rerun()
                                 else:
                                     st.error("Failed to unpublish policy")
                             except Exception as e:
-                                st.error(f"Error unpublishing policy: {str(e)}")
-                    
+                                st.error(
+                                    f"Error unpublishing policy: {str(e)}")
+
                     st.markdown("<br>", unsafe_allow_html=True)
         else:
             st.info("No published policies found.")
@@ -161,4 +188,3 @@ except Exception as e:
     st.error(f"Error: {str(e)}")
 
 st.write("---")
-

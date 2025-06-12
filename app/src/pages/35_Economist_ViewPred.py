@@ -24,19 +24,7 @@ if 'published_policy' not in st.session_state:
     st.stop()
 
 policy = st.session_state['published_policy']
-'''
- st.session_state['published_policy'] = {
-                                'Selected Country': policy['Country'],
-                                'Discount Rate': policy['discountRate'],
-                                'Federal Balance': policy['FederalReserveBalanceSheet'],
-                                'Treasury Holdings': policy['TreasurySecurities'],
-                                'Military Spending': policy['MilitarySpending'],
-                                'Education Spending': policy['EducationSpending'],
-                                'Health Spending': policy['HealthSpending'],
-                                'SP500': policy['SP500'],
-                                'GDP': policy['GDP'],
-                                'Predictions': policy['Predictions']
-                            }'''
+
 
 selected_country = policy['Selected Country']
 
@@ -53,15 +41,10 @@ market_indices = {
 market_index = market_indices.get(selected_country, "SP500")
 
 
-if "Market" in policy['Predictions']:
+market_pred = round(float(policy['SP500']), 2)
 
-    market_pred = round(float(policy['Predictions']["Market"]), 2)
-else:
 
-    market_pred = round(float(policy['Predictions'].get(
-        market_index, policy['Predictions'].get("SP500", 0))), 2)
-
-gdp_pred = round(float(policy['Predictions']["GDP/C"]), 2)
+gdp_pred = round(float(policy["GDP"]), 2)
 
 
 col1, col2 = st.columns(2)
@@ -97,7 +80,7 @@ with col1:
     }
 
     endpoint = api_endpoints.get(market_index, "sp500")
-    API_URL = f"http://web-api:4000/model/fetchData/{endpoint}"
+    API_URL = f"http://web-api:4000/model/data/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -214,7 +197,7 @@ with col2:
     if selected_country == "Great Britain":
         country_for_api = "UnitedKingdom"
 
-    GDP_API_URL = f"http://web-api:4000/model/fetchCountryGDP/{country_for_api}"
+    GDP_API_URL = f"http://web-api:4000/model/countryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)
@@ -343,7 +326,7 @@ world_gdp_last_value = None
 with col3:
     st.markdown("##### URTH ETF (Global Equity)")
 
-    URTH_API_URL = "http://web-api:4000/model/fetchData/urth"
+    URTH_API_URL = "http://web-api:4000/model/data/urth"
 
     try:
         response = requests.get(URTH_API_URL)
@@ -459,7 +442,7 @@ with col3:
 with col4:
     st.markdown("##### World GDP per Capita Average")
 
-    WORLD_GDP_API_URL = "http://web-api:4000/model/fetchData/world_gdp_per_capita"
+    WORLD_GDP_API_URL = "http://web-api:4000/model/data/world_gdp_per_capita"
 
     try:
         response = requests.get(WORLD_GDP_API_URL)
@@ -572,3 +555,7 @@ with col6:
             f"{gdp_vs_world:+.1f}%",
             f"${gdp_pred:,.0f} per capita"
         )
+st.divider()
+
+if st.button("Previous"):
+    st.switch_page("pages/saved_drafts.py")

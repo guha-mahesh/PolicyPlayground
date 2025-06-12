@@ -95,6 +95,23 @@ if st.button('Lobbyist Login', type='primary',  use_container_width=True):
     st.session_state['user_id'] = lobby_dict[lobby]
     st.session_state['nationality'] = 'United States'
     st.switch_page('pages/40_Lobbyist.py')
+st.divider()
+col1, col2, col3, col4 = st.columns(4)
+
+
+with col4:
+    st.write("\n\n\n\n\n")
+    st.write('\n')
+    st.write('\n')
+    st.write("\n\n\n\n\n")
+    st.write('\n')
+    st.write('\n')
+    if st.button("🔧  Act as System Administrator"):
+        st.session_state['authenticated'] = True
+        st.session_state['role'] = 'administrator'
+        st.session_state['first_name'] = 'Admin'
+        st.session_state['user_id'] = 4
+        st.switch_page('pages/20_Admin_Home.py')
 
 st.write("\n\n\n\n\n")
 st.write('\n')

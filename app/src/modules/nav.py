@@ -9,14 +9,8 @@ import streamlit as st
 
 
 def HomeNav():
+
     st.sidebar.page_link("Home.py", label="Home", icon="🏠")
-    if st.session_state["authenticated"] == False:
-        if st.sidebar.button("Act as System Administrator"):
-            st.session_state['authenticated'] = True
-            st.session_state['role'] = 'administrator'
-            st.session_state['first_name'] = 'Admin'
-            st.session_state['user_id'] = 4
-            st.switch_page('pages/20_Admin_Home.py')
 
 
 def AboutPageNav():
