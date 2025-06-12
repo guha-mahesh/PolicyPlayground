@@ -94,10 +94,3 @@ if st.button('Lobbyist Login', type='primary',  use_container_width=True):
 st.write("\n\n\n\n\n")
 st.write('\n')
 st.write('\n')
-
-if st.button('System Admin Login', type='primary',  use_container_width=True):
-    st.session_state['authenticated'] = True
-    st.session_state['role'] = 'administrator'
-    st.session_state['first_name'] = 'Admin'
-    st.session_state['user_id'] = 4
-    st.switch_page('pages/20_Admin_Home.py')
