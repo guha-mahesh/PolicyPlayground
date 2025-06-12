@@ -2,6 +2,7 @@ import streamlit as st
 
 
 def custom_style():
+    st.set_page_config(layout='wide')
     st.markdown(
         """
         <style>
@@ -11,6 +12,7 @@ def custom_style():
         [data-testid="stSidebar"] {
             background-color: #18435a;
         }
+        
 
         [data-testid="stSidebar"] * {
             color: #FFFFFF !important;
