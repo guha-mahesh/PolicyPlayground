@@ -4,7 +4,7 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 import json
-from modules.theme import custom_style
+from modules.theme import *
 
 
 logger = logging.getLogger(__name__)
@@ -15,8 +15,11 @@ custom_style()
 SideBarLinks()
 
 currentConvo = st.session_state["current_convo"]
+if 'new_note_title' not in st.session_state:
+    st.session_state['new_note_title'] = ""
+if 'new_note_content' not in st.session_state:
+    st.session_state['new_note_content'] = ""
 
-# Get current policy data to pre-populate sliders
 currentPolicy = getmethods.getPolicy(currentConvo["saved_id"]).json()[0]
 
 # create a 2 column layout
@@ -34,6 +37,8 @@ content = st.text_area(label="Enter Description", value=currentConvo["content"],
                        key=None, help=None, on_change=None, args=None, kwargs=None,
                        placeholder=None, disabled=False, label_visibility="visible")
 
+st.session_state['new_note_title'] = title
+st.session_state['new_note_content'] = content
 col1, col2 = st.columns(2, vertical_alignment="bottom")
 response = getmethods.getPoliticians(st.session_state["user_id"])
 
@@ -65,8 +70,7 @@ country_options = ["Use My Nationality", "United States", "Japan", "Germany",
 selected_country = st.selectbox(
     "Select Country for GDP Analysis (Optional)",
     options=country_options,
-    index=country_options.index(
-        currentPolicy["Country"]) if currentPolicy["Country"] in country_options else 0,
+    index=0,
     help="Choose a country for GDP prediction, or use your nationality"
 )
 
@@ -208,35 +212,37 @@ with col9:
 
 
 if st.button("Save Note", type="primary", use_container_width=True):
-    sp500 = getmethods.predictSP(frdr, fbss, tsh)
-    GDP = getmethods.predictGDP(military, education, health, country)
-    save_policy = {
-        "discountRate": frdr,
-        "federalReserveBalanceSheet": fbss,
-        "treasurySecurities": tsh,
-        "militarySpending": military,
-        "educationSpending": education,
-        "healthSpending": health,
-        "country": country,
-        "user_id": st.session_state["user_id"],
-        "market_index": sp500,
-        "GDP": GDP,
-        "federalFundsRate": fed_funds_rate,
-        "moneySupply": money_supply,
-        "reserveRequirementRatio": reserve_ratio,
-        "infrastructureSpending": infrastructure,
-        "debtToGDPRatio": debt_gdp_ratio,
-        "corporateTaxRate": corporate_tax_rate,
-        "title": title,
-        "user_id": st.session_state["user_id"],
-        "saved_id": currentPolicy["saved_id"]
-    }
-    json1 = getmethods.modifyPolicy(save_policy).json()
-    saved_id = json1["saved_id"]
+    if current_politician == None:
+        st.write("Please select a Politician")
+    else:
+        sp500 = getmethods.predictSP(frdr, fbss, tsh).json()["prediction"]
+        GDP = getmethods.predictGDP(military, education, health, country).json()["prediction"]
+        save_policy = {
+            "discountRate": frdr,
+            "federalReserveBalanceSheet": fbss,
+            "treasurySecurities": tsh,
+            "militarySpending": military,
+            "educationSpending": education,
+            "healthSpending": health,
+            "country": country,
+            "user_id": st.session_state["user_id"],
+            "market_index": sp500,
+            "GDP": GDP,
+            "federalFundsRate": fed_funds_rate,
+            "moneySupply": money_supply,
+            "reserveRequirementRatio": reserve_ratio,
+            "infrastructureSpending": infrastructure,
+            "debtToGDPRatio": debt_gdp_ratio,
+            "corporateTaxRate": corporate_tax_rate,
+            "title": title,
+            "saved_id": st.session_state["saved_id"]
+        }
+        json1 = getmethods.modifyPolicy(save_policy).json()
+        saved_id = json1["saved_id"]
+        noteJson = {"politician_id": current_politician["politician_id"],
+                    "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
+        getmethods.modifyNotes(noteJson)
+        st.session_state['new_note_title'] = ""
+        st.session_state['new_note_content'] = ""
+        st.switch_page("pages/43_Lobbyist2.py")
 
-    returnJson = {"title": title, "content": content, "politician_id": current_politician,
-                  "conversation_id": currentConvo["conversation_id"], "user_id": st.session_state["user_id"],
-                  "saved_id": saved_id}
-
-    getmethods.modifyNotes(returnJson)
-    st.switch_page("pages/43_Lobbyist2.py")

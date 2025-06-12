@@ -147,4 +147,5 @@ if not (st.session_state["notes_empty"]):
     with col2_4:
         if st.button(label="Modify", use_container_width=True):
             st.session_state["current_politician"] = selected_politician
+            st.session_state["saved_id"] =  currentPolicy["saved_id"]
             st.switch_page("pages/44_Lobbyist3.py")
