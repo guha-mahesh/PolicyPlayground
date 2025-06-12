@@ -9,7 +9,7 @@ from modules.theme import custom_style
 
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout="wide")
+
 custom_style()
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
@@ -55,16 +55,18 @@ else:
 #         st.switch_page('pages/42_NewPolitician.py')
 
 current_politician = st.session_state["current_politician"]
-st.write(f'**Politician:** {st.session_state["current_politician"]["full_name"]}')
+st.write(
+    f'**Politician:** {st.session_state["current_politician"]["full_name"]}')
 
 
 st.subheader('Policy Changes')
 country_options = ["Use My Nationality", "United States", "Japan", "Germany",
-                       "United Kingdom", "France", "Russia", "Canada"]
+                   "United Kingdom", "France", "Russia", "Canada"]
 selected_country = st.selectbox(
     "Select Country for GDP Analysis (Optional)",
     options=country_options,
-    index=country_options.index(currentPolicy["Country"]) if currentPolicy["Country"] in country_options else 0,
+    index=country_options.index(
+        currentPolicy["Country"]) if currentPolicy["Country"] in country_options else 0,
     help="Choose a country for GDP prediction, or use your nationality"
 )
 
@@ -209,29 +211,32 @@ if st.button("Save Note", type="primary", use_container_width=True):
     sp500 = getmethods.predictSP(frdr, fbss, tsh)
     GDP = getmethods.predictGDP(military, education, health, country)
     save_policy = {
-        "discountRate": frdr, 
-        "federalReserveBalanceSheet": fbss, 
-        "treasurySecurities": tsh, 
+        "discountRate": frdr,
+        "federalReserveBalanceSheet": fbss,
+        "treasurySecurities": tsh,
         "militarySpending": military,
-        "educationSpending": education, 
-        "healthSpending": health, 
-        "country": country, 
-        "user_id": st.session_state["user_id"], 
-        "market_index": sp500, 
+        "educationSpending": education,
+        "healthSpending": health,
+        "country": country,
+        "user_id": st.session_state["user_id"],
+        "market_index": sp500,
         "GDP": GDP,
         "federalFundsRate": fed_funds_rate,
         "moneySupply": money_supply,
         "reserveRequirementRatio": reserve_ratio,
         "infrastructureSpending": infrastructure,
         "debtToGDPRatio": debt_gdp_ratio,
-        "corporateTaxRate": corporate_tax_rate
+        "corporateTaxRate": corporate_tax_rate,
+        "title": title,
+        "user_id": st.session_state["user_id"],
+        "saved_id": currentPolicy["saved_id"]
     }
     json1 = getmethods.modifyPolicy(save_policy).json()
     saved_id = json1["saved_id"]
-    
+
     returnJson = {"title": title, "content": content, "politician_id": current_politician,
-                    "conversation_id": currentConvo["conversation_id"], "user_id": st.session_state["user_id"], 
-                    "saved_id": saved_id}
-    
+                  "conversation_id": currentConvo["conversation_id"], "user_id": st.session_state["user_id"],
+                  "saved_id": saved_id}
+
     getmethods.modifyNotes(returnJson)
     st.switch_page("pages/43_Lobbyist2.py")

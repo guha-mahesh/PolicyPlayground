@@ -8,11 +8,11 @@ import pandas as pd
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
+from modules.theme import *
 
-
+custom_style()
 logger = logging.getLogger(__name__)
 
-st.set_page_config(layout='wide')
 
 SideBarLinks()
 

@@ -1,30 +1,31 @@
+from modules.theme import *
+import numpy as np
+import pandas as pd
+import requestfunctions.getmethods as getmethods
+import requests
+from modules.nav import SideBarLinks
+import streamlit as st
 import logging
 
 logger = logging.getLogger(__name__)
 
-import streamlit as st
-from modules.nav import SideBarLinks
-import requests
-import requestfunctions.getmethods as getmethods
-import pandas as pd
-import numpy as np
-from modules.theme import custom_style
 
-
-st.set_page_config(layout="wide")
 custom_style()
+banner("View Saved Notes", "View, analyze, and modify saved notes")
 
 # Display the appropriate sidebar links for the role of the logged in user
 SideBarLinks()
 
 politicians = getmethods.getPoliticians(st.session_state["user_id"]).json()
 
-selected_politician = st.selectbox(label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
+selected_politician = st.selectbox(
+    label="Select Politician:", options=politicians, index=0, format_func=lambda pol: pol["full_name"])
 
 
-currentConvo = {"title" : "", "content" : ""}
+currentConvo = {"title": "", "content": ""}
 if selected_politician != None:
-    conversations = getmethods.getNotes(st.session_state["user_id"], selected_politician["politician_id"]).json()
+    conversations = getmethods.getNotes(
+        st.session_state["user_id"], selected_politician["politician_id"]).json()
 else:
     conversations = []
 st.session_state["notes_empty"] = True
@@ -41,7 +42,7 @@ col1, col2 = st.columns([1, 2])
 
 # Left panel
 with col1:
-    with st.container(height=500): 
+    with st.container(height=700):
         if st.session_state["notes_empty"]:
             st.write("No conversations found")
         else:
@@ -49,19 +50,20 @@ with col1:
                 if st.button(label=convo["title"], key=convo["conversation_id"], use_container_width=True):
                     currentConvo = convo
                     st.session_state["current_convo"] = currentConvo
-                    currentPolicy = getmethods.getPolicy(currentConvo["saved_id"]).json()[0]
+                    currentPolicy = getmethods.getPolicy(
+                        currentConvo["saved_id"]).json()[0]
 
 
 # Right panel
 with col2:
-    if not(st.session_state["notes_empty"]):  
+    if not (st.session_state["notes_empty"]):
         st.subheader(currentConvo["title"])
 
         st.write("Future Prediction")
         with st.container(height=200):
             df = pd.DataFrame({
-            'x': range(10),
-            'y': np.random.randn(10)
+                'x': range(10),
+                'y': np.random.randn(10)
             })
             # Plot
             st.line_chart(df.set_index('x'))
@@ -69,35 +71,50 @@ with col2:
         col2_1, col2_2 = st.columns([2, 1])
 
         with col2_1:
-            with st.container(height=150):
+            with st.container():
                 st.write("description")
                 st.write(currentConvo["content"])
 
         with col2_2:
-            with st.container(height=150):
+            with st.container():
                 st.write("Policy Summary")
                 st.write("**Monetary Policy:**")
                 st.write(f'• Discount Rate: {currentPolicy["discountRate"]}%')
-                st.write(f'• Fed Balance: ${currentPolicy["FederalReserveBalanceSheet"]:,}B')
-                st.write(f'• Treasury Holdings: ${currentPolicy["TreasurySecurities"]:,}B')
-                st.write(f'• Federal Funds Rate: {currentPolicy["FederalFundsRate"]}%')
+                st.write(
+                    f'• Fed Balance: ${currentPolicy["FederalReserveBalanceSheet"]:,}B')
+                st.write(
+                    f'• Treasury Holdings: ${currentPolicy["TreasurySecurities"]:,}B')
+                st.write(
+                    f'• Federal Funds Rate: {currentPolicy["FederalFundsRate"]}%')
                 st.write(f'• Money Supply: ${currentPolicy["MoneySupply"]:,}B')
-                st.write(f'• Reserve Requirement: {currentPolicy["ReserveRequirementRatio"]}%')
+                st.write(
+                    f'• Reserve Requirement: {currentPolicy["ReserveRequirementRatio"]}%')
                 st.write("**Fiscal Policy:**")
                 st.write(f'• Country: {currentPolicy["Country"]}')
-                st.write(f'• Military Spending: {currentPolicy["MilitarySpending"]}%')
-                st.write(f'• Education Spending: {currentPolicy["EducationSpending"]}%')
-                st.write(f'• Health Spending: {currentPolicy["HealthSpending"]}%')
-                st.write(f'• Infrastructure Spending: {currentPolicy["InfrastructureSpending"]}%')
-                st.write(f'• Debt-to-GDP Ratio: {currentPolicy["DebtToGDPRatio"]}%')
-                st.write(f'• Corporate Tax Rate: {currentPolicy["CorporateTaxRate"]}%')
+                st.write(
+                    f'• Military Spending: {currentPolicy["MilitarySpending"]}%')
+                st.write(
+                    f'• Education Spending: {currentPolicy["EducationSpending"]}%')
+                st.write(
+                    f'• Health Spending: {currentPolicy["HealthSpending"]}%')
+                st.write(
+                    f'• Infrastructure Spending: {currentPolicy["InfrastructureSpending"]}%')
+                st.write(
+                    f'• Debt-to-GDP Ratio: {currentPolicy["DebtToGDPRatio"]}%')
+                st.write(
+                    f'• Corporate Tax Rate: {currentPolicy["CorporateTaxRate"]}%')
 
         col2_3, col2_4 = st.columns([3, 1])
 
         with col2_3:
-            with st.container(height=150):
-                st.write("Similar Politicians")
+            with st.container():
+                st.write("Politician Information")
+                st.write(f'**{selected_politician["full_name"]}**')
+                st.write("Email: " + (f'{selected_politician["email_address"]}' or "N/A"))
+                st.write("Phone Number: " + (f'{selected_politician["phone_number"]}' or "N/A"))
+                st.write("Department: " + (f'{selected_politician["department"]}' or "N/A"))
                 
+
         with col2_4:
             if st.button(label="Modify", use_container_width=True):
                 st.session_state["current_politician"] = selected_politician

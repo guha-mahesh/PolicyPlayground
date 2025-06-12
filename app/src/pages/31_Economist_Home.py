@@ -1,4 +1,4 @@
-from modules.theme import custom_style
+from modules.theme import *
 import pandas as pd
 import requests
 from modules.nav import SideBarLinks
@@ -12,15 +12,8 @@ custom_style()
 
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
+welcome_banner("Analyze and explore policies and their impacts")
 
-
-st.markdown("""
-    <div style='background: linear-gradient(90deg, #1e3a8a 0%, #1e40af 100%); padding: 2rem; border-radius: 10px; margin-bottom: 2rem;'>
-        <h1 style='color: white; margin: 0;'>Start Exploring Policy</h1>
-        <p style='color: #94a3b8; margin: 0.5rem 0 0 0;'>Analyze past policies and their impacts</p>
-    </div>
-""", unsafe_allow_html=True)
-st.write(f"### Weclome, {st.session_state['first_name']}.\n")
 
 col1, col2 = st.columns(2)
 with col1:

@@ -3,9 +3,8 @@ from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
 from modules.theme import custom_style
 
-
-SideBarLinks()
 custom_style()
+SideBarLinks()
 st.write("# About this App")
 
 st.markdown(
