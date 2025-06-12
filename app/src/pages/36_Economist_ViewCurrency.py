@@ -20,14 +20,14 @@ st.markdown("""
         color: #e2e8f0;
         text-align: center;
     }
-    
+
     .currency-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         gap: 1rem;
         margin-bottom: 2rem;
     }
-    
+
     .currency-card {
         background: #18435a;
         border: none;
@@ -35,32 +35,37 @@ st.markdown("""
         padding: 1.5rem;
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+        min-height: 180px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
-    
+
     .currency-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(0,0,0,0.3);
     }
-    
+
     .currency-flag {
         font-size: 2rem;
         margin-bottom: 0.5rem;
     }
-    
+
     .currency-name {
         color: #e2e8f0;
         font-weight: 600;
         margin-bottom: 0.5rem;
     }
-    
+
     .currency-rate {
         color: #e2e8f0;
         font-size: 1.5rem;
         font-weight: bold;
     }
-    
+
     .base-currency-info {
-        background: #1e293b;
+        background: #18435a;
         border: none;
         padding: 1rem;
         border-radius: 8px;
@@ -68,7 +73,7 @@ st.markdown("""
         text-align: center;
         color: #e2e8f0;
     }
-    
+
     .policy-params-section {
         background: #18435a;
         border: none;
@@ -76,7 +81,7 @@ st.markdown("""
         border-radius: 12px;
         margin-top: 2rem;
     }
-    
+
     .policy-params-header {
         color: #e2e8f0;
         margin: 0 0 1rem 0;
@@ -120,12 +125,8 @@ currency_info = {
     "New Zealand Dollar": {"symbol": "NZ$", "flag": "🇳🇿", "code": "NZD"}
 }
 
-st.markdown(f"""
-    <div class='currency-header'>
-        <h1 style='margin: 0; color: #e2e8f0;'>💱 Currency Exchange Rate Predictions</h1>
-        <p style='margin: 0.5rem 0 0 0; color: #e2e8f0;'>Based on Policy Analysis for {analysis_country}</p>
-    </div>
-""", unsafe_allow_html=True)
+banner("Currency Exchange Rate Predictions",
+       f"Based on Policy Analysis for {analysis_country}")
 
 st.markdown(f"""
     <div class='base-currency-info'>
@@ -134,41 +135,41 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-cols = st.columns(3)
+# Display currency cards in a 3-column grid
 currency_items = list(currency_predictions.items())
+num_rows = (len(currency_items) + 2) // 3  # Calculate number of rows needed
 
-i = 0
-for idx, (currency_name, rate) in enumerate(currency_items):
-    col_idx = idx % 3
-    with cols[col_idx]:
-        info = currency_info.get(
-            currency_name, {"symbol": "", "flag": "🌐", "code": "???"})
+for row in range(num_rows):
+    cols = st.columns(3)
+    for col_idx in range(3):
+        item_idx = row * 3 + col_idx
+        if item_idx < len(currency_items):
+            currency_name, rate = currency_items[item_idx]
+            with cols[col_idx]:
+                info = currency_info.get(
+                    currency_name, {"symbol": "", "flag": "🌐", "code": "???"})
 
-        if currency_name == "Japanese Yen":
-            formatted_rate = f"{rate:.2f}"
-        elif rate < 1:
-            formatted_rate = f"{rate:.4f}"
-        else:
-            formatted_rate = f"{rate:.3f}"
+                if currency_name == "Japanese Yen":
+                    formatted_rate = f"{rate:.2f}"
+                elif rate < 1:
+                    formatted_rate = f"{rate:.4f}"
+                else:
+                    formatted_rate = f"{rate:.3f}"
 
-        st.markdown(f"""
-            <div class='currency-card'>
-                <div class='currency-flag'>{info['flag']}</div>
-                <div class='currency-name'>{currency_name}</div>
-                <div class='currency-rate'>{info['symbol']}{formatted_rate}</div>
-                <div style='color: #e2e8f0; font-size: 0.9rem; margin-top: 0.5rem;'>{info['code']}</div>
-            </div>
-        """, unsafe_allow_html=True)
-        if i > 2:
-            st.write("\n\n\n")
-        i += 1
+                st.markdown(f"""
+                    <div class='currency-card'>
+                        <div class='currency-flag'>{info['flag']}</div>
+                        <div class='currency-name'>{currency_name}</div>
+                        <div class='currency-rate'>{info['symbol']}{formatted_rate}</div>
+                        <div style='color: #e2e8f0; font-size: 0.9rem; margin-top: 0.5rem;'>{info['code']}</div>
+                    </div>
+                """, unsafe_allow_html=True)
+
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns([1, 1, 1])
 with col2:
-    st.write("\n\n\n")
-    st.write("\n\n\n")
     if st.button("← Back to Policies", type="secondary", use_container_width=True):
         st.switch_page("pages/33_Economist_viewPolicy.py")
-
-if st.button("View GDP and Market Predictions", type="primary", use_container_width=True):
-    st.switch_page("pages/35_Economist_ViewPred.py")
+    if st.button("View GDP and Market Predictions", type="secondary", use_container_width=True):
+        st.switch_page("pages/35_Economist_ViewPred.py")
