@@ -111,4 +111,5 @@ def SideBarLinks(show_home=False):
         if st.sidebar.button("Logout"):
             del st.session_state["role"]
             del st.session_state["authenticated"]
+            st.session_state.clear()
             st.switch_page("Home.py")
