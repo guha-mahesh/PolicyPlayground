@@ -1,4 +1,5 @@
 # Policy Playground
+## Guha Mahesh, Sota Shimizu, Bhuvan Hospet, Carter Vargas
 
 Welcome to Policy Playground by Pushin' Policy! Our app is designed to empower individuals working with economic public policy by providing data-driven insights to support the legislative process.
 
@@ -15,8 +16,12 @@ Through interactive fiscal and monetary tools, users can explore and predict key
 
 To go about starting the project, you simply need to 
 1. Clone the repository to your compute
-  - `git clone https://github.com/your-username/FinFluxes.git`
+  - `git clone https://github.com/guha-mahesh/FinFluxes.git`
   - `cd FinFluxes`
 3. Run `docker build -t your-image-name .` in the FinFluxes directory
 4. Run `docker compose up `
+
+
+View Our Blog [Here](https://bhuvanh66.github.io/Bhuvan-Carter-Guha-Sota_DOC/) to see view our methodologies when creating this project!
+
 
