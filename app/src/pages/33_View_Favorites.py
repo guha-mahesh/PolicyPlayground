@@ -73,13 +73,26 @@ if not df.empty:
                 <p style='color: #94a3b8; margin: 0;'>Policies with similar characteristics and objectives</p>
             </div>
         """, unsafe_allow_html=True)
+        st.markdown("""
+            <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
+                <h3 style='color: #e2e8f0; margin: 0 0 1rem 0;'> Similar Policies</h3>
+                <p style='color: #94a3b8; margin: 0;'>Policies with similar characteristics and objectives</p>
+            </div>
+        """, unsafe_allow_html=True)
 
         try:
             num = int(fav_choice.split('.')[0])
             similar_response = requests.get(
                 f"http://web-api:4000/model/similar_policies/{num}")
             similar_data = similar_response.json()
+        try:
+            num = int(fav_choice.split('.')[0])
+            similar_response = requests.get(
+                f"http://web-api:4000/model/similar_policies/{num}")
+            similar_data = similar_response.json()
 
+            if similar_data and len(similar_data) > 0:
+                similar_df = pd.DataFrame(similar_data)
             if similar_data and len(similar_data) > 0:
                 similar_df = pd.DataFrame(similar_data)
 
@@ -92,7 +105,19 @@ if not df.empty:
                 if 'duration_length' in similar_df.columns:
                     similar_df['duration_length'] = similar_df['duration_length'].apply(
                         lambda x: f"{x} months" if pd.notnull(x) else "")
+                if 'budget' in similar_df.columns:
+                    similar_df['budget'] = similar_df['budget'].apply(
+                        lambda x: f"${x:,.0f}M" if pd.notnull(x) else "")
+                if 'population_size' in similar_df.columns:
+                    similar_df['population_size'] = similar_df['population_size'].apply(
+                        lambda x: f"{x:,.0f}" if pd.notnull(x) else "")
+                if 'duration_length' in similar_df.columns:
+                    similar_df['duration_length'] = similar_df['duration_length'].apply(
+                        lambda x: f"{x} months" if pd.notnull(x) else "")
 
+                for _, policy in similar_df.iterrows():
+                    with st.expander(f"📋 {policy['politician']} - {policy['topic']} ({policy['year_enacted']})"):
+                        col1, col2 = st.columns(2)
                 for _, policy in similar_df.iterrows():
                     with st.expander(f"📋 {policy['politician']} - {policy['topic']} ({policy['year_enacted']})"):
                         col1, col2 = st.columns(2)
@@ -110,7 +135,16 @@ if not df.empty:
                         with col2:
                             st.subheader("Description")
                             st.write(policy['pol_description'])
+                        with col2:
+                            st.subheader("Description")
+                            st.write(policy['pol_description'])
 
+                        # Add save button for each policy
+                        if st.button(f"Save Policy", key=f"save_{policy['policy_id']}", use_container_width=True):
+                            returnJson = {
+                                "policy_id": policy['policy_id'], "user_id": st.session_state['user_id']}
+                            response = requests.post(
+                                f"http://web-api:4000/pol/favorites", json=returnJson)
                         # Add save button for each policy
                         if st.button(f"Save Policy", key=f"save_{policy['policy_id']}", use_container_width=True):
                             returnJson = {
@@ -126,6 +160,7 @@ if not df.empty:
             st.info(
                 "Please try again later or contact support if the issue persists.")
 
+        st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.write("---")
