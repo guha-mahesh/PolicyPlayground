@@ -1,98 +1,46 @@
-# Summer 2025 Data and Software Belgium Dialogue
+# Policy Playground
+## Guha Mahesh, Sota Shimizu, Bhuvan Hospet, Carter Vargas
 
-This is a template repo for the project course associated with the Summer 2025 Northeastern University's Data and Software in International Government and Politics Dialogue of Civilization.
+Welcome to Policy Playground by Pushin' Policy! Our app is designed to empower individuals working with economic public policy by providing data-driven insights to support the legislative process.
 
-It includes most of the infrastructure setup (containers), sample databases and ML models, and example UI pages. Explore it fully and ask questions!
+Through interactive fiscal and monetary tools, users can explore and predict key economic indicators such as the S&P 500 and GDP. Policy Playground also offers access to historical policy data, politicians’ records, and their associated economic impacts—helping economists, lobbyists, and policymakers make informed decisions with confidence.
 
-## Prerequisites
 
-- A GitHub Account
-- A terminal-based git client or GUI Git client such as GitHub Desktop or the Git plugin for VSCode.
-- VSCode with the Python Plugin
-- A distribution of Python running on your laptop. The distribution supported by the course is Anaconda or Miniconda.
+## Our tools include:
 
-## Structure of the Repo
+- AI Models to predict Currency Exchange Rates, Market Indicators such as the SPY or the FTSE, and the GDP/Capita of a country based off of fiscal and monetary policy.
+- Policy saving and publishing features for politicians to test out policies and save their favorite "presets" or publish policies to receive feedback from Economists
+- Note taking features for Lobbyists to keep track of their conversations with politicians and view the politicians proposed policies and their implications
+- Pages for Economists to view historic policies and information regarding how the policy was carried out, when the policies were made, and what the policies accomplished
+- Additionally, Economists can also utilize a model which shows them similar policies to the historic policies they have saved
 
-- The repo is organized into five main directories:
-  - `./app` - the Streamlit app
-  - `./api` - the Flask REST API
-  - `./database-files` - SQL scripts to initialize the MySQL database
-  - `./datasets` - folder for storing datasets
-  - `./ml-src` - folder for storing ML models
-- The repo also contains a `docker-compose.yaml` file that is used to set up the Docker containers for the front end app, the REST API, and MySQL database. This file is used to run the app and API in Docker containers.
+## Deploying the project
+To go about starting the project, you simply need to 
+1. Clone the repository to your computer
+  - `git clone https://github.com/guha-mahesh/FinFluxes.git`
+  - `cd FinFluxes`
+2. Copy the information in the env template in api/.env.template into a .env file in the same directory
+3. Replace "northwind" with "global_database" and put in a password
+4. Run `docker build -t finfluxes .` in the FinFluxes directory
+5. Run `docker compose up `
+6. Visit http://localhost:8501/
 
-## Suggestion for Learning the Project Code Base
 
-If you are not familiar with web app development, this code base might be confusing. But don't worry, we'll get through it together. Here are some suggestions for learning the code base:
 
-1. Have two versions of the template repo - one for you to individually explore and learn and another for the team's project implementation.
-1. Start by exploring the `./app` directory. This is where the Streamlit app is located. The Streamlit app is a Python-based web app that is used to interact with the user. It's a great way to build a simple web app without having to learn a lot of web development.
-1. Next, explore the `./api` directory. This is where the Flask REST API is located. The REST API is used to interact with the database and perform other server-side tasks.
-1. Finally, explore the `./database-files` directory. This is where the SQL scripts are located that will be used to initialize the MySQL database.
+## How to use:
+- Once you load into the website, choose one of the three users for each of our defined personas
+- For the Policy Maker, you have the choice to use the models and features as either a German, Britisher, or American. This will affect what market index you predict in addition to what currency exchagnes are displayed.
+- If you would like to track your conversations with politicians:
+  1. Select the lobbyist persona with the user of your choice
+  2. Enter your politician information and the policies they described
+  3. View the implications of their policy and add your notes on it
+- If you would like to view historic data regarding policies and their attributes or find previous policies similar to your ideas:
+  1. Select the economist with the user of your choice:
+  2. Filter through attributes regarding the policy to narrow down to policies applicable to your interests
+  3. View save the policy and view similar policies and information about your saved policies.
 
-### Setting Up Your Personal Testing Repo
 
-**Before you start**: You need to have a GitHub account and a terminal-based git client or GUI Git client such as GitHub Desktop or the Git plugin for VSCode.
+### We Hope You Enjoy Our App
+### View Our Blog [Here](https://bhuvanh66.github.io/Bhuvan-Carter-Guha-Sota_DOC/) to see view our methodologies when creating this project!
 
-1. Clone this repo to your local machine.
-   1. You can do this by clicking the green "Code" button on the top right of the repo page and copying the URL. Then, in your terminal, run `git clone <URL>`.
-   1. Or, you can use the GitHub Desktop app to clone the repo.
-1. Open the repo in VSCode.
-1. Set up the `.env` file in the `api` folder based on the `.env.template` file.
-1. For running the testing containers (for your personal repo), you will tell `docker compose` to use a different configuration file named `docker-compose-testing.yaml`.
-   1. `docker compose -f docker-compose-testing.yaml up -d` to start all the containers in the background
-   1. `docker compose -f docker-compose-testing.yaml down` to shutdown and delete the containers
-   1. `docker compose -f docker-compose-testing.yaml up db -d` only start the database container (replace db with api or app for the other two services as needed)
-   1. `docker compose -f docker-compose-testing.yaml stop` to "turn off" the containers but not delete them.
 
-### Setting Up Your Team's Repo
-
-**Before you start**: As a team, one person needs to assume the role of _Team Project Repo Owner_.
-
-1. The Team Project Repo Owner needs to **fork** this template repo into their own GitHub account **and give the repo a name consistent with your project's name**. If you're worried that the repo is public, don't. Every team is doing a different project.
-1. In the newly forked team repo, the Team Project Repo Owner should go to the **Settings** tab, choose **Collaborators and Teams** on the left-side panel. Add each of your team members to the repository with Write access.
-
-**Remaining Team Members**
-
-1. Each of the other team members will receive an invitation to join.
-1. Once you have accepted the invitation, you should clone the Team's Project Repo to your local machine.
-1. Set up the `.env` file in the `api` folder based on the `.env.template` file.
-1. For running the testing containers (for your team's repo):
-   1. `docker compose up -d` to start all the containers in the background
-   1. `docker compose down` to shutdown and delete the containers
-   1. `docker compose up db -d` only start the database container (replace db with api or app for the other two services as needed)
-   1. `docker compose stop` to "turn off" the containers but not delete them.
-
-**Note:** You can also use the Docker Desktop GUI to start and stop the containers after the first initial run.
-
-## Incorporating ML Models into your Project
-
-_Note_: This project only contains the infrastructure for a hypothetical ML model.
-
-1. Collect and preprocess necessary datasets for your ML models.
-1. Build, train, and test your ML model in a Jupyter Notebook.
-   - You can store your datasets in the `datasets` folder. You can also store your Jupyter Notebook in the `ml-src` folder.
-1. Once your team is happy with the model's performance, convert your Jupyter Notebook code for the ML model to a pure Python script.
-   - You can include the `training` and `testing` functionality as well as the `prediction` functionality.
-   - Develop and test this pure Python script first in the `ml-src` folder.
-   - You may or may not need to include data cleaning, though.
-1. Review the `api/backend/ml_models` module. In this folder,
-   - We've put a sample (read _fake_) ML model in the `model01.py` file. The `predict` function will be called by the Flask REST API to perform '_real-time_' prediction based on model parameter values that are stored in the database. **Important**: you would never want to hard code the model parameter weights directly in the prediction function.
-1. The prediction route for the REST API is in `api/backend/customers/customer_routes.py`. Basically, it accepts two URL parameters and passes them to the `prediction` function in the `ml_models` module. The `prediction` route/function packages up the value(s) it receives from the model's `predict` function and send its back to Streamlit as JSON.
-1. Back in streamlit, check out `app/src/pages/11_Prediction.py`. Here, I create two numeric input fields. When the button is pressed, it makes a request to the REST API URL `/c/prediction/.../...` function and passes the values from the two inputs as URL parameters. It gets back the results from the route and displays them. Nothing fancy here.
-
-## Handling User Role Access and Control
-
-In most applications, when a user logs in, they assume a particular role. For instance, when one logs in to a stock price prediction app, they may be a single investor, a portfolio manager, or a corporate executive (of a publicly traded company). Each of those _roles_ will likely present some similar features as well as some different features when compared to the other roles. So, how do you accomplish this in Streamlit? This is sometimes called Role-based Access Control, or **RBAC** for short.
-
-The code in this project demonstrates how to implement a simple RBAC system in Streamlit but without actually using user authentication (usernames and passwords). The Streamlit pages from the original template repo are split up among 3 roles - Political Strategist, USAID Worker, and a System Administrator role (this is used for any sort of system tasks such as re-training ML model, etc.). It also demonstrates how to deploy an ML model.
-
-Wrapping your head around this will take a little time and exploration of this code base. Some highlights are below.
-
-### Getting Started with the RBAC
-
-1. We need to turn off the standard panel of links on the left side of the Streamlit app. This is done through the `app/src/.streamlit/config.toml` file. So check that out. We are turning it off so we can control directly what links are shown.
-1. Then I created a new python module in `app/src/modules/nav.py`. When you look at the file, you will se that there are functions for basically each page of the application. The `st.sidebar.page_link(...)` adds a single link to the sidebar. We have a separate function for each page so that we can organize the links/pages by role.
-1. Next, check out the `app/src/Home.py` file. Notice that there are 3 buttons added to the page and when one is clicked, it redirects via `st.switch_page(...)` to that Roles Home page in `app/src/pages`. But before the redirect, I set a few different variables in the Streamlit `session_state` object to track role, first name of the user, and that the user is now authenticated.
-1. Notice near the top of `app/src/Home.py` and all other pages, there is a call to `SideBarLinks(...)` from the `app/src/nav.py` module. This is the function that will use the role set in `session_state` to determine what links to show the user in the sidebar.
-1. The pages are organized by Role. Pages that start with a `0` are related to the _Political Strategist_ role. Pages that start with a `1` are related to the _USAID worker_ role. And, pages that start with a `2` are related to The _System Administrator_ role.
