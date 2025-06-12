@@ -212,8 +212,8 @@ if st.button("Save Note", type="primary", use_container_width=True):
     if selected_politician == None:
         st.write("Please select a Politician")
     else:
-        sp500 = getmethods.predictSP(frdr, fbss, tsh)
-        GDP = getmethods.predictGDP(military, education, health, country)
+        sp500 = getmethods.predictSP(frdr, fbss, tsh).json()["prediction"]
+        GDP = getmethods.predictGDP(military, education, health, country).json()["prediction"]
         save_policy = {
             "discountRate": frdr,
             "federalReserveBalanceSheet": fbss,
@@ -235,7 +235,6 @@ if st.button("Save Note", type="primary", use_container_width=True):
         }
         json1 = getmethods.savePolicy(save_policy).json()
         saved_id = json1["saved_id"]
-        st.write(saved_id)
         noteJson = {"politician_id": selected_politician["politician_id"],
                     "content": content, "title": title, "user_id": st.session_state["user_id"], "saved_id": saved_id}
         getmethods.postNote(noteJson)
