@@ -26,7 +26,6 @@ def get_policies():
     topic = request.args.get('Topic Choice', None)
     politician = request.args.get('politician_choice', None)
     
-    # Get range parameters
     budget_min = request.args.get('budget_min', None)
     budget_max = request.args.get('budget_max', None)
     duration_min = request.args.get('duration_min', None)
@@ -34,19 +33,15 @@ def get_policies():
     population_min = request.args.get('population_min', None)
     population_max = request.args.get('population_max', None)
 
-    # Debug logging
     current_app.logger.info(f"Query parameters: budget_min={budget_min}, budget_max={budget_max}, duration_min={duration_min}, duration_max={duration_max}, population_min={population_min}, population_max={population_max}")
 
-    # Validate order param
     if order not in ('ASC', 'DESC'):
         order = 'ASC'
 
-    # Build base query
     query = "SELECT policy_id, year_enacted, politician, topic, country, budget, duration_length, population_size FROM Policies"
     params = []
     conditions = []
 
-    # Add filtering if year specified
     if year_start:
         conditions.append("year_enacted >= %s")
         params.append(year_start)
@@ -63,13 +58,12 @@ def get_policies():
         conditions.append("politician = %s")
         params.append(politician)
 
-    # Add numeric range conditions
     if budget_min is not None:
         conditions.append("(budget IS NULL OR budget >= %s)")
-        params.append(float(budget_min))  # Convert to float to handle larger numbers
+        params.append(float(budget_min))  
     if budget_max is not None:
         conditions.append("(budget IS NULL OR budget <= %s)")
-        params.append(float(budget_max))  # Convert to float to handle larger numbers
+        params.append(float(budget_max)) 
     
     if duration_min is not None:
         conditions.append("(duration_length IS NULL OR duration_length >= %s)")
@@ -85,13 +79,11 @@ def get_policies():
         conditions.append("(population_size IS NULL OR population_size <= %s)")
         params.append(int(population_max))
 
-    # Add WHERE clause if there are any conditions
     if conditions:
         query += " WHERE " + " AND ".join(conditions)
 
     query += f" ORDER BY {sort_by} {order}"
 
-    # Debug logging
     current_app.logger.info(f"Final query: {query}")
     current_app.logger.info(f"Query parameters: {params}")
 
