@@ -37,10 +37,10 @@ try:
             num = int(fav_choice.split('.')[0])
             st.write(f"Year Enacted:\t{df.loc[df['policy_id'] == num, 'year_enacted'].iloc[0]}")
             st.write(f"Politician:\t{df.loc[df['policy_id'] == num, 'politician'].iloc[0]}")
-            st.write(f"Scope:\t{df.loc[df['policy_id'] == num, 'pol_scope'].iloc[0]}")
-            st.write(f"Duration:\t{df.loc[df['policy_id'] == num, 'duration'].iloc[0]}")
-            st.write(f"Intensity:\t{df.loc[df['policy_id'] == num, 'intensity'].iloc[0]}")
-            st.write(f"Course of Action:\t{df.loc[df['policy_id'] == num, 'advocacy_method'].iloc[0]}")
+            st.write(f"Country:\t{df.loc[df['policy_id'] == num, 'country'].iloc[0]}")
+            st.write(f"Budget:\t{df.loc[df['policy_id'] == num, 'budget'].iloc[0]} M")
+            st.write(f"Population:\t{df.loc[df['policy_id'] == num, 'population_size'].iloc[0]} K")
+            st.write(f"Duration:\t{df.loc[df['policy_id'] == num, 'duration_length'].iloc[0]} M")
 
     with col2:
         num = int(fav_choice.split('.')[0])
