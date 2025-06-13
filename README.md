@@ -29,6 +29,7 @@ To go about starting the project, you simply need to
 
 ## How to use:
 - Once you load into the website, choose one of the three users for each of our defined personas
+- **TRAIN THE MODEL**
 - For the Policy Maker, you have the choice to use the models and features as either a German, Britisher, or American. This will affect what market index you predict in addition to what currency exchagnes are displayed.
 - If you would like to track your conversations with politicians:
   1. Select the lobbyist persona with the user of your choice
