@@ -16,7 +16,7 @@ user_id = st.session_state['user_id']
 
 # saved policies
 st.markdown("""
-    <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
+    <div style='background: #18435a; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
         <h3 style='color: #e2e8f0; margin: 0 0 1rem 0;'>Saved Policies</h3>
         <p style='color: #94a3b8; margin: 0;'>View and manage your saved policy drafts</p>
     </div>
@@ -140,7 +140,7 @@ for item in saved_policies:
 
 # published policies
 st.markdown("""
-    <div style='background: #1e293b; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
+    <div style='background: #18435a; padding: 1.5rem; border-radius: 8px; margin: 2rem 0;'>
         <h3 style='color: #e2e8f0; margin: 0 0 1rem 0;'>Published Policies</h3>
         <p style='color: #94a3b8; margin: 0;'>View and manage your published policies</p>
     </div>

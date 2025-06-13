@@ -579,13 +579,13 @@ col_left, col_right = st.columns(2)
 with col_left:
     st.markdown(f"""
         <div class='policy-card'>
-            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>💰 Monetary Policy</h4>
-            <p style='color: #94a3b8; margin: 0;'>• {policy_config['rate_name']}: {discount_rate}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Balance Sheet: {policy_config['currency']}{fed_balance:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Securities Holdings: {policy_config['currency']}{treasury_holdings:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Federal Funds Rate: {fed_funds_rate}%</p>
-            <p style='color: #94a3b8; margin: 0;'>• Money Supply: {policy_config['currency']}{money_supply:,}B</p>
-            <p style='color: #94a3b8; margin: 0;'>• Reserve Requirement: {reserve_ratio}%</p>
+            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>Monetary Policy</h4>
+            <p style='color: #FFFFFF; margin: 0;'>• {policy_config['rate_name']}: {discount_rate}%</p>
+            <p style='color: #FFFFFF; margin: 0;'>• Balance Sheet: {policy_config['currency']}{fed_balance:,}B</p>
+            <p style='color: #FFFFFF; margin: 0;'>• Securities Holdings: {policy_config['currency']}{treasury_holdings:,}B</p>
+            <p style='color: #FFFFFF; margin: 0;'>• Federal Funds Rate: {fed_funds_rate}%</p>
+            <p style='color: #FFFFFF; margin: 0;'>• Money Supply: {policy_config['currency']}{money_supply:,}B</p>
+            <p style='color: #FFFFFF; margin: 0;'>• Reserve Requirement: {reserve_ratio}%</p>
             <p style='color: transparent; margin: 0;'>• &nbsp;</p>
         </div>
     """, unsafe_allow_html=True)
@@ -593,14 +593,14 @@ with col_left:
 with col_right:
     st.markdown(f"""
         <div class='policy-card'>
-            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>📊 Fiscal Policy</h4>
-            <p style='color: #ffffff; margin: 0;'>• Analysis Country: {analysis_country}</p>
+            <h4 style='color: #e2e8f0; margin: 0 0 0.5rem 0;'>Fiscal Policy</h4>
             <p style='color: #ffffff; margin: 0;'>• Military Spending: {military_spending}%</p>
             <p style='color: #ffffff; margin: 0;'>• Education Spending: {education_spending}%</p>
             <p style='color: #ffffff; margin: 0;'>• Health Spending: {health_spending}%</p>
             <p style='color: #ffffff; margin: 0;'>• Infrastructure Spending: {infrastructure_spending}%</p>
             <p style='color: #ffffff; margin: 0;'>• Debt-to-GDP Ratio: {debt_gdp_ratio}%</p>
             <p style='color: #ffffff; margin: 0;'>• Corporate Tax Rate: {corporate_tax_rate}%</p>
+            <p style='color: transparent; margin: 0;'>• &nbsp;</p>
         </div>
     """, unsafe_allow_html=True)
 
