@@ -1,11 +1,12 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from modules.nav import SideBarLinks
-from modules.theme import custom_style
+from modules.theme import *
 
 custom_style()
 SideBarLinks()
-st.write("# About this App")
+
+banner("About this App", "Policy Playground by Pushing Policy")
 
 st.markdown(
     """
