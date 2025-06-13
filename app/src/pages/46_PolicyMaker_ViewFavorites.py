@@ -77,7 +77,7 @@ for item in saved_policies:
                     f'**Corporate Tax Rate:** {policyJson["CorporateTaxRate"]}%')
             with col2:
                 if st.button("View Analysis", key=f"analyze_{id}", use_container_width=True):
-                    # Set policy parameters in session state
+
                     st.session_state['policy_params'] = {
                         'Selected Country': policyJson['Country'],
                         'Discount Rate': policyJson['discountRate'],
@@ -93,7 +93,7 @@ for item in saved_policies:
                         'Debt to GDP Ratio': policyJson['DebtToGDPRatio'],
                         'Corporate Tax Rate': policyJson['CorporateTaxRate']
                     }
-                    # Set predictions in session state
+
                     st.session_state['Predictions'] = {
                         'Market': str(policyJson['SP500']),
                         'GDP/C': str(policyJson['GDP'])

@@ -111,5 +111,3 @@ try:
 
 except Exception as e:
     logger.exception("Main execution failed")
-    if st.button("Please Favorite Some Policies!"):
-        st.switch_page("pages/32_Historical_Data.py")

@@ -599,5 +599,6 @@ with col6:
         )
 
 st.divider()
+
 if st.button("View Currency Predictions"):
     st.switch_page("pages/45_Policy_Maker_Currency.py")
