@@ -27,7 +27,10 @@ def economy_home():
 def PolStratAdvHomeNav():
     st.sidebar.page_link(
         "pages/32_Historical_Data.py", label="Historical Data Viewer", icon="💰"
+
     )
+    st.sidebar.page_link("pages/33_View_Favorites.py",
+                         label="View Saved Policies", icon="📜")
 
 
 def viewFavoritesNav():
