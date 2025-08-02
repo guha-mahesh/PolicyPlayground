@@ -18,10 +18,10 @@ Through interactive fiscal and monetary tools, users can explore and predict key
 To go about starting the project, you simply need to 
 1. Clone the repository to your computer
   - `git clone https://github.com/guha-mahesh/PolicyPlayground.git`
-  - `cd FinFluxes`
+  - `cd PolicyPlayground`
 2. Copy the information in the env template in api/.env.template into a .env file in the same directory
 3. Replace "northwind" with "global_database" and put in a password
-4. Run `docker build -t finfluxes .` in the FinFluxes directory
+4. Run `docker build -t finfluxes .` in the PolicyPlayground directory
 5. Run `docker compose up `
 6. Visit http://localhost:8501/
 
