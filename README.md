@@ -17,7 +17,7 @@ Through interactive fiscal and monetary tools, users can explore and predict key
 ## Deploying the project
 To go about starting the project, you simply need to 
 1. Clone the repository to your computer
-  - `git clone https://github.com/guha-mahesh/FinFluxes.git`
+  - `git clone https://github.com/guha-mahesh/PolicyPlayground.git`
   - `cd FinFluxes`
 2. Copy the information in the env template in api/.env.template into a .env file in the same directory
 3. Replace "northwind" with "global_database" and put in a password
