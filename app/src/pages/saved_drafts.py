@@ -4,6 +4,8 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 from modules.theme import *
+import os
+import dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +14,9 @@ custom_style()
 
 SideBarLinks()
 banner("Published Policies", "View all published policies")
+
+dotenv.load_dotenv()
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
 
 
 def adjust_currencies_for_country(base_currencies, user_country, discount_rate):
@@ -78,7 +83,7 @@ def adjust_currencies_for_country(base_currencies, user_country, discount_rate):
 
 try:
 
-    response = requests.get("http://web-api:4000/politician/publisher")
+    response = requests.get(f"{API_BASE_URL}/politician/publisher")
     if response.status_code == 200:
         published_policies = response.json()
 
@@ -122,7 +127,7 @@ try:
                             if user_country not in ["United States", "United Kingdom", "Germany"]:
                                 user_country = "United States"
 
-                            api_url2 = f"http://host.docker.internal:4000/model/currency/{policy['discountRate']},{policy['TreasurySecurities']},{policy['FederalReserveBalanceSheet']}"
+                            api_url2 = f"{API_BASE_URL}/model/currency/{policy['discountRate']},{policy['TreasurySecurities']},{policy['FederalReserveBalanceSheet']}"
 
                             try:
                                 headers = {

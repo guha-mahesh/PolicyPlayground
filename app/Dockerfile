@@ -1,13 +1,8 @@
 FROM python:3.11-slim
 
 WORKDIR /appcode
+RUN apt-get update && apt-get install -y build-essential curl git && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -y \
-  build-essential \
-  curl \
-  software-properties-common \
-  git \
-  && rm -rf /var/lib/apt/lists/*
 
 # RUN mkdir /requirements
 # COPY ./src/requirements.txt /requirements/requirements.txt

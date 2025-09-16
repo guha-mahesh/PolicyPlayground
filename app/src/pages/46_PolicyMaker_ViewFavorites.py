@@ -4,6 +4,8 @@ import streamlit as st
 from modules.nav import SideBarLinks
 import logging
 from modules.theme import *
+import os
+import dotenv
 
 
 logger = logging.getLogger(__name__)
@@ -12,6 +14,9 @@ banner("Policy Management Dashboard",
        "Manage your saved and published policies")
 SideBarLinks()
 
+
+dotenv.load_dotenv()
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
 user_id = st.session_state['user_id']
 
 # saved policies
@@ -23,7 +28,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 saved_policies = requests.get(
-    f"http://web-api:4000/politician/allpolicy/{user_id}").json()
+    f"{API_BASE_URL}/politician/allpolicy/{user_id}").json()
 count = 0
 for item in saved_policies:
     count += 1
@@ -32,14 +37,14 @@ for item in saved_policies:
     # Check if policy is already published
     try:
         check_response = requests.get(
-            f"http://web-api:4000/politician/all_published/{id}")
+            f"{API_BASE_URL}/politician/all_published/{id}")
         is_published = check_response.status_code == 200 and check_response.json().get(
             "is_published", False)
 
         if is_published:
             continue
 
-        policy_url = f"http://web-api:4000/politician/policy/{id}"
+        policy_url = f"{API_BASE_URL}/politician/policy/{id}"
         policyJson = requests.get(policy_url).json()[0]
         title = policyJson["title"]
 
@@ -106,7 +111,7 @@ for item in saved_policies:
                             f"Sending publish request with data: {request_data}")
 
                         response = requests.post(
-                            "http://web-api:4000/politician/publisher",
+                            f"{API_BASE_URL}/politician/publisher",
                             json=request_data,
                             headers={'Content-Type': 'application/json'}
                         )
@@ -148,7 +153,7 @@ st.markdown("""
 
 try:
     response = requests.get(
-        f"http://web-api:4000/politician/userPublisher/{user_id}")
+        f"{API_BASE_URL}/politician/userPublisher/{user_id}")
     if response.status_code == 200:
         published_policies = response.json()
 
@@ -157,12 +162,14 @@ try:
                 try:
 
                     policy_details_response = requests.get(
-                        f"http://web-api:4000/politician/policy/{policy['saved_id']}")
+                        f"{API_BASE_URL}/politician/policy/{policy['saved_id']}")
                     if policy_details_response.status_code == 200:
                         policy_details = policy_details_response.json()[0]
 
                         policy_title = policy_details.get(
                             'title', f'Policy {policy["publish_id"]}')
+                        st.markdown(
+                            f"<h4 style='margin-bottom:0;'>{policy_title}</h4>", unsafe_allow_html=True)
                         with st.expander(f"Expand {policy_title}", expanded=False):
                             col1, col2 = st.columns(
                                 [4, 1], vertical_alignment="bottom")
@@ -194,7 +201,7 @@ try:
                                 if st.button("Unpublish", key=f"unpublish_{policy['publish_id']}", use_container_width=True):
                                     try:
                                         unpublish_response = requests.delete(
-                                            f"http://web-api:4000/politician/publisher/{policy['publish_id']}")
+                                            f"{API_BASE_URL}/politician/publisher/{policy['publish_id']}")
                                         if unpublish_response.status_code == 200:
                                             st.success(
                                                 "Policy unpublished successfully!")

@@ -9,9 +9,15 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
 from modules.theme import *
+import os
+import dotenv
 
 custom_style()
 logger = logging.getLogger(__name__)
+
+dotenv.load_dotenv()
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
+
 
 
 SideBarLinks()
@@ -80,7 +86,7 @@ with col1:
     }
 
     endpoint = api_endpoints.get(market_index, "sp500")
-    API_URL = f"http://web-api:4000/model/data/{endpoint}"
+    API_URL = f"{API_BASE_URL}/model/data/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -197,7 +203,7 @@ with col2:
     if selected_country == "Great Britain":
         country_for_api = "UnitedKingdom"
 
-    GDP_API_URL = f"http://web-api:4000/model/countryGDP/{country_for_api}"
+    GDP_API_URL = f"{API_BASE_URL}/model/countryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)
@@ -326,7 +332,7 @@ world_gdp_last_value = None
 with col3:
     st.markdown("##### URTH ETF (Global Equity)")
 
-    URTH_API_URL = "http://web-api:4000/model/data/urth"
+    URTH_API_URL = f"{API_BASE_URL}/model/data/urth"
 
     try:
         response = requests.get(URTH_API_URL)
@@ -442,7 +448,7 @@ with col3:
 with col4:
     st.markdown("##### World GDP per Capita Average")
 
-    WORLD_GDP_API_URL = "http://web-api:4000/model/data/world_gdp_per_capita"
+    WORLD_GDP_API_URL = f"{API_BASE_URL}/model/data/world_gdp_per_capita"
 
     try:
         response = requests.get(WORLD_GDP_API_URL)

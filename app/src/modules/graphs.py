@@ -8,6 +8,12 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import json
 from requestfunctions import getmethods
+import os
+import dotenv
+
+
+dotenv.load_dotenv()
+API_URL = os.getenv("URL", "smth.onrender idkyet")
 
 def sp500graph():
 
@@ -45,7 +51,7 @@ def sp500graph():
     }
 
     endpoint = api_endpoints.get(market_index, "sp500")
-    API_URL = f"http://web-api:4000/model/data/{endpoint}"
+    API_URL = f"{API_URL}/model/data/{endpoint}"
 
     try:
         response = requests.get(API_URL)
@@ -185,7 +191,7 @@ def GDPgraph():
     if selected_country == "Great Britain":
         country_for_api = "UnitedKingdom"
 
-    GDP_API_URL = f"http://web-api:4000/model/countryGDP/{country_for_api}"
+    GDP_API_URL = f"{API_URL}/model/countryGDP/{country_for_api}"
 
     try:
         response = requests.get(GDP_API_URL)

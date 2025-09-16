@@ -5,16 +5,22 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 logger = logging.getLogger(__name__)
+import os
+import dotenv
 
 
 custom_style()
 # Show appropriate sidebar links for the role of the currently logged in user
 SideBarLinks()
 
+dotenv.load_dotenv()
+API_URL = os.getenv("URL", "smth.onrender idkyet")
+
+
 with st.container(height=300):
     st.write("### Politician Contact Info:")
     response = requests.get(
-        f"http://web-api:4000/pol/politician/{st.session_state['Politician Index']}")
+        f"{API_URL}/pol/politician/{st.session_state['Politician Index']}")
     data = response.json()
     df1 = pd.DataFrame(data)
     st.write(f"**Full name**: {df1.loc[0, 'full_name']}")

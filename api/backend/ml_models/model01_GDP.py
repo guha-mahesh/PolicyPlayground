@@ -1,12 +1,19 @@
 import pandas as pd
 import numpy as np
 import requests
+import dotenv
+import os
 
 
 feature_means = {}
 feature_stds = {}
 country_features = []
 log_transformed_features = set()
+
+
+
+dotenv.load_dotenv()
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
 
 
 def train_func():
@@ -77,13 +84,13 @@ def train_func():
 
     def prepare_training_data():
         govt_health = requests.get(
-            "http://web-api:4000/model/data2/HealthExpenditure").json()['data']
+            f"{API_BASE_URL}/model/data2/HealthExpenditure").json()['data']
         govt_education = requests.get(
-            "http://web-api:4000/model/data2/EducationExpenditure").json()['data']
+            f"{API_BASE_URL}/model/data2/EducationExpenditure").json()['data']
         military_spending = requests.get(
-            "http://web-api:4000/model/data2/MilitaryExpenditure").json()['data']
+            f"{API_BASE_URL}/model/data2/MilitaryExpenditure").json()['data']
         gdp_per_capita = requests.get(
-            "http://web-api:4000/model/data2/GDP").json()['data']
+            f"{API_BASE_URL}/model/data2/GDP").json()['data']
 
         df = pd.DataFrame(gdp_per_capita)
         health_df = pd.DataFrame(govt_health)
@@ -188,7 +195,7 @@ def train_func():
     y = np.nan_to_num(y, nan=0.0, posinf=1e6, neginf=-1e6)
 
     coefficients = regress(X, y)
-    api_base_url = "http://web-api:4000/model"
+    api_base_url = f"{API_BASE_URL}/model"
 
     gdp_payload = {
         "model_name": "GDP",
@@ -213,7 +220,7 @@ def predict(user_features, country, current_year=2024, coefficients=None):
     }
 
     if coefficients is None:
-        response = requests.get("http://web-api:4000/model/weights/GDP")
+        response = requests.get(f"{API_BASE_URL}/model/weights/GDP")
         if response.status_code == 200:
             coefficients = np.array(response.json()['coefficients'])
 

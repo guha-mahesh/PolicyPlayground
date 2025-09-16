@@ -4,17 +4,21 @@ import requests
 from modules.nav import SideBarLinks
 import streamlit as st
 import logging
+import os
+import dotenv
 
 logger = logging.getLogger(__name__)
 
 custom_style()
 SideBarLinks()
 banner("Historical Data Viewer", "Analyze past policies and their impacts")
+dotenv.load_dotenv()
+API_URL = os.getenv("URL", "smth.onrender idkyet")
 
 st.write("## Choose a Favorited Policy to View:")
 
 response = requests.get(
-    f"http://web-api:4000/pol/favorites/{st.session_state['user_id']}")
+    f"{API_URL}/pol/favorites/{st.session_state['user_id']}")
 data = response.json()
 df = pd.DataFrame(data)
 
@@ -30,7 +34,7 @@ else:
     st.session_state['Politician Index'] = num
     with col2:
         if st.button("Delete Policy"):
-            requests.delete(f"http://web-api:4000/pol/favorites/{num}")
+            requests.delete(f"{API_URL}/pol/favorites/{num}")
 
     with col1:
         st.markdown("**Policy Information**")
@@ -65,7 +69,7 @@ else:
 
     try:
         similar_response = requests.get(
-            f"http://web-api:4000/model/similar_policies/{num}")
+            f"{API_URL}/model/similar_policies/{num}")
         similar_data = similar_response.json()
 
         if similar_data:
@@ -100,7 +104,7 @@ else:
                         returnJson = {
                             "policy_id": policy['policy_id'], "user_id": st.session_state['user_id']}
                         requests.post(
-                            f"http://web-api:4000/pol/favorites", json=returnJson)
+                            f"{API_URL}/pol/favorites", json=returnJson)
         else:
             st.info("No similar policies found.")
     except Exception as e:

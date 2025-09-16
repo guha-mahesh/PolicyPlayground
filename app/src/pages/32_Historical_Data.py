@@ -6,11 +6,18 @@ from modules.nav import SideBarLinks
 import streamlit as st
 import logging
 logger = logging.getLogger(__name__)
+import os
+import dotenv
+
 
 custom_style()
 
 SideBarLinks()
 banner("Historical Data Viewer", "Analyze past policies and their impacts")
+
+
+dotenv.load_dotenv()
+API_URL = os.getenv("URL", "smth.onrender idkyet")
 
 st.markdown(f"#### Logged in as: **{st.session_state['first_name']}**")
 st.write("\n \n")
@@ -98,7 +105,7 @@ params = st.session_state.get('filter_params', {})
 
 
 response = requests.get(
-    "http://web-api:4000/pol/policy_handler", params=params)
+    f"{API_URL}/pol/policy_handler", params=params)
 data = response.json()
 df = pd.DataFrame(data, columns=("policy_id", "country", "year_enacted",
                   "politician", "topic", "budget", "duration_length", "population_size"))
@@ -133,7 +140,7 @@ try:
 
     if st.button("Save Policy"):
         returnJson = {"policy_id": num, "user_id": st.session_state['user_id']}
-        requests.post(f"http://web-api:4000/pol/favorites", json=returnJson)
+        requests.post(f"{API_URL}/pol/favorites", json=returnJson)
         st.success("Policy Saved!")
 
     st.write("---")

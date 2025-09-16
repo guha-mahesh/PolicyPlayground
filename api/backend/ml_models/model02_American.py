@@ -3,7 +3,8 @@ import requests
 import pandas as pd
 import os
 from datetime import datetime, timedelta
-
+import os
+import dotenv
 pd.set_option('display.max_columns', None)
 
 
@@ -11,6 +12,9 @@ sp500_coefficients_data = None
 currency_models = None
 merged_df = None
 normalization_stats = None
+dotenv.load_dotenv()
+
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
 
 
 def train():
@@ -24,7 +28,7 @@ def train():
 
     def fetch_from_api(table_name):
         """Fetch data from database API"""
-        url = f"http://web-api:4000/model/data/{table_name}"
+        url = f"{API_BASE_URL}/model/data/{table_name}"
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()['data']
@@ -252,7 +256,7 @@ def train():
         except Exception as e:
             print(f"Error training {name} model: {e}")
 
-    api_base_url = "http://web-api:4000/model"
+    api_base_url = f"{API_BASE_URL}/model"
 
     sp500_payload = {
         "model_name": "sp500",
@@ -291,13 +295,13 @@ def predict_sp500(user_features, coefficients=None):
         raise ValueError("Model must be trained before making predictions")
 
     if coefficients is None:
-        response = requests.get("http://web-api:4000/model/weights/sp500")
+        response = requests.get(f"{API_BASE_URL}/model/weights/sp500")
         if response.status_code == 200:
             coefficients = np.array(response.json()['coefficients'])
         else:
             raise ValueError("Failed to fetch S&P 500 model weights from API")
 
-    url = "http://web-api:4000/model/data/sp500"
+    url = f"{API_BASE_URL}/model/data/sp500"
     response = requests.get(url)
     data = response.json()['data']
     sp500_df = pd.DataFrame(data, columns=['mos', 'vals'])
@@ -378,7 +382,7 @@ def predict_currency(user_features, currency_models_dict=None):
 
         for currency in currencies:
             response = requests.get(
-                f"http://web-api:4000/model/weights/currency_{currency}")
+                f"{API_BASE_URL}/model/weights/currency_{currency}")
             if response.status_code == 200:
                 currency_models_dict[currency] = np.array(
                     response.json()['coefficients'])
@@ -401,7 +405,7 @@ def predict_currency(user_features, currency_models_dict=None):
 
         currency_coefficients = currency_models_dict[currency_name]
 
-        url = f"http://web-api:4000/model/data/{table_name}"
+        url = f"{API_BASE_URL}/model/data/{table_name}"
         response = requests.get(url)
         data = response.json()['data']
         historical_currency_data = pd.DataFrame(data, columns=['mos', 'vals'])

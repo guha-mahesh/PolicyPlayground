@@ -1,3 +1,5 @@
+import dotenv
+import os
 from modules.theme import custom_style
 from modules.nav import SideBarLinks
 from modules.theme import welcome_banner, logOut
@@ -11,6 +13,10 @@ custom_style()
 SideBarLinks()
 
 logOut()
+
+
+dotenv.load_dotenv()
+API_BASE_URL = os.getenv("URL", "smth.onrender idkyet")
 
 
 # Custom CSS for enhanced styling
@@ -628,9 +634,9 @@ if st.button("🚀 Test Policy Set", type="primary", use_container_width=True):
     }
 
     # API calls
-    api_url = f"http://host.docker.internal:4000/model/SP500/{discount_rate},{treasury_holdings},{fed_balance}"
-    api_url2 = f"http://host.docker.internal:4000/model/currency/{discount_rate},{treasury_holdings},{fed_balance}"
-    api_url3 = f"http://host.docker.internal:4000/model/GDP/{health_spending},{education_spending},{military_spending}/{country_codes[analysis_country]}"
+    api_url = f"{API_BASE_URL}/model/SP500/{discount_rate},{treasury_holdings},{fed_balance}"
+    api_url2 = f"{API_BASE_URL}/model/currency/{discount_rate},{treasury_holdings},{fed_balance}"
+    api_url3 = f"{API_BASE_URL}/model/GDP/{health_spending},{education_spending},{military_spending}/{country_codes[analysis_country]}"
 
     try:
         headers = {
